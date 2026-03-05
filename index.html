@@ -1,0 +1,4153 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StockMaster Pro • Sistema Profissional de Estoque</title>
+    <style>
+        /* Mesmo CSS do arquivo original */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3f37c9;
+            --primary-light: #4895ef;
+            --secondary: #3f37c9;
+            --success: #4cc9f0;
+            --warning: #f72585;
+            --danger: #e63946;
+            --dark: #1e1e2e;
+            --light: #f8f9fa;
+            --gray-100: #f1f3f5;
+            --gray-200: #e9ecef;
+            --gray-300: #dee2e6;
+            --gray-400: #ced4da;
+            --gray-500: #adb5bd;
+            --gray-600: #6c757d;
+            --gray-700: #495057;
+            --gray-800: #343a40;
+            --gray-900: #212529;
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.02);
+            --shadow: 0 4px 6px rgba(0,0,0,0.04);
+            --shadow-md: 0 6px 12px rgba(0,0,0,0.06);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.08);
+            --shadow-xl: 0 20px 40px rgba(0,0,0,0.12);
+            --radius-sm: 8px;
+            --radius: 12px;
+            --radius-md: 16px;
+            --radius-lg: 24px;
+            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="dark"] {
+            --primary: #4895ef;
+            --primary-dark: #4361ee;
+            --primary-light: #4cc9f0;
+            --dark: #ffffff;
+            --light: #1a1b2f;
+            --gray-100: #2d2e42;
+            --gray-200: #2a2b3e;
+            --gray-300: #252637;
+            --gray-400: #202132;
+            --gray-500: #1b1c2d;
+            --gray-600: #161728;
+            --gray-700: #111223;
+            --gray-800: #0c0d1e;
+            --gray-900: #070819;
+            background: linear-gradient(135deg, #0f0f1a 0%, #1a1b2f 100%);
+            color: #ffffff;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            transition: var(--transition);
+        }
+
+        body.dark-mode {
+            background: linear-gradient(135deg, #1a1b2f 0%, #2d2e42 100%);
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-xl);
+            overflow: hidden;
+            transition: var(--transition);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .dark-mode .container {
+            background: rgba(26, 27, 47, 0.95);
+            border-color: rgba(255, 255, 255, 0.05);
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 25px 35px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 50%);
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .header-title {
+            position: relative;
+            z-index: 1;
+        }
+
+        .header-title h1 {
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin-bottom: 5px;
+            background: linear-gradient(135deg, #fff, #f0f0f0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-title p {
+            opacity: 0.9;
+            font-size: 14px;
+            font-weight: 400;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .stats-grid {
+            display: flex;
+            gap: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            padding: 15px 25px;
+            border-radius: var(--radius);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: var(--transition);
+            min-width: 120px;
+            text-align: center;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 800;
+            line-height: 1.2;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .theme-toggle {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 40px;
+            padding: 5px;
+            display: flex;
+            gap: 5px;
+        }
+
+        .theme-btn {
+            background: none;
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .theme-btn.active {
+            background: white;
+            color: var(--primary);
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: var(--gray-100);
+            padding: 15px 25px 0;
+            gap: 5px;
+            border-bottom: 1px solid var(--gray-200);
+            overflow-x: auto;
+            scrollbar-width: thin;
+        }
+
+        .nav-tabs::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .nav-tabs::-webkit-scrollbar-thumb {
+            background: var(--gray-400);
+            border-radius: 4px;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--gray-600);
+            border-radius: var(--radius) var(--radius) 0 0;
+            transition: var(--transition);
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+        }
+
+        .tab-btn:hover {
+            color: var(--primary);
+            background: rgba(67, 97, 238, 0.05);
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            background: white;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.02);
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 3px 3px 0 0;
+        }
+
+        .dark-mode .tab-btn.active {
+            background: var(--gray-800);
+            color: var(--primary-light);
+        }
+
+        .tab-content {
+            padding: 30px;
+        }
+
+        .tab-pane {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .action-bar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .search-wrapper {
+            flex: 1;
+            min-width: 300px;
+            position: relative;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray-500);
+            font-size: 18px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 14px 20px 14px 45px;
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius);
+            font-size: 15px;
+            transition: var(--transition);
+            background: var(--gray-100);
+            color: inherit;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.1);
+            background: white;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+        }
+
+        .btn-orcamento {
+            background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+            color: white;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow);
+            overflow: auto;
+            border: 1px solid var(--gray-200);
+        }
+
+        .dark-mode .table-container {
+            background: var(--gray-800);
+            border-color: var(--gray-700);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        th {
+            background: var(--gray-100);
+            color: var(--gray-700);
+            font-weight: 600;
+            padding: 18px 15px;
+            text-align: left;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid var(--gray-200);
+        }
+
+        .dark-mode th {
+            background: var(--gray-700);
+            color: var(--gray-200);
+            border-bottom-color: var(--gray-600);
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid var(--gray-200);
+            color: var(--gray-700);
+            vertical-align: middle;
+        }
+
+        .dark-mode td {
+            border-bottom-color: var(--gray-700);
+            color: var(--gray-300);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background: var(--gray-100);
+        }
+
+        .dark-mode tr:hover td {
+            background: var(--gray-700);
+        }
+
+        .clickable-row {
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .clickable-row:hover td {
+            background: rgba(67, 97, 238, 0.1) !important;
+        }
+
+        .product-thumbnail {
+            width: 50px;
+            height: 50px;
+            border-radius: var(--radius-sm);
+            object-fit: cover;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 2px solid white;
+            box-shadow: var(--shadow);
+        }
+
+        .product-thumbnail:hover {
+            transform: scale(1.1);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .product-image-large {
+            max-width: 100%;
+            max-height: 400px;
+            border-radius: var(--radius);
+            object-fit: contain;
+        }
+
+        .badge {
+            padding: 6px 12px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .badge-success {
+            background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+            color: #065f46;
+        }
+
+        .badge-warning {
+            background: linear-gradient(135deg, #fee2e2, #fecaca);
+            color: #991b1b;
+        }
+
+        .badge-info {
+            background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+            color: #1e40af;
+        }
+
+        .badge-devolucao {
+            background: linear-gradient(135deg, #cffafe, #a5f3fc);
+            color: #0e7490;
+        }
+
+        .dark-mode .badge-success {
+            background: linear-gradient(135deg, #064e3b, #065f46);
+            color: #d1fae5;
+        }
+
+        .dark-mode .badge-warning {
+            background: linear-gradient(135deg, #7f1d1d, #991b1b);
+            color: #fee2e2;
+        }
+
+        .action-icons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            width: 35px;
+            height: 35px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+            background: var(--gray-100);
+            color: var(--gray-600);
+            font-size: 16px;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .action-btn.view:hover {
+            background: var(--primary-light);
+            color: white;
+        }
+
+        .action-btn.edit:hover {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .action-btn.delete:hover {
+            background: #ef4444;
+            color: white;
+        }
+
+        .itens-saida-container {
+            background: var(--gray-100);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .item-saida {
+            background: white;
+            border-radius: var(--radius);
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid var(--gray-200);
+            position: relative;
+        }
+
+        .dark-mode .item-saida {
+            background: var(--gray-800);
+            border-color: var(--gray-700);
+        }
+
+        .item-saida-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .item-saida-header h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .btn-remove-item {
+            background: none;
+            border: none;
+            color: var(--danger);
+            cursor: pointer;
+            font-size: 18px;
+            width: 30px;
+            height: 30px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .btn-remove-item:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        .item-saida-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 10px;
+        }
+
+        .btn-adicionar-item {
+            width: 100%;
+            padding: 12px;
+            background: var(--gray-200);
+            border: 2px dashed var(--gray-400);
+            border-radius: var(--radius);
+            color: var(--gray-600);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-adicionar-item:hover {
+            background: var(--gray-300);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .total-saida {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 15px 20px;
+            border-radius: var(--radius);
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+        }
+
+        .orcamentos-list {
+            margin-top: 30px;
+        }
+
+        .orcamento-card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 1px solid var(--gray-200);
+            transition: var(--transition);
+        }
+
+        .dark-mode .orcamento-card {
+            background: var(--gray-800);
+            border-color: var(--gray-700);
+        }
+
+        .orcamento-card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+
+        .orcamento-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .orcamento-header h3 {
+            font-size: 18px;
+            color: var(--primary);
+        }
+
+        .orcamento-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-pendente {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-aprovado {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-cancelado {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .orcamento-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .orcamento-info-item {
+            font-size: 14px;
+        }
+
+        .orcamento-info-item strong {
+            display: block;
+            color: var(--gray-600);
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+
+        .orcamento-itens {
+            background: var(--gray-100);
+            border-radius: var(--radius);
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .orcamento-itens table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: auto;
+        }
+
+        .orcamento-itens th,
+        .orcamento-itens td {
+            padding: 8px;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .orcamento-itens th {
+            background: none;
+            border-bottom: 2px solid var(--gray-300);
+            text-transform: none;
+            font-size: 12px;
+        }
+
+        .orcamento-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid var(--gray-200);
+        }
+
+        .orcamento-total {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .orcamento-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: var(--radius-lg);
+            max-width: 900px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-xl);
+            animation: slideUp 0.3s;
+        }
+
+        .dark-mode .modal-content {
+            background: var(--gray-800);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            padding: 25px 30px;
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .modal-header h2 {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .modal-close {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 8px;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group.full-width {
+            grid-column: span 2;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--gray-700);
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .dark-mode .form-group label {
+            color: var(--gray-300);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius);
+            font-size: 14px;
+            transition: var(--transition);
+            background: var(--gray-100);
+            color: inherit;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.1);
+            background: white;
+        }
+
+        select.form-control {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236c757d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            padding-right: 45px;
+        }
+
+        .image-upload-container {
+            border: 2px dashed var(--gray-300);
+            border-radius: var(--radius);
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            background: var(--gray-100);
+        }
+
+        .image-upload-container:hover {
+            border-color: var(--primary);
+            background: var(--gray-200);
+        }
+
+        .image-upload-container input[type="file"] {
+            display: none;
+        }
+
+        .image-preview {
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: var(--radius);
+            margin: 15px auto;
+            display: block;
+            box-shadow: var(--shadow);
+        }
+
+        .upload-options {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .upload-option {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius);
+            background: none;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--gray-600);
+            transition: var(--transition);
+        }
+
+        .upload-option.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        .alert {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 16px 24px;
+            border-radius: var(--radius);
+            background: white;
+            box-shadow: var(--shadow-xl);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 2000;
+            animation: slideIn 0.3s;
+            border-left: 4px solid transparent;
+            max-width: 400px;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .alert-success {
+            border-left-color: #10b981;
+        }
+
+        .alert-success .alert-icon {
+            color: #10b981;
+        }
+
+        .alert-danger {
+            border-left-color: #ef4444;
+        }
+
+        .alert-danger .alert-icon {
+            color: #ef4444;
+        }
+
+        .alert-warning {
+            border-left-color: #f59e0b;
+        }
+
+        .alert-warning .alert-icon {
+            color: #f59e0b;
+        }
+
+        .alert-content {
+            flex: 1;
+        }
+
+        .alert-title {
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .alert-message {
+            font-size: 14px;
+            color: var(--gray-600);
+        }
+
+        .alert-close {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--gray-400);
+            transition: var(--transition);
+        }
+
+        .alert-close:hover {
+            color: var(--gray-600);
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--gray-200);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        [data-tooltip] {
+            position: relative;
+            cursor: help;
+        }
+
+        [data-tooltip]:before {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 8px 12px;
+            background: var(--gray-800);
+            color: white;
+            font-size: 12px;
+            border-radius: 6px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        [data-tooltip]:hover:before {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(-8px);
+        }
+
+        .itens-vendidos-lista {
+            list-style: none;
+            padding: 0;
+        }
+
+        .itens-vendidos-lista li {
+            padding: 12px;
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .itens-vendidos-lista li:last-child {
+            border-bottom: none;
+        }
+
+        .itens-vendidos-lista .produto-nome {
+            font-weight: 600;
+        }
+
+        .itens-vendidos-lista .produto-qtd {
+            background: var(--gray-100);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            color: var(--gray-700);
+        }
+
+        .itens-vendidos-lista .produto-data {
+            font-size: 12px;
+            color: var(--gray-500);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: var(--gray-500);
+        }
+
+        .orcamento-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--gray-200);
+            padding-bottom: 10px;
+        }
+
+        .orcamento-tab {
+            padding: 8px 16px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--gray-600);
+            border-radius: var(--radius);
+            transition: var(--transition);
+        }
+
+        .orcamento-tab:hover {
+            background: var(--gray-200);
+            color: var(--primary);
+        }
+
+        .orcamento-tab.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        @media (max-width: 1024px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-group.full-width {
+                grid-column: span 1;
+            }
+            
+            .stats-grid {
+                flex-wrap: wrap;
+            }
+            
+            .stat-card {
+                flex: 1;
+                min-width: 120px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .action-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-wrapper {
+                min-width: auto;
+            }
+            
+            .btn-group {
+                justify-content: stretch;
+            }
+            
+            .btn {
+                flex: 1;
+            }
+            
+            .stats-grid {
+                width: 100%;
+            }
+            
+            .modal-content {
+                width: 95%;
+                margin: 10px;
+            }
+        }
+
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .print-area, .print-area * {
+                visibility: visible;
+            }
+            .print-area {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                padding: 20px;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+
+        .print-area {
+            background: white;
+            color: black;
+            padding: 30px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .print-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #333;
+        }
+
+        .print-header h2 {
+            font-size: 24px;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        .print-header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .print-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        .print-table th,
+        .print-table td {
+            border: 1px solid #333;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .print-table th {
+            background: #f0f0f0;
+            font-weight: 600;
+        }
+
+        .print-footer {
+            margin-top: 30px;
+            text-align: right;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .connection-status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            background: rgba(255,255,255,0.2);
+            margin-left: 10px;
+        }
+        
+        .connection-status.online {
+            background: rgba(16, 185, 129, 0.3);
+            color: #10b981;
+        }
+        
+        .connection-status.offline {
+            background: rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+        }
+
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(3px);
+            z-index: 3000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .loading-spinner {
+            background: white;
+            padding: 30px;
+            border-radius: var(--radius-lg);
+            text-align: center;
+            box-shadow: var(--shadow-xl);
+        }
+
+        .loading-spinner .spinner {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 20px;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>Sincronizando com o servidor...</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <header>
+            <div class="header-title">
+                <h1>StockMaster Pro <span class="connection-status" id="connectionStatus">🔄 Conectando...</span></h1>
+                <p>
+                    <span>⚡ Sistema Profissional de Gestão de Estoque</span>
+                    <span class="badge" style="background: rgba(255,255,255,0.2);">v2.0 Enterprise + Supabase</span>
+                </p>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalProdutos">0</div>
+                    <div class="stat-label">Produtos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalItens">0</div>
+                    <div class="stat-label">Itens em Estoque</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="alertas">0</div>
+                    <div class="stat-label">Alertas</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="valorTotal">R$ 0</div>
+                    <div class="stat-label">Valor em Estoque</div>
+                </div>
+            </div>
+
+            <div class="theme-toggle">
+                <button class="theme-btn active" onclick="setTheme('light')">☀️ Light</button>
+                <button class="theme-btn" onclick="setTheme('dark')">🌙 Dark</button>
+            </div>
+        </header>
+
+        <div class="modal" id="supabaseConfigModal">
+            <div class="modal-content" style="max-width: 500px;">
+                <div class="modal-header">
+                    <h2>🔧 Configuração do Supabase</h2>
+                    <button class="modal-close" onclick="fecharSupabaseConfigModal()">✕</button>
+                </div>
+                <div class="modal-body">
+                    <form onsubmit="configurarSupabase(event)">
+                        <div class="form-group">
+                            <label>URL do Projeto Supabase</label>
+                            <input type="url" class="form-control" id="supabaseUrl" placeholder="https://seuprojeto.supabase.co" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Chave Anônima (anon key)</label>
+                            <input type="text" class="form-control" id="supabaseKey" placeholder="sua-chave-anon-aqui" required>
+                        </div>
+                        <p style="color: var(--gray-500); font-size: 13px; margin: 10px 0;">
+                            ℹ️ Estas informações podem ser encontradas em Configurações > API no seu projeto Supabase.
+                        </p>
+                        <div style="display: flex; gap: 10px;">
+                            <button type="submit" class="btn btn-primary" style="flex: 1;">🔌 Conectar</button>
+                            <button type="button" class="btn" style="flex: 1; background: var(--gray-200);" onclick="fecharSupabaseConfigModal()">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="tab-btn active" onclick="showTab('dashboard', event)">📊 Dashboard</button>
+            <button class="tab-btn" onclick="showTab('produtos', event)">📦 Produtos</button>
+            <button class="tab-btn" onclick="showTab('fornecedores', event)">🤝 Fornecedores</button>
+            <button class="tab-btn" onclick="showTab('entradas', event)">📥 Entradas</button>
+            <button class="tab-btn" onclick="showTab('saidas', event)">📤 Saídas</button>
+            <button class="tab-btn" onclick="showTab('relatorios', event)">📊 Relatórios</button>
+        </div>
+
+        <div class="tab-content">
+            <div class="tab-pane active" id="dashboard">
+                <div class="action-bar">
+                    <div class="search-wrapper">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" class="search-input" placeholder="Buscar produtos por código, nome ou categoria..." onkeyup="buscarProdutos()" id="searchDashboard">
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="exportarRelatorio('pdf')">📥 Exportar PDF</button>
+                        <button class="btn btn-success" onclick="exportarRelatorio('excel')">📊 Exportar Excel</button>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Imagem</th>
+                                <th>Código</th>
+                                <th>Produto</th>
+                                <th>Categoria</th>
+                                <th>Localização</th>
+                                <th>Estoque Mínimo</th>
+                                <th>Saldo Atual</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dashboardBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="tab-pane" id="produtos">
+                <div class="action-bar">
+                    <div class="search-wrapper">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" class="search-input" placeholder="Buscar produtos..." onkeyup="buscarProdutos()" id="searchProdutos">
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="abrirModal('produto')">➕ Novo Produto</button>
+                        <button class="btn btn-success" onclick="importarProdutos()">📤 Importar JSON</button>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Imagem</th>
+                                <th>Código</th>
+                                <th>Nome</th>
+                                <th>Categoria</th>
+                                <th>Localização</th>
+                                <th>Fornecedor</th>
+                                <th>Estoque Mínimo</th>
+                                <th>Saldo</th>
+                                <th>Valor Unit.</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="produtosBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="tab-pane" id="fornecedores">
+                <div class="action-bar">
+                    <div class="search-wrapper">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" class="search-input" placeholder="Buscar fornecedores..." onkeyup="buscarFornecedores()" id="searchFornecedores">
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="abrirModal('fornecedor')">➕ Novo Fornecedor</button>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Produtos</th>
+                                <th>Contato</th>
+                                <th>Telefone</th>
+                                <th>E-mail</th>
+                                <th>Prazo Entrega</th>
+                                <th>Último Pedido</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="fornecedoresBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="tab-pane" id="entradas">
+                <div class="action-bar">
+                    <div class="search-wrapper">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" class="search-input" placeholder="Buscar entradas..." onkeyup="buscarEntradas()" id="searchEntradas">
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-success" onclick="abrirModal('entrada')">➕ Registrar Entrada</button>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Hora</th>
+                                <th>Código</th>
+                                <th>Produto</th>
+                                <th>Quantidade</th>
+                                <th>Fornecedor</th>
+                                <th>NF</th>
+                                <th>Valor</th>
+                                <th>Tipo</th>
+                            </tr>
+                        </thead>
+                        <tbody id="entradasBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="tab-pane" id="saidas">
+                <div class="action-bar">
+                    <div class="search-wrapper">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" class="search-input" placeholder="Buscar saídas ou orçamentos..." onkeyup="buscarSaidas()" id="searchSaidas">
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-info" onclick="imprimirSaidas()">🖨️ Imprimir</button>
+                        <button class="btn btn-orcamento" onclick="abrirModal('orcamento')">📝 Novo Orçamento</button>
+                        <button class="btn btn-warning" onclick="abrirModal('saida')">➖ Registrar Saída</button>
+                    </div>
+                </div>
+
+                <div class="orcamento-tabs">
+                    <button class="orcamento-tab active" onclick="mostrarVisaoSaidas('saidas', event)">📋 Movimentações</button>
+                    <button class="orcamento-tab" onclick="mostrarVisaoSaidas('orcamentos', event)">📝 Orçamentos</button>
+                </div>
+
+                <div id="visaoSaidas" style="display: block;">
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Hora</th>
+                                    <th>Código</th>
+                                    <th>Produto</th>
+                                    <th>Quantidade</th>
+                                    <th>Motivo</th>
+                                    <th>Destino</th>
+                                    <th>Tipo</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="saidasBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="visaoOrcamentos" style="display: none;">
+                    <div class="orcamentos-list" id="orcamentosList"></div>
+                </div>
+            </div>
+
+            <div class="tab-pane" id="relatorios">
+                <div class="action-bar">
+                    <h2 style="color: black;">📊 Relatórios Gerenciais</h2>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 20px;">
+                    <div class="stat-card" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white;">
+                        <div style="font-size: 24px; margin-bottom: 10px;">📦</div>
+                        <div style="font-size: 18px; font-weight: 600;">Produtos com Estoque Baixo</div>
+                        <div style="font-size: 36px; font-weight: 800; margin: 10px 0;" id="relatorioBaixo">0</div>
+                        <button class="btn" style="background: white; color: var(--primary); width: 100%;" onclick="gerarRelatorio('baixo')">Ver Relatório</button>
+                    </div>
+                    
+                    <div class="stat-card" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white;">
+                        <div style="font-size: 24px; margin-bottom: 10px;">💰</div>
+                        <div style="font-size: 18px; font-weight: 600;">Valor Total em Estoque</div>
+                        <div style="font-size: 36px; font-weight: 800; margin: 10px 0;" id="relatorioValor">R$ 0</div>
+                        <button class="btn" style="background: white; color: #f59e0b; width: 100%;" onclick="gerarRelatorio('valor')">Ver Detalhes</button>
+                    </div>
+                    
+                    <div class="stat-card" style="background: linear-gradient(135deg, #10b981, #059669); color: white;">
+                        <div style="font-size: 24px; margin-bottom: 10px;">🔄</div>
+                        <div style="font-size: 18px; font-weight: 600;">Movimentações (Mês)</div>
+                        <div style="font-size: 36px; font-weight: 800; margin: 10px 0;" id="relatorioMov">0</div>
+                        <button class="btn" style="background: white; color: #10b981; width: 100%;" onclick="gerarRelatorio('movimentacoes')">Ver Histórico</button>
+                    </div>
+                </div>
+
+                <div style="margin-top: 30px;">
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Período</th>
+                                    <th>Total Entradas</th>
+                                    <th>Total Saídas</th>
+                                    <th>Saldo</th>
+                                    <th>Valor Movimentado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="relatorioBody">
+                                <tr>
+                                    <td colspan="5" style="text-align: center; padding: 40px;">
+                                        <div class="spinner" style="margin: 0 auto;"></div>
+                                        <p style="margin-top: 15px;">Carregando relatórios...</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p style="text-align: center; margin-top: 10px; color: var(--gray-500); font-size: 13px;">
+                        👆 Clique em qualquer mês para ver os itens movimentados no período
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Novo Registro</h2>
+                <button class="modal-close" onclick="fecharModal()">✕</button>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+        </div>
+    </div>
+
+    <div class="modal" id="imageModal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2>Visualizar Imagem</h2>
+                <button class="modal-close" onclick="fecharImageModal()">✕</button>
+            </div>
+            <div class="modal-body" style="text-align: center;">
+                <img id="fullSizeImage" class="product-image-large" src="" alt="Imagem do Produto">
+                <p style="margin-top: 15px; color: var(--gray-500);" id="imageCaption"></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="itensVendidosModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="itensVendidosModalTitle">Itens Movimentados</h2>
+                <button class="modal-close" onclick="fecharItensVendidosModal()">✕</button>
+            </div>
+            <div class="modal-body" id="itensVendidosModalBody"></div>
+        </div>
+    </div>
+
+    <div id="printArea" class="print-area" style="display: none;"></div>
+
+    <script>
+        // ============================================
+        // VARIÁVEIS GLOBAIS
+        // ============================================
+        let produtos = [];
+        let fornecedores = [];
+        let entradas = [];
+        let saidas = [];
+        let orcamentos = [];
+        let imagemTipo = 'url';
+        let currentTheme = 'light';
+        let itensSaida = [];
+        let itensOrcamento = [];
+        let supabaseClient = null;
+        let isOnline = false;
+        const SUPABASE_CONFIG_KEY = 'supabase_config';
+
+        // ============================================
+        // FUNÇÕES DE TEMA
+        // ============================================
+        function setTheme(theme) {
+            currentTheme = theme;
+            document.body.classList.toggle('dark-mode', theme === 'dark');
+            
+            document.querySelectorAll('.theme-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.textContent.toLowerCase().includes(theme));
+            });
+            
+            localStorage.setItem('theme', theme);
+        }
+
+        // ============================================
+        // FUNÇÕES DE NAVEGAÇÃO
+        // ============================================
+        function showTab(tabId, event) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+            
+            if (tabId === 'relatorios') {
+                carregarRelatorios();
+            }
+            
+            if (tabId === 'saidas') {
+                atualizarOrcamentos();
+            }
+            
+            atualizarTabelas();
+        }
+
+        function mostrarVisaoSaidas(tipo, event) {
+            document.querySelectorAll('.orcamento-tab').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            if (tipo === 'saidas') {
+                document.getElementById('visaoSaidas').style.display = 'block';
+                document.getElementById('visaoOrcamentos').style.display = 'none';
+            } else {
+                document.getElementById('visaoSaidas').style.display = 'none';
+                document.getElementById('visaoOrcamentos').style.display = 'block';
+                atualizarOrcamentos();
+            }
+        }
+
+        // ============================================
+        // FUNÇÕES DE MODAL
+        // ============================================
+        function abrirModal(tipo, dados = null) {
+            if (!isOnline) {
+                mostrarAlerta('warning', 'Modo offline - Os dados serão salvos localmente até a sincronização');
+            }
+            
+            const modal = document.getElementById('modal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalBody = document.getElementById('modalBody');
+            
+            let html = '';
+            const dataHora = new Date();
+            const dataAtual = dataHora.toLocaleDateString('pt-BR');
+            const horaAtual = dataHora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            
+            switch(tipo) {
+                case 'produto':
+                    modalTitle.textContent = dados ? '✏️ Editar Produto' : '➕ Novo Produto';
+                    html = `
+                        <form onsubmit="salvarProduto(event, ${dados ? `'${dados.codigo}'` : null})">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>Código do Produto</label>
+                                    <input type="text" class="form-control" id="codigo" value="${dados ? dados.codigo : ''}" placeholder="Ex: 001" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Nome do Produto</label>
+                                    <input type="text" class="form-control" id="nome" value="${dados ? dados.nome : ''}" placeholder="Ex: Papel A4" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Categoria</label>
+                                    <input type="text" class="form-control" id="categoria" value="${dados ? dados.categoria : ''}" placeholder="Ex: Papelaria" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Localização</label>
+                                    <input type="text" class="form-control" id="localizacao" value="${dados ? dados.localizacao : ''}" placeholder="Ex: Prateleira A1" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Fornecedor</label>
+                                    <select class="form-control" id="fornecedor" required>
+                                        <option value="">Selecione...</option>
+                                        ${fornecedores.map(f => `<option value="${f.nome}" ${dados && dados.fornecedor === f.nome ? 'selected' : ''}>${f.nome}</option>`).join('')}
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Estoque Mínimo</label>
+                                    <input type="number" class="form-control" id="estoqueMinimo" value="${dados ? dados.estoqueMinimo : ''}" placeholder="Ex: 10" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Saldo Inicial</label>
+                                    <input type="number" class="form-control" id="saldo" value="${dados ? dados.saldo : '0'}" placeholder="Ex: 0" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Preço Unitário (R$)</label>
+                                    <input type="number" step="0.01" class="form-control" id="preco" value="${dados && dados.preco ? dados.preco : ''}" placeholder="Ex: 10.00" required>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group full-width">
+                                <label>Imagem do Produto</label>
+                                
+                                <div class="upload-options">
+                                    <button type="button" class="upload-option ${imagemTipo === 'url' ? 'active' : ''}" onclick="setImagemTipo('url')">🔗 URL da Imagem</button>
+                                    <button type="button" class="upload-option ${imagemTipo === 'upload' ? 'active' : ''}" onclick="setImagemTipo('upload')">📁 Upload do Computador</button>
+                                </div>
+                                
+                                <div id="previewContainer" style="text-align: center; ${dados && dados.imagem ? '' : 'display: none;'}">
+                                    <img id="previewImage" class="image-preview" src="${dados ? dados.imagem : ''}" alt="Preview">
+                                </div>
+                                
+                                <div id="urlUpload" style="${imagemTipo === 'url' ? 'display: block;' : 'display: none;'}">
+                                    <input type="url" class="form-control" id="imagemUrl" placeholder="https://exemplo.com/imagem.jpg" value="${dados && dados.imagem ? dados.imagem : ''}" onchange="previewImagem(this.value)">
+                                </div>
+                                
+                                <div id="fileUpload" style="${imagemTipo === 'upload' ? 'display: block;' : 'display: none;'}">
+                                    <div class="image-upload-container" onclick="document.getElementById('imagemFile').click()">
+                                        <input type="file" id="imagemFile" accept="image/*" onchange="handleFileSelect(this)">
+                                        <span style="font-size: 40px;">📸</span>
+                                        <p style="margin-top: 10px; font-weight: 600;">Clique para selecionar uma imagem</p>
+                                        <p style="font-size: 12px; color: var(--gray-500);">ou arraste e solte aqui</p>
+                                    </div>
+                                </div>
+                                
+                                <input type="hidden" id="imagem" value="${dados && dados.imagem ? dados.imagem : ''}">
+                            </div>
+                            
+                            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                                <button type="submit" class="btn btn-primary" style="flex: 1;">💾 Salvar Produto</button>
+                                <button type="button" class="btn" style="flex: 1; background: var(--gray-200);" onclick="fecharModal()">Cancelar</button>
+                            </div>
+                        </form>
+                    `;
+                    break;
+                    
+                case 'fornecedor':
+                    modalTitle.textContent = dados ? '✏️ Editar Fornecedor' : '➕ Novo Fornecedor';
+                    html = `
+                        <form onsubmit="salvarFornecedor(event, ${dados ? `'${dados.nome}'` : null})">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>Nome do Fornecedor</label>
+                                    <input type="text" class="form-control" id="nomeFornecedor" value="${dados ? dados.nome : ''}" placeholder="Ex: Distribuidora XYZ" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Produtos Fornecidos</label>
+                                    <input type="text" class="form-control" id="produtosFornecedor" value="${dados ? dados.produtos : ''}" placeholder="Ex: Papelaria, Materiais" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Pessoa de Contato</label>
+                                    <input type="text" class="form-control" id="contato" value="${dados ? dados.contato : ''}" placeholder="Ex: João Silva" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Telefone</label>
+                                    <input type="text" class="form-control" id="telefone" value="${dados ? dados.telefone : ''}" placeholder="Ex: (11) 99999-9999" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>E-mail</label>
+                                    <input type="email" class="form-control" id="email" value="${dados ? dados.email : ''}" placeholder="Ex: contato@fornecedor.com" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Prazo de Entrega (dias)</label>
+                                    <input type="number" class="form-control" id="prazoEntrega" value="${dados ? dados.prazoEntrega : '5'}" placeholder="Ex: 5" required>
+                                </div>
+                            </div>
+                            
+                            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                                <button type="submit" class="btn btn-primary" style="flex: 1;">💾 Salvar Fornecedor</button>
+                                <button type="button" class="btn" style="flex: 1; background: var(--gray-200);" onclick="fecharModal()">Cancelar</button>
+                            </div>
+                        </form>
+                    `;
+                    break;
+                    
+                case 'entrada':
+                    modalTitle.textContent = '📦 Registrar Entrada de Produto';
+                    html = `
+                        <form onsubmit="registrarEntrada(event)">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>Data</label>
+                                    <input type="text" class="form-control" id="dataEntrada" value="${dataAtual}" placeholder="DD/MM/AAAA" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Hora</label>
+                                    <input type="text" class="form-control" id="horaEntrada" value="${horaAtual}" placeholder="HH:MM" required>
+                                </div>
+                                <div class="form-group full-width">
+                                    <label>Produto</label>
+                                    <select class="form-control" id="produtoEntrada" required>
+                                        <option value="">Selecione o produto...</option>
+                                        ${produtos.map(p => `<option value="${p.codigo}">${p.codigo} - ${p.nome} (Saldo: ${p.saldo})</option>`).join('')}
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Quantidade</label>
+                                    <input type="number" class="form-control" id="quantidadeEntrada" placeholder="Ex: 10" min="1" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Número da NF</label>
+                                    <input type="text" class="form-control" id="nfEntrada" placeholder="Ex: 123456" required>
+                                </div>
+                                <div class="form-group full-width">
+                                    <label>Observações</label>
+                                    <textarea class="form-control" id="obsEntrada" rows="3" placeholder="Observações adicionais..."></textarea>
+                                </div>
+                            </div>
+                            
+                            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                                <button type="submit" class="btn btn-success" style="flex: 1;">✅ Registrar Entrada</button>
+                                <button type="button" class="btn" style="flex: 1; background: var(--gray-200);" onclick="fecharModal()">Cancelar</button>
+                            </div>
+                        </form>
+                    `;
+                    break;
+                    
+                case 'saida':
+                    modalTitle.textContent = '📤 Registrar Movimentação de Saída';
+                    itensSaida = itensSaida.length ? itensSaida : [{ id: Date.now() }];
+                    html = `
+                        <form onsubmit="registrarMovimentacaoMultiplosItens(event)">
+                            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                                <div style="flex: 1;">
+                                    <label>Data</label>
+                                    <input type="text" class="form-control" id="dataSaida" value="${dataAtual}" placeholder="DD/MM/AAAA" required>
+                                </div>
+                                <div style="flex: 1;">
+                                    <label>Hora</label>
+                                    <input type="text" class="form-control" id="horaSaida" value="${horaAtual}" placeholder="HH:MM" required>
+                                </div>
+                            </div>
+                            
+                            <div class="itens-saida-container" id="itensSaidaContainer">
+                                <h3 style="margin-bottom: 15px; font-size: 16px; color: var(--gray-600);">Itens da Movimentação</h3>
+                                
+                                ${itensSaida.map((item, index) => `
+                                    <div class="item-saida" id="item-${item.id}">
+                                        <div class="item-saida-header">
+                                            <h4>Item ${index + 1}</h4>
+                                            <button type="button" class="btn-remove-item" onclick="removerItemSaida(${item.id})">✕</button>
+                                        </div>
+                                        <div class="item-saida-grid">
+                                            <select class="form-control" id="produto-${item.id}" onchange="atualizarEstoqueDisponivel()">
+                                                <option value="">Selecione o produto</option>
+                                                ${produtos.map(p => `<option value="${p.codigo}" data-nome="${p.nome}" data-preco="${p.preco}" data-saldo="${p.saldo}">${p.codigo} - ${p.nome} (Saldo: ${p.saldo})</option>`).join('')}
+                                            </select>
+                                            <input type="number" class="form-control" id="quantidade-${item.id}" placeholder="Quantidade" min="1" onchange="atualizarEstoqueDisponivel()">
+                                            <select class="form-control" id="motivo-${item.id}">
+                                                <option value="Venda">Venda</option>
+                                                <option value="Devolução">Devolução</option>
+                                                <option value="Ajuste">Ajuste</option>
+                                                <option value="Perda">Perda</option>
+                                            </select>
+                                            <input type="text" class="form-control" id="destino-${item.id}" placeholder="Destino/Cliente">
+                                        </div>
+                                        <small id="estoque-disponivel-${item.id}" style="color: var(--gray-500); display: block; margin-top: 5px;">Selecione um produto</small>
+                                    </div>
+                                `).join('')}
+                                
+                                <button type="button" class="btn-adicionar-item" onclick="adicionarItemSaida()">
+                                    <span>➕</span> Adicionar outro item
+                                </button>
+                            </div>
+                            
+                            <div class="form-group full-width">
+                                <label>Observações Gerais</label>
+                                <textarea class="form-control" id="obsSaidaGeral" rows="2" placeholder="Observações para todos os itens..."></textarea>
+                            </div>
+                            
+                            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                                <button type="submit" class="btn btn-warning" style="flex: 1;">📤 Registrar Movimentações</button>
+                                <button type="button" class="btn" style="flex: 1; background: var(--gray-200);" onclick="fecharModal()">Cancelar</button>
+                            </div>
+                        </form>
+                    `;
+                    break;
+                    
+                case 'orcamento':
+                    modalTitle.textContent = '📝 Novo Orçamento';
+                    itensOrcamento = itensOrcamento.length ? itensOrcamento : [{ id: Date.now() }];
+                    html = `
+                        <form onsubmit="salvarOrcamento(event)">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>Cliente</label>
+                                    <input type="text" class="form-control" id="clienteOrcamento" placeholder="Nome do cliente" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Telefone</label>
+                                    <input type="text" class="form-control" id="telefoneOrcamento" placeholder="(11) 99999-9999">
+                                </div>
+                                <div class="form-group">
+                                    <label>E-mail</label>
+                                    <input type="email" class="form-control" id="emailOrcamento" placeholder="cliente@email.com">
+                                </div>
+                                <div class="form-group">
+                                    <label>Data</label>
+                                    <input type="text" class="form-control" id="dataOrcamento" value="${dataAtual}" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Validade (dias)</label>
+                                    <input type="number" class="form-control" id="validadeOrcamento" value="30" required>
+                                </div>
+                                <div class="form-group full-width">
+                                    <label>Observações</label>
+                                    <textarea class="form-control" id="obsOrcamento" rows="2" placeholder="Observações do orçamento..."></textarea>
+                                </div>
+                            </div>
+                            
+                            <div class="itens-saida-container" style="margin-top: 15px;">
+                                <h3 style="margin-bottom: 15px; font-size: 16px;">Itens do Orçamento</h3>
+                                
+                                ${itensOrcamento.map((item, index) => `
+                                    <div class="item-saida" id="orcamento-item-${item.id}">
+                                        <div class="item-saida-header">
+                                            <h4>Item ${index + 1}</h4>
+                                            <button type="button" class="btn-remove-item" onclick="removerItemOrcamento(${item.id})">✕</button>
+                                        </div>
+                                        <div class="item-saida-grid">
+                                            <select class="form-control" id="orcamento-produto-${item.id}" onchange="calcularTotalOrcamento()">
+                                                <option value="">Selecione o produto</option>
+                                                ${produtos.map(p => `<option value="${p.codigo}" data-nome="${p.nome}" data-preco="${p.preco}">${p.codigo} - ${p.nome} - R$ ${p.preco}</option>`).join('')}
+                                            </select>
+                                            <input type="number" class="form-control" id="orcamento-quantidade-${item.id}" placeholder="Qtd" value="1" min="1" onchange="calcularTotalOrcamento()">
+                                            <select class="form-control" id="orcamento-motivo-${item.id}">
+                                                <option value="Venda">Venda</option>
+                                                <option value="Orçamento">Orçamento</option>
+                                            </select>
+                                            <input type="text" class="form-control" id="orcamento-destino-${item.id}" placeholder="Destino">
+                                        </div>
+                                    </div>
+                                `).join('')}
+                                
+                                <button type="button" class="btn-adicionar-item" onclick="adicionarItemOrcamento()">
+                                    <span>➕</span> Adicionar outro item
+                                </button>
+                            </div>
+                            
+                            <div class="total-saida" id="totalOrcamento">
+                                <span>💰 Valor Total do Orçamento:</span>
+                                <span style="font-size: 24px;">R$ 0,00</span>
+                            </div>
+                            
+                            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                                <button type="submit" class="btn btn-orcamento" style="flex: 1;">💾 Salvar Orçamento</button>
+                                <button type="button" class="btn" style="flex: 1; background: var(--gray-200);" onclick="fecharModal()">Cancelar</button>
+                            </div>
+                        </form>
+                    `;
+                    break;
+                    
+                default:
+                    html = '<p>Conteúdo não disponível</p>';
+            }
+            
+            modalBody.innerHTML = html;
+            modal.classList.add('active');
+        }
+
+        function fecharModal() {
+            document.getElementById('modal').classList.remove('active');
+            itensSaida = [];
+            itensOrcamento = [];
+        }
+
+        function setImagemTipo(tipo) {
+            imagemTipo = tipo;
+            document.getElementById('urlUpload').style.display = tipo === 'url' ? 'block' : 'none';
+            document.getElementById('fileUpload').style.display = tipo === 'upload' ? 'block' : 'none';
+            document.querySelectorAll('.upload-option').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function previewImagem(url) {
+            document.getElementById('imagem').value = url;
+            document.getElementById('previewImage').src = url;
+            document.getElementById('previewContainer').style.display = 'block';
+        }
+
+        function handleFileSelect(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('imagem').value = e.target.result;
+                    document.getElementById('previewImage').src = e.target.result;
+                    document.getElementById('previewContainer').style.display = 'block';
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function adicionarItemSaida() {
+            itensSaida.push({ id: Date.now() });
+            abrirModal('saida');
+        }
+
+        function removerItemSaida(id) {
+            itensSaida = itensSaida.filter(item => item.id !== id);
+            abrirModal('saida');
+        }
+
+        function adicionarItemOrcamento() {
+            itensOrcamento.push({ id: Date.now() });
+            abrirModal('orcamento');
+        }
+
+        function removerItemOrcamento(id) {
+            itensOrcamento = itensOrcamento.filter(item => item.id !== id);
+            abrirModal('orcamento');
+        }
+
+        function atualizarEstoqueDisponivel() {
+            itensSaida.forEach(item => {
+                const select = document.getElementById(`produto-${item.id}`);
+                const quantidade = document.getElementById(`quantidade-${item.id}`);
+                const disponivelEl = document.getElementById(`estoque-disponivel-${item.id}`);
+                
+                if (select && select.value && quantidade && disponivelEl) {
+                    const option = select.options[select.selectedIndex];
+                    const saldo = parseInt(option.dataset.saldo) || 0;
+                    const qtd = parseInt(quantidade.value) || 0;
+                    
+                    if (qtd > saldo) {
+                        disponivelEl.style.color = 'red';
+                        disponivelEl.innerHTML = `⚠️ Estoque insuficiente! Disponível: ${saldo}`;
+                    } else {
+                        disponivelEl.style.color = 'var(--gray-500)';
+                        disponivelEl.innerHTML = `✅ Disponível em estoque: ${saldo}`;
+                    }
+                }
+            });
+        }
+
+        function calcularTotalOrcamento() {
+            let total = 0;
+            
+            itensOrcamento.forEach(item => {
+                const select = document.getElementById(`orcamento-produto-${item.id}`);
+                const quantidade = document.getElementById(`orcamento-quantidade-${item.id}`);
+                
+                if (select && select.value && quantidade && quantidade.value) {
+                    const option = select.options[select.selectedIndex];
+                    const preco = parseFloat(option.dataset.preco) || 0;
+                    const qtd = parseInt(quantidade.value) || 1;
+                    total += preco * qtd;
+                }
+            });
+            
+            const totalEl = document.getElementById('totalOrcamento');
+            if (totalEl) {
+                const span = totalEl.querySelector('span:last-child');
+                if (span) {
+                    span.textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
+                }
+            }
+        }
+
+        // ============================================
+        // CONFIGURAÇÃO DO SUPABASE
+        // ============================================
+        async function initSupabase() {
+            const config = localStorage.getItem(SUPABASE_CONFIG_KEY);
+            if (config) {
+                try {
+                    const { url, key } = JSON.parse(config);
+                    await connectSupabase(url, key);
+                } catch (error) {
+                    console.error('Erro ao carregar configuração do Supabase:', error);
+                    mostrarAlerta('warning', 'Configuração do Supabase inválida. Configure novamente.');
+                    abrirSupabaseConfigModal();
+                }
+            } else {
+                setTimeout(() => {
+                    if (!isOnline) {
+                        abrirSupabaseConfigModal();
+                    }
+                }, 1000);
+            }
+        }
+
+        async function connectSupabase(url, key) {
+            try {
+                mostrarLoading(true, 'Conectando ao Supabase...');
+                
+                supabaseClient = window.supabase.createClient(url, key);
+                
+                const { data, error } = await supabaseClient.from('produtos').select('count', { count: 'exact', head: true });
+                
+                if (error) {
+                    if (error.code === '42501') {
+                        mostrarAlerta('warning', 'Erro de permissão. Configure as políticas RLS no Supabase ou desative RLS temporariamente.');
+                    } else {
+                        throw error;
+                    }
+                }
+                
+                localStorage.setItem(SUPABASE_CONFIG_KEY, JSON.stringify({ url, key }));
+                
+                isOnline = true;
+                atualizarStatusConexao();
+                
+                await carregarDados();
+                await sincronizarDadosPendentes();
+                
+                mostrarAlerta('success', 'Conectado ao Supabase com sucesso!');
+                fecharSupabaseConfigModal();
+                
+            } catch (error) {
+                console.error('Erro ao conectar ao Supabase:', error);
+                isOnline = false;
+                atualizarStatusConexao();
+                mostrarAlerta('danger', 'Erro ao conectar ao Supabase: ' + error.message);
+            } finally {
+                mostrarLoading(false);
+            }
+        }
+
+        function abrirSupabaseConfigModal() {
+            document.getElementById('supabaseConfigModal').classList.add('active');
+        }
+
+        function fecharSupabaseConfigModal() {
+            document.getElementById('supabaseConfigModal').classList.remove('active');
+        }
+
+        async function configurarSupabase(event) {
+            event.preventDefault();
+            
+            const url = document.getElementById('supabaseUrl').value.trim();
+            const key = document.getElementById('supabaseKey').value.trim();
+            
+            await connectSupabase(url, key);
+        }
+
+        function atualizarStatusConexao() {
+            const statusEl = document.getElementById('connectionStatus');
+            if (statusEl) {
+                statusEl.textContent = isOnline ? '✅ Online' : '⚠️ Offline';
+                statusEl.className = `connection-status ${isOnline ? 'online' : 'offline'}`;
+            }
+        }
+
+        function mostrarLoading(show, message = 'Carregando...') {
+            const overlay = document.getElementById('loadingOverlay');
+            const messageEl = overlay.querySelector('p');
+            
+            if (show) {
+                messageEl.textContent = message;
+                overlay.classList.add('active');
+            } else {
+                overlay.classList.remove('active');
+            }
+        }
+
+        // ============================================
+        // FUNÇÃO DE SINCRONIZAÇÃO
+        // ============================================
+        async function sincronizarDadosPendentes() {
+            if (!isOnline || !supabaseClient) return;
+            
+            try {
+                console.log('Sincronizando dados com o servidor...');
+                
+                // Sincronizar fornecedores
+                for (const fornecedor of fornecedores) {
+                    const { data: existente } = await supabaseClient
+                        .from('fornecedores')
+                        .select('nome')
+                        .eq('nome', fornecedor.nome);
+                    
+                    if (existente && existente.length > 0) {
+                        await supabaseClient
+                            .from('fornecedores')
+                            .update(fornecedor)
+                            .eq('nome', fornecedor.nome);
+                    } else {
+                        await supabaseClient
+                            .from('fornecedores')
+                            .insert([fornecedor]);
+                    }
+                }
+                
+                // Sincronizar produtos
+                for (const produto of produtos) {
+                    const { data: existente } = await supabaseClient
+                        .from('produtos')
+                        .select('codigo')
+                        .eq('codigo', produto.codigo);
+                    
+                    if (existente && existente.length > 0) {
+                        await supabaseClient
+                            .from('produtos')
+                            .update(produto)
+                            .eq('codigo', produto.codigo);
+                    } else {
+                        await supabaseClient
+                            .from('produtos')
+                            .insert([produto]);
+                    }
+                }
+                
+                // Sincronizar entradas
+                for (const entrada of entradas) {
+                    if (!entrada.id) {
+                        entrada.id = Date.now() + Math.random();
+                    }
+                    
+                    const { data: existente } = await supabaseClient
+                        .from('entradas')
+                        .select('id')
+                        .eq('id', entrada.id);
+                    
+                    if (!existente || existente.length === 0) {
+                        await supabaseClient
+                            .from('entradas')
+                            .insert([entrada]);
+                    }
+                }
+                
+                // Sincronizar saidas
+                for (const saida of saidas) {
+                    if (!saida.id) {
+                        saida.id = Date.now() + Math.random();
+                    }
+                    
+                    const { data: existente } = await supabaseClient
+                        .from('saidas')
+                        .select('id')
+                        .eq('id', saida.id);
+                    
+                    if (!existente || existente.length === 0) {
+                        await supabaseClient
+                            .from('saidas')
+                            .insert([saida]);
+                    }
+                }
+                
+                // Sincronizar orcamentos
+                for (const orcamento of orcamentos) {
+                    if (!orcamento.id) {
+                        orcamento.id = Date.now();
+                    }
+                    
+                    const { data: existente } = await supabaseClient
+                        .from('orcamentos')
+                        .select('id')
+                        .eq('id', orcamento.id);
+                    
+                    if (!existente || existente.length === 0) {
+                        await supabaseClient
+                            .from('orcamentos')
+                            .insert([orcamento]);
+                    }
+                }
+                
+                console.log('Sincronização concluída com sucesso!');
+                
+            } catch (error) {
+                console.error('Erro durante sincronização:', error);
+            }
+        }
+
+        // ============================================
+        // FUNÇÕES DE CRUD
+        // ============================================
+        async function carregarDados() {
+            if (!supabaseClient || !isOnline) {
+                produtos = JSON.parse(localStorage.getItem('produtos')) || [];
+                fornecedores = JSON.parse(localStorage.getItem('fornecedores')) || [];
+                entradas = JSON.parse(localStorage.getItem('entradas')) || [];
+                saidas = JSON.parse(localStorage.getItem('saidas')) || [];
+                orcamentos = JSON.parse(localStorage.getItem('orcamentos')) || [];
+                
+                atualizarTabelas();
+                return;
+            }
+
+            try {
+                mostrarLoading(true, 'Carregando dados do servidor...');
+                
+                const { data: produtosData, error: produtosError } = await supabaseClient
+                    .from('produtos')
+                    .select('*');
+                
+                if (!produtosError && produtosData) {
+                    produtos = produtosData;
+                }
+                
+                const { data: fornecedoresData, error: fornecedoresError } = await supabaseClient
+                    .from('fornecedores')
+                    .select('*');
+                
+                if (!fornecedoresError && fornecedoresData) {
+                    fornecedores = fornecedoresData;
+                }
+                
+                const { data: entradasData, error: entradasError } = await supabaseClient
+                    .from('entradas')
+                    .select('*');
+                
+                if (!entradasError && entradasData) {
+                    entradas = entradasData;
+                }
+                
+                const { data: saidasData, error: saidasError } = await supabaseClient
+                    .from('saidas')
+                    .select('*');
+                
+                if (!saidasError && saidasData) {
+                    saidas = saidasData;
+                }
+                
+                const { data: orcamentosData, error: orcamentosError } = await supabaseClient
+                    .from('orcamentos')
+                    .select('*');
+                
+                if (!orcamentosError && orcamentosData) {
+                    orcamentos = orcamentosData;
+                }
+                
+                salvarDadosLocal();
+                atualizarTabelas();
+                
+            } catch (error) {
+                console.error('Erro ao carregar dados:', error);
+                mostrarAlerta('danger', 'Erro ao carregar dados do servidor');
+            } finally {
+                mostrarLoading(false);
+            }
+        }
+
+        function salvarDadosLocal() {
+            localStorage.setItem('produtos', JSON.stringify(produtos));
+            localStorage.setItem('fornecedores', JSON.stringify(fornecedores));
+            localStorage.setItem('entradas', JSON.stringify(entradas));
+            localStorage.setItem('saidas', JSON.stringify(saidas));
+            localStorage.setItem('orcamentos', JSON.stringify(orcamentos));
+        }
+
+        async function salvarProduto(event, codigoEdit = null) {
+            event.preventDefault();
+            
+            const novoProduto = {
+                codigo: document.getElementById('codigo').value,
+                nome: document.getElementById('nome').value,
+                categoria: document.getElementById('categoria').value,
+                localizacao: document.getElementById('localizacao').value,
+                fornecedor: document.getElementById('fornecedor').value,
+                estoqueMinimo: parseInt(document.getElementById('estoqueMinimo').value),
+                saldo: parseInt(document.getElementById('saldo').value),
+                preco: parseFloat(document.getElementById('preco').value) || 0,
+                imagem: document.getElementById('imagem').value || 'https://via.placeholder.com/200x200?text=Sem+Imagem'
+            };
+            
+            if (!isOnline || !supabaseClient) {
+                if (codigoEdit) {
+                    const index = produtos.findIndex(p => p.codigo === codigoEdit);
+                    if (index !== -1) {
+                        produtos[index] = novoProduto;
+                    }
+                } else {
+                    if (produtos.some(p => p.codigo === novoProduto.codigo)) {
+                        mostrarAlerta('danger', 'Já existe um produto com este código!');
+                        return;
+                    }
+                    produtos.push(novoProduto);
+                }
+                
+                salvarDadosLocal();
+                mostrarAlerta('success', 'Produto salvo offline! (Sincronização pendente)');
+                fecharModal();
+                atualizarTabelas();
+                return;
+            }
+            
+            try {
+                mostrarLoading(true, 'Salvando produto...');
+                
+                if (codigoEdit) {
+                    const { error } = await supabaseClient
+                        .from('produtos')
+                        .update(novoProduto)
+                        .eq('codigo', codigoEdit);
+                    
+                    if (error) throw error;
+                    
+                    const index = produtos.findIndex(p => p.codigo === codigoEdit);
+                    if (index !== -1) {
+                        produtos[index] = novoProduto;
+                    }
+                } else {
+                    const { data: existente } = await supabaseClient
+                        .from('produtos')
+                        .select('codigo')
+                        .eq('codigo', novoProduto.codigo);
+                    
+                    if (existente && existente.length > 0) {
+                        mostrarAlerta('danger', 'Já existe um produto com este código!');
+                        return;
+                    }
+                    
+                    const { error } = await supabaseClient
+                        .from('produtos')
+                        .insert([novoProduto]);
+                    
+                    if (error) throw error;
+                    
+                    produtos.push(novoProduto);
+                }
+                
+                mostrarAlerta('success', 'Produto salvo com sucesso!');
+                fecharModal();
+                atualizarTabelas();
+                
+            } catch (error) {
+                console.error('Erro ao salvar produto:', error);
+                mostrarAlerta('danger', 'Erro ao salvar produto: ' + error.message);
+            } finally {
+                mostrarLoading(false);
+            }
+        }
+
+        async function salvarFornecedor(event, nomeEdit = null) {
+            event.preventDefault();
+            
+            const novoFornecedor = {
+                nome: document.getElementById('nomeFornecedor').value,
+                produtos: document.getElementById('produtosFornecedor').value,
+                contato: document.getElementById('contato').value,
+                telefone: document.getElementById('telefone').value,
+                email: document.getElementById('email').value,
+                prazoEntrega: document.getElementById('prazoEntrega').value,
+                ultimoPedido: new Date().toLocaleDateString('pt-BR')
+            };
+            
+            if (!isOnline || !supabaseClient) {
+                if (nomeEdit) {
+                    const index = fornecedores.findIndex(f => f.nome === nomeEdit);
+                    if (index !== -1) {
+                        fornecedores[index] = novoFornecedor;
+                    }
+                } else {
+                    fornecedores.push(novoFornecedor);
+                }
+                
+                salvarDadosLocal();
+                mostrarAlerta('success', 'Fornecedor salvo offline!');
+                fecharModal();
+                atualizarTabelas();
+                return;
+            }
+            
+            try {
+                mostrarLoading(true, 'Salvando fornecedor...');
+                
+                if (nomeEdit) {
+                    const { error } = await supabaseClient
+                        .from('fornecedores')
+                        .update(novoFornecedor)
+                        .eq('nome', nomeEdit);
+                    
+                    if (error) throw error;
+                    
+                    const index = fornecedores.findIndex(f => f.nome === nomeEdit);
+                    if (index !== -1) {
+                        fornecedores[index] = novoFornecedor;
+                    }
+                } else {
+                    const { error } = await supabaseClient
+                        .from('fornecedores')
+                        .insert([novoFornecedor]);
+                    
+                    if (error) throw error;
+                    
+                    fornecedores.push(novoFornecedor);
+                }
+                
+                mostrarAlerta('success', 'Fornecedor salvo com sucesso!');
+                fecharModal();
+                atualizarTabelas();
+                
+            } catch (error) {
+                console.error('Erro ao salvar fornecedor:', error);
+                mostrarAlerta('danger', 'Erro ao salvar fornecedor: ' + error.message);
+            } finally {
+                mostrarLoading(false);
+            }
+        }
+
+        async function registrarEntrada(event) {
+            event.preventDefault();
+            
+            const codigoProduto = document.getElementById('produtoEntrada').value;
+            const quantidade = parseInt(document.getElementById('quantidadeEntrada').value);
+            const nf = document.getElementById('nfEntrada').value;
+            const data = document.getElementById('dataEntrada').value;
+            const hora = document.getElementById('horaEntrada').value;
+            const obs = document.getElementById('obsEntrada')?.value || '';
+            
+            const produto = produtos.find(p => p.codigo === codigoProduto);
+            
+            if (!produto) return;
+            
+            const entrada = {
+                id: Date.now() + Math.random(),
+                data: data,
+                hora: hora,
+                codigo: codigoProduto,
+                produto: produto.nome,
+                quantidade: quantidade,
+                fornecedor: produto.fornecedor,
+                nf: nf,
+                obs: obs,
+                valorTotal: produto.preco * quantidade,
+                tipo: 'entrada'
+            };
+            
+            if (!isOnline || !supabaseClient) {
+                produto.saldo += quantidade;
+                entradas.push(entrada);
+                
+                salvarDadosLocal();
+                mostrarAlerta('success', 'Entrada registrada offline!');
+                fecharModal();
+                atualizarTabelas();
+                return;
+            }
+            
+            try {
+                mostrarLoading(true, 'Registrando entrada...');
+                
+                const novoSaldo = produto.saldo + quantidade;
+                const { error: updateError } = await supabaseClient
+                    .from('produtos')
+                    .update({ saldo: novoSaldo })
+                    .eq('codigo', codigoProduto);
+                
+                if (updateError) throw updateError;
+                
+                const { error: insertError } = await supabaseClient
+                    .from('entradas')
+                    .insert([entrada]);
+                
+                if (insertError) throw insertError;
+                
+                produto.saldo = novoSaldo;
+                entradas.push(entrada);
+                
+                mostrarAlerta('success', 'Entrada registrada com sucesso!');
+                fecharModal();
+                atualizarTabelas();
+                
+            } catch (error) {
+                console.error('Erro ao registrar entrada:', error);
+                mostrarAlerta('danger', 'Erro ao registrar entrada: ' + error.message);
+            } finally {
+                mostrarLoading(false);
+            }
+        }
+
+        async function registrarMovimentacaoMultiplosItens(event) {
+            event.preventDefault();
+            
+            const itensValidos = [];
+            let temErro = false;
+            
+            itensSaida.forEach(item => {
+                const select = document.getElementById(`produto-${item.id}`);
+                const quantidade = document.getElementById(`quantidade-${item.id}`);
+                const motivo = document.getElementById(`motivo-${item.id}`);
+                const destino = document.getElementById(`destino-${item.id}`);
+                
+                if (select && select.value && quantidade && quantidade.value) {
+                    const codigoProduto = select.value;
+                    const qtd = parseInt(quantidade.value);
+                    const produto = produtos.find(p => p.codigo === codigoProduto);
+                    const tipo = motivo.value === 'Devolução' ? 'entrada' : 'saida';
+                    
+                    if (produto) {
+                        if (tipo === 'saida' && produto.saldo < qtd) {
+                            temErro = true;
+                            mostrarAlerta('danger', `Estoque insuficiente para ${produto.nome}!`);
+                        } else {
+                            itensValidos.push({
+                                codigo: codigoProduto,
+                                produto: produto.nome,
+                                quantidade: qtd,
+                                motivo: motivo.value,
+                                destino: destino.value,
+                                preco: produto.preco,
+                                tipo: tipo
+                            });
+                        }
+                    }
+                }
+            });
+            
+            if (itensValidos.length === 0) {
+                mostrarAlerta('danger', 'Adicione pelo menos um item válido!');
+                return;
+            }
+            
+            if (temErro) return;
+            
+            const data = document.getElementById('dataSaida').value;
+            const hora = document.getElementById('horaSaida').value;
+            const obsGeral = document.getElementById('obsSaidaGeral')?.value || '';
+            
+            if (!isOnline || !supabaseClient) {
+                itensValidos.forEach(item => {
+                    const produto = produtos.find(p => p.codigo === item.codigo);
+                    if (produto) {
+                        if (item.tipo === 'saida') {
+                            produto.saldo -= item.quantidade;
+                        } else {
+                            produto.saldo += item.quantidade;
+                        }
+                        
+                        saidas.push({
+                            id: Date.now() + Math.random(),
+                            data: data,
+                            hora: hora,
+                            codigo: item.codigo,
+                            produto: item.produto,
+                            quantidade: item.quantidade,
+                            motivo: item.motivo,
+                            destino: item.destino,
+                            obs: obsGeral,
+                            valorTotal: item.preco * item.quantidade,
+                            tipo: item.tipo
+                        });
+                    }
+                });
+                
+                salvarDadosLocal();
+                fecharModal();
+                mostrarAlerta('success', `${itensValidos.length} movimentação(ões) registrada(s) offline!`);
+                atualizarTabelas();
+                return;
+            }
+            
+            try {
+                mostrarLoading(true, 'Registrando movimentações...');
+                
+                for (const item of itensValidos) {
+                    const produto = produtos.find(p => p.codigo === item.codigo);
+                    
+                    if (!produto) continue;
+                    
+                    const novoSaldo = item.tipo === 'saida' 
+                        ? produto.saldo - item.quantidade 
+                        : produto.saldo + item.quantidade;
+                    
+                    const { error: updateError } = await supabaseClient
+                        .from('produtos')
+                        .update({ saldo: novoSaldo })
+                        .eq('codigo', item.codigo);
+                    
+                    if (updateError) throw updateError;
+                    
+                    const saida = {
+                        id: Date.now() + Math.random(),
+                        data: data,
+                        hora: hora,
+                        codigo: item.codigo,
+                        produto: item.produto,
+                        quantidade: item.quantidade,
+                        motivo: item.motivo,
+                        destino: item.destino,
+                        obs: obsGeral,
+                        valorTotal: item.preco * item.quantidade,
+                        tipo: item.tipo
+                    };
+                    
+                    const { error: insertError } = await supabaseClient
+                        .from('saidas')
+                        .insert([saida]);
+                    
+                    if (insertError) throw insertError;
+                    
+                    produto.saldo = novoSaldo;
+                    saidas.push(saida);
+                }
+                
+                fecharModal();
+                mostrarAlerta('success', `${itensValidos.length} movimentação(ões) registrada(s) com sucesso!`);
+                atualizarTabelas();
+                
+            } catch (error) {
+                console.error('Erro ao registrar movimentações:', error);
+                mostrarAlerta('danger', 'Erro ao registrar movimentações: ' + error.message);
+            } finally {
+                mostrarLoading(false);
+            }
+        }
+
+        async function salvarOrcamento(event) {
+            event.preventDefault();
+            
+            const cliente = document.getElementById('clienteOrcamento').value;
+            const telefone = document.getElementById('telefoneOrcamento')?.value || '';
+            const email = document.getElementById('emailOrcamento')?.value || '';
+            const data = document.getElementById('dataOrcamento').value;
+            const validade = parseInt(document.getElementById('validadeOrcamento').value) || 30;
+            const observacoes = document.getElementById('obsOrcamento')?.value || '';
+            
+            const itens = [];
+            itensOrcamento.forEach(item => {
+                const select = document.getElementById(`orcamento-produto-${item.id}`);
+                const quantidade = document.getElementById(`orcamento-quantidade-${item.id}`);
+                const motivo = document.getElementById(`orcamento-motivo-${item.id}`);
+                const destino = document.getElementById(`orcamento-destino-${item.id}`);
+                
+                if (select && select.value && quantidade && quantidade.value) {
+                    const option = select.options[select.selectedIndex];
+                    itens.push({
+                        codigo: select.value,
+                        nome: option.dataset.nome,
+                        quantidade: parseInt(quantidade.value) || 1,
+                        preco: parseFloat(option.dataset.preco) || 0,
+                        motivo: motivo?.value || 'Venda',
+                        destino: destino?.value || ''
+                    });
+                }
+            });
+            
+            if (itens.length === 0) {
+                mostrarAlerta('danger', 'Adicione pelo menos um item ao orçamento!');
+                return;
+            }
+            
+            const valorTotal = itens.reduce((acc, item) => acc + (item.preco * item.quantidade), 0);
+            
+            const novoOrcamento = {
+                id: Date.now(),
+                cliente: cliente,
+                telefone: telefone,
+                email: email,
+                data: data,
+                validade: validade,
+                observacoes: observacoes,
+                itens: itens,
+                valorTotal: valorTotal,
+                status: 'Pendente',
+                dataValidade: new Date(Date.now() + validade * 24 * 60 * 60 * 1000).toLocaleDateString('pt-BR')
+            };
+            
+            if (!isOnline || !supabaseClient) {
+                orcamentos.push(novoOrcamento);
+                salvarDadosLocal();
+                fecharModal();
+                mostrarAlerta('success', `Orçamento para ${cliente} criado offline!`);
+                mostrarVisaoSaidas('orcamentos', { target: document.querySelector('.orcamento-tab:last-child') });
+                atualizarOrcamentos();
+                return;
+            }
+            
+            try {
+                mostrarLoading(true, 'Salvando orçamento...');
+                
+                const { error } = await supabaseClient
+                    .from('orcamentos')
+                    .insert([novoOrcamento]);
+                
+                if (error) throw error;
+                
+                orcamentos.push(novoOrcamento);
+                fecharModal();
+                mostrarAlerta('success', `Orçamento para ${cliente} criado com sucesso!`);
+                mostrarVisaoSaidas('orcamentos', { target: document.querySelector('.orcamento-tab:last-child') });
+                atualizarOrcamentos();
+                
+            } catch (error) {
+                console.error('Erro ao salvar orçamento:', error);
+                mostrarAlerta('danger', 'Erro ao salvar orçamento: ' + error.message);
+            } finally {
+                mostrarLoading(false);
+            }
+        }
+
+        async function excluirProduto(codigo) {
+            if (!confirm('Tem certeza que deseja excluir este produto permanentemente?')) return;
+            
+            if (!isOnline || !supabaseClient) {
+                produtos = produtos.filter(p => p.codigo !== codigo);
+                salvarDadosLocal();
+                mostrarAlerta('success', 'Produto excluído offline!');
+                atualizarTabelas();
+                return;
+            }
+            
+            try {
+                mostrarLoading(true, 'Excluindo produto...');
+                
+                const { error } = await supabaseClient
+                    .from('produtos')
+                    .delete()
+                    .eq('codigo', codigo);
+                
+                if (error) throw error;
+                
+                produtos = produtos.filter(p => p.codigo !== codigo);
+                mostrarAlerta('success', 'Produto excluído com sucesso!');
+                atualizarTabelas();
+                
+            } catch (error) {
+                console.error('Erro ao excluir produto:', error);
+                mostrarAlerta('danger', 'Erro ao excluir produto: ' + error.message);
+            } finally {
+                mostrarLoading(false);
+            }
+        }
+
+        async function excluirFornecedor(nome) {
+            if (!confirm('Tem certeza que deseja excluir este fornecedor?')) return;
+            
+            if (!isOnline || !supabaseClient) {
+                fornecedores = fornecedores.filter(f => f.nome !== nome);
+                salvarDadosLocal();
+                mostrarAlerta('success', 'Fornecedor excluído offline!');
+                atualizarTabelas();
+                return;
+            }
+            
+            try {
+                mostrarLoading(true, 'Excluindo fornecedor...');
+                
+                const { error } = await supabaseClient
+                    .from('fornecedores')
+                    .delete()
+                    .eq('nome', nome);
+                
+                if (error) throw error;
+                
+                fornecedores = fornecedores.filter(f => f.nome !== nome);
+                mostrarAlerta('success', 'Fornecedor excluído com sucesso!');
+                atualizarTabelas();
+                
+            } catch (error) {
+                console.error('Erro ao excluir fornecedor:', error);
+                mostrarAlerta('danger', 'Erro ao excluir fornecedor: ' + error.message);
+            } finally {
+                mostrarLoading(false);
+            }
+        }
+
+        async function excluirSaida(index) {
+            if (!confirm('Tem certeza que deseja excluir esta movimentação?')) return;
+            
+            const saida = saidas[index];
+            
+            if (!isOnline || !supabaseClient) {
+                const produto = produtos.find(p => p.codigo === saida.codigo);
+                if (produto) {
+                    if (saida.tipo === 'saida') {
+                        produto.saldo += saida.quantidade;
+                    } else {
+                        produto.saldo -= saida.quantidade;
+                    }
+                }
+                saidas.splice(index, 1);
+                salvarDadosLocal();
+                mostrarAlerta('success', 'Movimentação excluída offline!');
+                atualizarTabelas();
+                return;
+            }
+            
+            try {
+                mostrarLoading(true, 'Excluindo movimentação...');
+                
+                const produto = produtos.find(p => p.codigo === saida.codigo);
+                if (produto) {
+                    const novoSaldo = saida.tipo === 'saida' 
+                        ? produto.saldo + saida.quantidade 
+                        : produto.saldo - saida.quantidade;
+                    
+                    await supabaseClient
+                        .from('produtos')
+                        .update({ saldo: novoSaldo })
+                        .eq('codigo', saida.codigo);
+                    
+                    produto.saldo = novoSaldo;
+                }
+                
+                const { error } = await supabaseClient
+                    .from('saidas')
+                    .delete()
+                    .eq('id', saida.id);
+                
+                if (error) throw error;
+                
+                saidas.splice(index, 1);
+                mostrarAlerta('success', 'Movimentação excluída com sucesso!');
+                atualizarTabelas();
+                
+            } catch (error) {
+                console.error('Erro ao excluir movimentação:', error);
+                mostrarAlerta('danger', 'Erro ao excluir movimentação: ' + error.message);
+            } finally {
+                mostrarLoading(false);
+            }
+        }
+
+        // ============================================
+        // FUNÇÃO DE IMPORTAÇÃO JSON APRIMORADA
+        // ============================================
+        async function importarProdutos() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json,application/json';
+            
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                
+                reader.onload = async function(e) {
+                    try {
+                        mostrarLoading(true, 'Processando importação...');
+                        
+                        const dados = JSON.parse(e.target.result);
+                        
+                        let fornecedoresImportados = 0;
+                        let fornecedoresAtualizados = 0;
+                        let produtosImportados = 0;
+                        let produtosAtualizados = 0;
+                        
+                        // ========== IMPORTAR FORNECEDORES ==========
+                        if (dados.fornecedores && Array.isArray(dados.fornecedores)) {
+                            for (const item of dados.fornecedores) {
+                                if (!item.nome) {
+                                    console.warn('Fornecedor ignorado - nome obrigatório:', item);
+                                    continue;
+                                }
+                                
+                                const fornecedor = {
+                                    nome: item.nome,
+                                    produtos: item.produtos || 'Não especificado',
+                                    contato: item.contato || 'Não informado',
+                                    telefone: item.telefone || 'Não informado',
+                                    email: item.email || 'Não informado',
+                                    prazoEntrega: item.prazoEntrega || '5',
+                                    ultimoPedido: item.ultimoPedido || new Date().toLocaleDateString('pt-BR')
+                                };
+                                
+                                // Verificar se fornecedor já existe
+                                const index = fornecedores.findIndex(f => f.nome === fornecedor.nome);
+                                
+                                if (isOnline && supabaseClient) {
+                                    try {
+                                        if (index !== -1) {
+                                            // Atualizar no Supabase
+                                            const { error } = await supabaseClient
+                                                .from('fornecedores')
+                                                .update(fornecedor)
+                                                .eq('nome', fornecedor.nome);
+                                            
+                                            if (!error) {
+                                                fornecedores[index] = fornecedor;
+                                                fornecedoresAtualizados++;
+                                            }
+                                        } else {
+                                            // Inserir no Supabase
+                                            const { error } = await supabaseClient
+                                                .from('fornecedores')
+                                                .insert([fornecedor]);
+                                            
+                                            if (!error) {
+                                                fornecedores.push(fornecedor);
+                                                fornecedoresImportados++;
+                                            }
+                                        }
+                                    } catch (error) {
+                                        console.error('Erro ao salvar fornecedor no Supabase:', error);
+                                        // Fallback para localStorage
+                                        if (index !== -1) {
+                                            fornecedores[index] = fornecedor;
+                                            fornecedoresAtualizados++;
+                                        } else {
+                                            fornecedores.push(fornecedor);
+                                            fornecedoresImportados++;
+                                        }
+                                    }
+                                } else {
+                                    // Modo offline
+                                    if (index !== -1) {
+                                        fornecedores[index] = fornecedor;
+                                        fornecedoresAtualizados++;
+                                    } else {
+                                        fornecedores.push(fornecedor);
+                                        fornecedoresImportados++;
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // ========== IMPORTAR PRODUTOS ==========
+                        if (dados.produtos && Array.isArray(dados.produtos)) {
+                            for (const item of dados.produtos) {
+                                if (!item.codigo || !item.nome) {
+                                    console.warn('Produto ignorado - campos obrigatórios ausentes:', item);
+                                    continue;
+                                }
+                                
+                                const produto = {
+                                    codigo: item.codigo.toString(),
+                                    nome: item.nome,
+                                    categoria: item.categoria || 'Geral',
+                                    localizacao: item.localizacao || 'Não definida',
+                                    fornecedor: item.fornecedor || 'Não definido',
+                                    estoqueMinimo: parseInt(item.estoqueMinimo) || 0,
+                                    saldo: parseInt(item.saldo) || 0,
+                                    preco: parseFloat(item.preco) || 0,
+                                    imagem: item.imagem || 'https://via.placeholder.com/200x200?text=Sem+Imagem'
+                                };
+                                
+                                // Verificar se produto já existe
+                                const index = produtos.findIndex(p => p.codigo === produto.codigo);
+                                
+                                if (isOnline && supabaseClient) {
+                                    try {
+                                        if (index !== -1) {
+                                            // Atualizar no Supabase
+                                            const { error } = await supabaseClient
+                                                .from('produtos')
+                                                .update(produto)
+                                                .eq('codigo', produto.codigo);
+                                            
+                                            if (!error) {
+                                                produtos[index] = produto;
+                                                produtosAtualizados++;
+                                            }
+                                        } else {
+                                            // Verificar se código já existe no Supabase
+                                            const { data: existente } = await supabaseClient
+                                                .from('produtos')
+                                                .select('codigo')
+                                                .eq('codigo', produto.codigo);
+                                            
+                                            if (!existente || existente.length === 0) {
+                                                // Inserir no Supabase
+                                                const { error } = await supabaseClient
+                                                    .from('produtos')
+                                                    .insert([produto]);
+                                                
+                                                if (!error) {
+                                                    produtos.push(produto);
+                                                    produtosImportados++;
+                                                }
+                                            } else {
+                                                // Já existe no servidor, atualizar local
+                                                produtos.push(produto);
+                                                produtosImportados++;
+                                            }
+                                        }
+                                    } catch (error) {
+                                        console.error('Erro ao salvar produto no Supabase:', error);
+                                        // Fallback para localStorage
+                                        if (index !== -1) {
+                                            produtos[index] = produto;
+                                            produtosAtualizados++;
+                                        } else {
+                                            produtos.push(produto);
+                                            produtosImportados++;
+                                        }
+                                    }
+                                } else {
+                                    // Modo offline
+                                    if (index !== -1) {
+                                        produtos[index] = produto;
+                                        produtosAtualizados++;
+                                    } else {
+                                        produtos.push(produto);
+                                        produtosImportados++;
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // ========== IMPORTAR ARRAY SIMPLES (SÓ PRODUTOS) ==========
+                        if (!dados.produtos && !dados.fornecedores && Array.isArray(dados)) {
+                            for (const item of dados) {
+                                if (!item.codigo || !item.nome) {
+                                    console.warn('Item ignorado - campos obrigatórios ausentes:', item);
+                                    continue;
+                                }
+                                
+                                const produto = {
+                                    codigo: item.codigo.toString(),
+                                    nome: item.nome,
+                                    categoria: item.categoria || 'Geral',
+                                    localizacao: item.localizacao || 'Não definida',
+                                    fornecedor: item.fornecedor || 'Não definido',
+                                    estoqueMinimo: parseInt(item.estoqueMinimo) || 0,
+                                    saldo: parseInt(item.saldo) || 0,
+                                    preco: parseFloat(item.preco) || 0,
+                                    imagem: item.imagem || 'https://via.placeholder.com/200x200?text=Sem+Imagem'
+                                };
+                                
+                                const index = produtos.findIndex(p => p.codigo === produto.codigo);
+                                
+                                if (isOnline && supabaseClient) {
+                                    try {
+                                        if (index !== -1) {
+                                            const { error } = await supabaseClient
+                                                .from('produtos')
+                                                .update(produto)
+                                                .eq('codigo', produto.codigo);
+                                            
+                                            if (!error) {
+                                                produtos[index] = produto;
+                                                produtosAtualizados++;
+                                            }
+                                        } else {
+                                            const { data: existente } = await supabaseClient
+                                                .from('produtos')
+                                                .select('codigo')
+                                                .eq('codigo', produto.codigo);
+                                            
+                                            if (!existente || existente.length === 0) {
+                                                const { error } = await supabaseClient
+                                                    .from('produtos')
+                                                    .insert([produto]);
+                                                
+                                                if (!error) {
+                                                    produtos.push(produto);
+                                                    produtosImportados++;
+                                                }
+                                            } else {
+                                                produtos.push(produto);
+                                                produtosImportados++;
+                                            }
+                                        }
+                                    } catch (error) {
+                                        console.error('Erro ao salvar produto no Supabase:', error);
+                                        if (index !== -1) {
+                                            produtos[index] = produto;
+                                            produtosAtualizados++;
+                                        } else {
+                                            produtos.push(produto);
+                                            produtosImportados++;
+                                        }
+                                    }
+                                } else {
+                                    if (index !== -1) {
+                                        produtos[index] = produto;
+                                        produtosAtualizados++;
+                                    } else {
+                                        produtos.push(produto);
+                                        produtosImportados++;
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // ========== SALVAR NO LOCALSTORAGE E ATUALIZAR INTERFACE ==========
+                        salvarDadosLocal();
+                        await sincronizarDadosPendentes();
+                        atualizarTabelas();
+                        
+                        // ========== MENSAGEM DE RESULTADO ==========
+                        let mensagem = '';
+                        if (produtosImportados > 0 || produtosAtualizados > 0) {
+                            mensagem += `${produtosImportados} produtos importados`;
+                            if (produtosAtualizados > 0) {
+                                mensagem += ` e ${produtosAtualizados} atualizados`;
+                            }
+                        }
+                        
+                        if (fornecedoresImportados > 0 || fornecedoresAtualizados > 0) {
+                            if (mensagem) mensagem += ' • ';
+                            mensagem += `${fornecedoresImportados} fornecedores importados`;
+                            if (fornecedoresAtualizados > 0) {
+                                mensagem += ` e ${fornecedoresAtualizados} atualizados`;
+                            }
+                        }
+                        
+                        if (!mensagem) {
+                            mensagem = 'Nenhum dado novo para importar';
+                        }
+                        
+                        mostrarAlerta('success', mensagem + ' com sucesso!');
+                        mostrarLoading(false);
+                        
+                    } catch (error) {
+                        console.error('Erro ao importar JSON:', error);
+                        mostrarAlerta('danger', 'Erro ao processar arquivo JSON: ' + error.message);
+                        mostrarLoading(false);
+                    }
+                };
+                
+                reader.readAsText(file, 'UTF-8');
+            };
+            
+            input.click();
+        }
+
+        function atualizarTabelas() {
+            atualizarDashboard();
+            atualizarProdutos();
+            atualizarFornecedores();
+            atualizarEntradas();
+            atualizarSaidas();
+            atualizarOrcamentos();
+            atualizarEstatisticas();
+        }
+
+        function atualizarDashboard() {
+            const tbody = document.getElementById('dashboardBody');
+            if (!tbody) return;
+            
+            let html = '';
+            produtos.forEach(p => {
+                const status = p.saldo <= p.estoqueMinimo ? 'badge-warning' : 'badge-success';
+                const statusText = p.saldo <= p.estoqueMinimo ? '⚠️ Baixo' : '✅ Normal';
+                
+                html += `
+                    <tr class="clickable-row" onclick="abrirImageModal('${p.imagem}', '${p.nome}')">
+                        <td><img src="${p.imagem}" class="product-thumbnail" alt="${p.nome}"></td>
+                        <td><strong>${p.codigo}</strong></td>
+                        <td>${p.nome}</td>
+                        <td>${p.categoria}</td>
+                        <td>${p.localizacao}</td>
+                        <td>${p.estoqueMinimo}</td>
+                        <td><strong>${p.saldo}</strong></td>
+                        <td><span class="badge ${status}">${statusText}</span></td>
+                        <td>
+                            <div class="action-icons" onclick="event.stopPropagation()">
+                                <button class="action-btn view" onclick="abrirImageModal('${p.imagem}', '${p.nome}')" data-tooltip="Ver imagem">🔍</button>
+                                <button class="action-btn edit" onclick="abrirModal('produto', ${JSON.stringify(p).replace(/'/g, "&#39;")})" data-tooltip="Editar">✏️</button>
+                                <button class="action-btn delete" onclick="excluirProduto('${p.codigo}')" data-tooltip="Excluir">🗑️</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html || '<tr><td colspan="9" style="text-align: center;">Nenhum produto cadastrado</td></tr>';
+        }
+
+        function atualizarProdutos() {
+            const tbody = document.getElementById('produtosBody');
+            if (!tbody) return;
+            
+            let html = '';
+            produtos.forEach(p => {
+                html += `
+                    <tr>
+                        <td><img src="${p.imagem}" class="product-thumbnail" alt="${p.nome}" onclick="abrirImageModal('${p.imagem}', '${p.nome}')"></td>
+                        <td>${p.codigo}</td>
+                        <td>${p.nome}</td>
+                        <td>${p.categoria}</td>
+                        <td>${p.localizacao}</td>
+                        <td>${p.fornecedor}</td>
+                        <td>${p.estoqueMinimo}</td>
+                        <td><strong>${p.saldo}</strong></td>
+                        <td>R$ ${p.preco.toFixed(2).replace('.', ',')}</td>
+                        <td>
+                            <div class="action-icons">
+                                <button class="action-btn edit" onclick="abrirModal('produto', ${JSON.stringify(p).replace(/'/g, "&#39;")})" data-tooltip="Editar">✏️</button>
+                                <button class="action-btn delete" onclick="excluirProduto('${p.codigo}')" data-tooltip="Excluir">🗑️</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html || '<tr><td colspan="10" style="text-align: center;">Nenhum produto cadastrado</td></tr>';
+        }
+
+        function atualizarFornecedores() {
+            const tbody = document.getElementById('fornecedoresBody');
+            if (!tbody) return;
+            
+            let html = '';
+            fornecedores.forEach(f => {
+                html += `
+                    <tr>
+                        <td><strong>${f.nome}</strong></td>
+                        <td>${f.produtos}</td>
+                        <td>${f.contato}</td>
+                        <td>${f.telefone}</td>
+                        <td>${f.email}</td>
+                        <td>${f.prazoEntrega} dias</td>
+                        <td>${f.ultimoPedido}</td>
+                        <td>
+                            <div class="action-icons">
+                                <button class="action-btn edit" onclick="abrirModal('fornecedor', ${JSON.stringify(f).replace(/'/g, "&#39;")})" data-tooltip="Editar">✏️</button>
+                                <button class="action-btn delete" onclick="excluirFornecedor('${f.nome}')" data-tooltip="Excluir">🗑️</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html || '<tr><td colspan="8" style="text-align: center;">Nenhum fornecedor cadastrado</td></tr>';
+        }
+
+        function atualizarEntradas() {
+            const tbody = document.getElementById('entradasBody');
+            if (!tbody) return;
+            
+            let html = '';
+            entradas.slice().reverse().forEach(e => {
+                html += `
+                    <tr>
+                        <td>${e.data}</td>
+                        <td>${e.hora}</td>
+                        <td>${e.codigo}</td>
+                        <td>${e.produto}</td>
+                        <td><strong>+${e.quantidade}</strong></td>
+                        <td>${e.fornecedor}</td>
+                        <td>${e.nf}</td>
+                        <td>R$ ${e.valorTotal.toFixed(2).replace('.', ',')}</td>
+                        <td><span class="badge badge-success">Entrada</span></td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html || '<tr><td colspan="9" style="text-align: center;">Nenhuma entrada registrada</td></tr>';
+        }
+
+        function atualizarSaidas() {
+            const tbody = document.getElementById('saidasBody');
+            if (!tbody) return;
+            
+            let html = '';
+            saidas.slice().reverse().forEach((s, index) => {
+                const badgeClass = s.tipo === 'saida' ? 'badge-warning' : 'badge-devolucao';
+                const badgeText = s.tipo === 'saida' ? 'Saída' : 'Devolução';
+                
+                html += `
+                    <tr>
+                        <td>${s.data}</td>
+                        <td>${s.hora}</td>
+                        <td>${s.codigo}</td>
+                        <td>${s.produto}</td>
+                        <td><strong>${s.tipo === 'saida' ? '-' : '+'}${s.quantidade}</strong></td>
+                        <td>${s.motivo}</td>
+                        <td>${s.destino || '-'}</td>
+                        <td><span class="badge ${badgeClass}">${badgeText}</span></td>
+                        <td>
+                            <div class="action-icons">
+                                <button class="action-btn delete" onclick="excluirSaida(${saidas.length - 1 - index})" data-tooltip="Excluir">🗑️</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html || '<tr><td colspan="9" style="text-align: center;">Nenhuma movimentação registrada</td></tr>';
+        }
+
+        function atualizarOrcamentos() {
+            const container = document.getElementById('orcamentosList');
+            if (!container) return;
+            
+            let html = '';
+            orcamentos.slice().reverse().forEach(o => {
+                const statusClass = o.status === 'Pendente' ? 'status-pendente' : o.status === 'Aprovado' ? 'status-aprovado' : 'status-cancelado';
+                
+                html += `
+                    <div class="orcamento-card">
+                        <div class="orcamento-header">
+                            <h3>Orçamento #${o.id}</h3>
+                            <span class="orcamento-status ${statusClass}">${o.status}</span>
+                        </div>
+                        
+                        <div class="orcamento-info">
+                            <div class="orcamento-info-item">
+                                <strong>Cliente</strong>
+                                ${o.cliente}
+                                ${o.telefone ? `<br><small>${o.telefone}</small>` : ''}
+                                ${o.email ? `<br><small>${o.email}</small>` : ''}
+                            </div>
+                            <div class="orcamento-info-item">
+                                <strong>Data</strong>
+                                ${o.data}
+                            </div>
+                            <div class="orcamento-info-item">
+                                <strong>Validade</strong>
+                                ${o.dataValidade} (${o.validade} dias)
+                            </div>
+                        </div>
+                        
+                        <div class="orcamento-itens">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Produto</th>
+                                        <th>Qtd</th>
+                                        <th>Preço</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${o.itens.map(item => `
+                                        <tr>
+                                            <td>${item.nome}</td>
+                                            <td>${item.quantidade}</td>
+                                            <td>R$ ${item.preco.toFixed(2).replace('.', ',')}</td>
+                                            <td>R$ ${(item.preco * item.quantidade).toFixed(2).replace('.', ',')}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="orcamento-footer">
+                            <div class="orcamento-total">
+                                Total: R$ ${o.valorTotal.toFixed(2).replace('.', ',')}
+                            </div>
+                            <div class="orcamento-actions">
+                                <button class="action-btn print" onclick="imprimirOrcamento(${o.id})" data-tooltip="Imprimir">🖨️</button>
+                                <button class="action-btn edit" onclick="aprovarOrcamento(${o.id})" data-tooltip="Aprovar">✅</button>
+                                <button class="action-btn delete" onclick="cancelarOrcamento(${o.id})" data-tooltip="Cancelar">❌</button>
+                            </div>
+                        </div>
+                        
+                        ${o.observacoes ? `<p style="margin-top: 10px; font-size: 13px; color: var(--gray-500);">📝 ${o.observacoes}</p>` : ''}
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html || '<div class="empty-state">Nenhum orçamento criado</div>';
+        }
+
+        function atualizarEstatisticas() {
+            document.getElementById('totalProdutos').textContent = produtos.length;
+            
+            const totalItens = produtos.reduce((acc, p) => acc + p.saldo, 0);
+            document.getElementById('totalItens').textContent = totalItens;
+            
+            const alertas = produtos.filter(p => p.saldo <= p.estoqueMinimo).length;
+            document.getElementById('alertas').textContent = alertas;
+            
+            const valorTotal = produtos.reduce((acc, p) => acc + (p.preco * p.saldo), 0);
+            document.getElementById('valorTotal').textContent = `R$ ${valorTotal.toFixed(2).replace('.', ',')}`;
+        }
+
+        function buscarProdutos() {
+            const termo = document.getElementById('searchDashboard')?.value || document.getElementById('searchProdutos')?.value || '';
+            
+            if (!termo) {
+                atualizarDashboard();
+                atualizarProdutos();
+                return;
+            }
+            
+            const termoLower = termo.toLowerCase();
+            const filtrados = produtos.filter(p => 
+                p.codigo.toLowerCase().includes(termoLower) ||
+                p.nome.toLowerCase().includes(termoLower) ||
+                p.categoria.toLowerCase().includes(termoLower)
+            );
+            
+            if (document.getElementById('dashboard').classList.contains('active')) {
+                const tbody = document.getElementById('dashboardBody');
+                let html = '';
+                filtrados.forEach(p => {
+                    const status = p.saldo <= p.estoqueMinimo ? 'badge-warning' : 'badge-success';
+                    const statusText = p.saldo <= p.estoqueMinimo ? '⚠️ Baixo' : '✅ Normal';
+                    
+                    html += `
+                        <tr class="clickable-row" onclick="abrirImageModal('${p.imagem}', '${p.nome}')">
+                            <td><img src="${p.imagem}" class="product-thumbnail" alt="${p.nome}"></td>
+                            <td><strong>${p.codigo}</strong></td>
+                            <td>${p.nome}</td>
+                            <td>${p.categoria}</td>
+                            <td>${p.localizacao}</td>
+                            <td>${p.estoqueMinimo}</td>
+                            <td><strong>${p.saldo}</strong></td>
+                            <td><span class="badge ${status}">${statusText}</span></td>
+                            <td>
+                                <div class="action-icons" onclick="event.stopPropagation()">
+                                    <button class="action-btn view" onclick="abrirImageModal('${p.imagem}', '${p.nome}')" data-tooltip="Ver imagem">🔍</button>
+                                    <button class="action-btn edit" onclick="abrirModal('produto', ${JSON.stringify(p).replace(/'/g, "&#39;")})" data-tooltip="Editar">✏️</button>
+                                    <button class="action-btn delete" onclick="excluirProduto('${p.codigo}')" data-tooltip="Excluir">🗑️</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+                tbody.innerHTML = html || '<tr><td colspan="9" style="text-align: center;">Nenhum produto encontrado</td></tr>';
+            }
+            
+            if (document.getElementById('produtos').classList.contains('active')) {
+                const tbody = document.getElementById('produtosBody');
+                let html = '';
+                filtrados.forEach(p => {
+                    html += `
+                        <tr>
+                            <td><img src="${p.imagem}" class="product-thumbnail" alt="${p.nome}" onclick="abrirImageModal('${p.imagem}', '${p.nome}')"></td>
+                            <td>${p.codigo}</td>
+                            <td>${p.nome}</td>
+                            <td>${p.categoria}</td>
+                            <td>${p.localizacao}</td>
+                            <td>${p.fornecedor}</td>
+                            <td>${p.estoqueMinimo}</td>
+                            <td><strong>${p.saldo}</strong></td>
+                            <td>R$ ${p.preco.toFixed(2).replace('.', ',')}</td>
+                            <td>
+                                <div class="action-icons">
+                                    <button class="action-btn edit" onclick="abrirModal('produto', ${JSON.stringify(p).replace(/'/g, "&#39;")})" data-tooltip="Editar">✏️</button>
+                                    <button class="action-btn delete" onclick="excluirProduto('${p.codigo}')" data-tooltip="Excluir">🗑️</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+                tbody.innerHTML = html || '<tr><td colspan="10" style="text-align: center;">Nenhum produto encontrado</td></tr>';
+            }
+        }
+
+        function buscarFornecedores() {
+            const termo = document.getElementById('searchFornecedores')?.value || '';
+            const tbody = document.getElementById('fornecedoresBody');
+            
+            if (!tbody) return;
+            
+            if (!termo) {
+                atualizarFornecedores();
+                return;
+            }
+            
+            const termoLower = termo.toLowerCase();
+            const filtrados = fornecedores.filter(f => 
+                f.nome.toLowerCase().includes(termoLower) ||
+                f.produtos.toLowerCase().includes(termoLower) ||
+                f.contato.toLowerCase().includes(termoLower)
+            );
+            
+            let html = '';
+            filtrados.forEach(f => {
+                html += `
+                    <tr>
+                        <td><strong>${f.nome}</strong></td>
+                        <td>${f.produtos}</td>
+                        <td>${f.contato}</td>
+                        <td>${f.telefone}</td>
+                        <td>${f.email}</td>
+                        <td>${f.prazoEntrega} dias</td>
+                        <td>${f.ultimoPedido}</td>
+                        <td>
+                            <div class="action-icons">
+                                <button class="action-btn edit" onclick="abrirModal('fornecedor', ${JSON.stringify(f).replace(/'/g, "&#39;")})" data-tooltip="Editar">✏️</button>
+                                <button class="action-btn delete" onclick="excluirFornecedor('${f.nome}')" data-tooltip="Excluir">🗑️</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html || '<tr><td colspan="8" style="text-align: center;">Nenhum fornecedor encontrado</td></tr>';
+        }
+
+        function buscarEntradas() {
+            const termo = document.getElementById('searchEntradas')?.value || '';
+            const tbody = document.getElementById('entradasBody');
+            
+            if (!tbody) return;
+            
+            if (!termo) {
+                atualizarEntradas();
+                return;
+            }
+            
+            const termoLower = termo.toLowerCase();
+            const filtrados = entradas.filter(e => 
+                e.codigo.toLowerCase().includes(termoLower) ||
+                e.produto.toLowerCase().includes(termoLower) ||
+                e.fornecedor.toLowerCase().includes(termoLower) ||
+                e.nf.toLowerCase().includes(termoLower)
+            );
+            
+            let html = '';
+            filtrados.slice().reverse().forEach(e => {
+                html += `
+                    <tr>
+                        <td>${e.data}</td>
+                        <td>${e.hora}</td>
+                        <td>${e.codigo}</td>
+                        <td>${e.produto}</td>
+                        <td><strong>+${e.quantidade}</strong></td>
+                        <td>${e.fornecedor}</td>
+                        <td>${e.nf}</td>
+                        <td>R$ ${e.valorTotal.toFixed(2).replace('.', ',')}</td>
+                        <td><span class="badge badge-success">Entrada</span></td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html || '<tr><td colspan="9" style="text-align: center;">Nenhuma entrada encontrada</td></tr>';
+        }
+
+        function buscarSaidas() {
+            const termo = document.getElementById('searchSaidas')?.value || '';
+            
+            if (!termo) {
+                atualizarSaidas();
+                return;
+            }
+            
+            const termoLower = termo.toLowerCase();
+            const filtrados = saidas.filter(s => 
+                s.codigo.toLowerCase().includes(termoLower) ||
+                s.produto.toLowerCase().includes(termoLower) ||
+                s.motivo.toLowerCase().includes(termoLower) ||
+                (s.destino && s.destino.toLowerCase().includes(termoLower))
+            );
+            
+            const tbody = document.getElementById('saidasBody');
+            if (!tbody) return;
+            
+            let html = '';
+            filtrados.slice().reverse().forEach((s, index) => {
+                const badgeClass = s.tipo === 'saida' ? 'badge-warning' : 'badge-devolucao';
+                const badgeText = s.tipo === 'saida' ? 'Saída' : 'Devolução';
+                
+                html += `
+                    <tr>
+                        <td>${s.data}</td>
+                        <td>${s.hora}</td>
+                        <td>${s.codigo}</td>
+                        <td>${s.produto}</td>
+                        <td><strong>${s.tipo === 'saida' ? '-' : '+'}${s.quantidade}</strong></td>
+                        <td>${s.motivo}</td>
+                        <td>${s.destino || '-'}</td>
+                        <td><span class="badge ${badgeClass}">${badgeText}</span></td>
+                        <td>
+                            <div class="action-icons">
+                                <button class="action-btn delete" onclick="excluirSaida(${saidas.length - 1 - index})" data-tooltip="Excluir">🗑️</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html || '<tr><td colspan="9" style="text-align: center;">Nenhuma movimentação encontrada</td></tr>';
+        }
+
+        function abrirImageModal(src, caption) {
+            document.getElementById('fullSizeImage').src = src;
+            document.getElementById('imageCaption').textContent = caption;
+            document.getElementById('imageModal').classList.add('active');
+        }
+
+        function fecharImageModal() {
+            document.getElementById('imageModal').classList.remove('active');
+        }
+
+        function carregarRelatorios() {
+            const baixo = produtos.filter(p => p.saldo <= p.estoqueMinimo).length;
+            document.getElementById('relatorioBaixo').textContent = baixo;
+            
+            const valorTotal = produtos.reduce((acc, p) => acc + (p.preco * p.saldo), 0);
+            document.getElementById('relatorioValor').textContent = `R$ ${valorTotal.toFixed(2).replace('.', ',')}`;
+            
+            const hoje = new Date();
+            const mesAtual = hoje.getMonth();
+            const anoAtual = hoje.getFullYear();
+            
+            const movimentacoesMes = saidas.filter(s => {
+                const [dia, mes, ano] = s.data.split('/').map(Number);
+                return mes === mesAtual + 1 && ano === anoAtual;
+            }).length;
+            
+            document.getElementById('relatorioMov').textContent = movimentacoesMes;
+            
+            const tbody = document.getElementById('relatorioBody');
+            if (!tbody) return;
+            
+            const meses = [
+                'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+                'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+            ];
+            
+            let html = '';
+            
+            for (let i = 0; i < 6; i++) {
+                const data = new Date();
+                data.setMonth(data.getMonth() - i);
+                const mes = meses[data.getMonth()];
+                const ano = data.getFullYear();
+                const mesNum = data.getMonth() + 1;
+                
+                const entradasMes = entradas.filter(e => {
+                    const [dia, em, eano] = e.data.split('/').map(Number);
+                    return em === mesNum && eano === ano;
+                });
+                
+                const saidasMes = saidas.filter(s => {
+                    const [dia, sm, sano] = s.data.split('/').map(Number);
+                    return sm === mesNum && sano === ano;
+                });
+                
+                const totalEntradas = entradasMes.reduce((acc, e) => acc + e.quantidade, 0);
+                const totalSaidas = saidasMes.reduce((acc, s) => s.tipo === 'saida' ? acc + s.quantidade : acc, 0);
+                const saldo = totalEntradas - totalSaidas;
+                
+                const valorEntradas = entradasMes.reduce((acc, e) => acc + e.valorTotal, 0);
+                const valorSaidas = saidasMes.reduce((acc, s) => s.tipo === 'saida' ? acc + (s.preco * s.quantidade) : acc, 0);
+                const valorMovimentado = valorEntradas + valorSaidas;
+                
+                html += `
+                    <tr class="clickable-row" onclick="verItensMovimentados('${mes}/${ano}')">
+                        <td><strong>${mes}/${ano}</strong></td>
+                        <td>${totalEntradas}</td>
+                        <td>${totalSaidas}</td>
+                        <td><strong>${saldo}</strong></td>
+                        <td>R$ ${valorMovimentado.toFixed(2).replace('.', ',')}</td>
+                    </tr>
+                `;
+            }
+            
+            tbody.innerHTML = html;
+        }
+
+        function gerarRelatorio(tipo) {
+            switch(tipo) {
+                case 'baixo':
+                    const produtosBaixo = produtos.filter(p => p.saldo <= p.estoqueMinimo);
+                    let msgBaixo = '📦 PRODUTOS COM ESTOQUE BAIXO:\n\n';
+                    produtosBaixo.forEach(p => {
+                        msgBaixo += `${p.codigo} - ${p.nome}: ${p.saldo} (Mínimo: ${p.estoqueMinimo})\n`;
+                    });
+                    alert(msgBaixo);
+                    break;
+                    
+                case 'valor':
+                    const valor = produtos.reduce((acc, p) => acc + (p.preco * p.saldo), 0);
+                    alert(`💰 VALOR TOTAL EM ESTOQUE: R$ ${valor.toFixed(2).replace('.', ',')}`);
+                    break;
+                    
+                case 'movimentacoes':
+                    const hoje = new Date();
+                    const mes = hoje.getMonth() + 1;
+                    const ano = hoje.getFullYear();
+                    
+                    const entradasMes = entradas.filter(e => {
+                        const [dia, em, eano] = e.data.split('/').map(Number);
+                        return em === mes && eano === ano;
+                    });
+                    
+                    const saidasMes = saidas.filter(s => {
+                        const [dia, sm, sano] = s.data.split('/').map(Number);
+                        return sm === mes && sano === ano;
+                    });
+                    
+                    let msgMov = `🔄 MOVIMENTAÇÕES - ${mes}/${ano}:\n\n`;
+                    msgMov += `ENTRADAS: ${entradasMes.length}\n`;
+                    entradasMes.forEach(e => {
+                        msgMov += `  + ${e.quantidade}x ${e.produto} (${e.data})\n`;
+                    });
+                    
+                    msgMov += `\nSAÍDAS: ${saidasMes.length}\n`;
+                    saidasMes.forEach(s => {
+                        if (s.tipo === 'saida') {
+                            msgMov += `  - ${s.quantidade}x ${s.produto} (${s.data})\n`;
+                        }
+                    });
+                    
+                    alert(msgMov);
+                    break;
+            }
+        }
+
+        function verItensMovimentados(periodo) {
+            const [mes, ano] = periodo.split('/');
+            const meses = {
+                'Janeiro': 1, 'Fevereiro': 2, 'Março': 3, 'Abril': 4,
+                'Maio': 5, 'Junho': 6, 'Julho': 7, 'Agosto': 8,
+                'Setembro': 9, 'Outubro': 10, 'Novembro': 11, 'Dezembro': 12
+            };
+            
+            const mesNum = meses[mes] || parseInt(mes);
+            
+            const entradasPeriodo = entradas.filter(e => {
+                const [dia, em, eano] = e.data.split('/').map(Number);
+                return em === mesNum && eano === parseInt(ano);
+            });
+            
+            const saidasPeriodo = saidas.filter(s => {
+                const [dia, sm, sano] = s.data.split('/').map(Number);
+                return sm === mesNum && sano === parseInt(ano);
+            });
+            
+            const modal = document.getElementById('itensVendidosModal');
+            const modalTitle = document.getElementById('itensVendidosModalTitle');
+            const modalBody = document.getElementById('itensVendidosModalBody');
+            
+            modalTitle.textContent = `📋 Itens Movimentados - ${mes}/${ano}`;
+            
+            let html = '<div style="max-height: 400px; overflow-y: auto;">';
+            
+            if (entradasPeriodo.length > 0) {
+                html += '<h3 style="color: #10b981; margin: 15px 0 10px;">📦 Entradas</h3>';
+                html += '<ul class="itens-vendidos-lista">';
+                entradasPeriodo.forEach(e => {
+                    html += `
+                        <li>
+                            <span class="produto-nome">${e.produto}</span>
+                            <span class="produto-qtd">+${e.quantidade}</span>
+                            <span class="produto-data">${e.data}</span>
+                        </li>
+                    `;
+                });
+                html += '</ul>';
+            }
+            
+            if (saidasPeriodo.length > 0) {
+                html += '<h3 style="color: #ef4444; margin: 20px 0 10px;">📤 Saídas</h3>';
+                html += '<ul class="itens-vendidos-lista">';
+                saidasPeriodo.forEach(s => {
+                    html += `
+                        <li>
+                            <span class="produto-nome">${s.produto}</span>
+                            <span class="produto-qtd">-${s.quantidade}</span>
+                            <span class="produto-data">${s.data}</span>
+                        </li>
+                    `;
+                });
+                html += '</ul>';
+            }
+            
+            if (entradasPeriodo.length === 0 && saidasPeriodo.length === 0) {
+                html += '<p class="empty-state">Nenhuma movimentação neste período</p>';
+            }
+            
+            html += '</div>';
+            
+            modalBody.innerHTML = html;
+            modal.classList.add('active');
+        }
+
+        function fecharItensVendidosModal() {
+            document.getElementById('itensVendidosModal').classList.remove('active');
+        }
+
+        function aprovarOrcamento(id) {
+            const index = orcamentos.findIndex(o => o.id === id);
+            if (index !== -1) {
+                orcamentos[index].status = 'Aprovado';
+                salvarDadosLocal();
+                atualizarOrcamentos();
+                mostrarAlerta('success', 'Orçamento aprovado!');
+            }
+        }
+
+        function cancelarOrcamento(id) {
+            const index = orcamentos.findIndex(o => o.id === id);
+            if (index !== -1) {
+                orcamentos[index].status = 'Cancelado';
+                salvarDadosLocal();
+                atualizarOrcamentos();
+                mostrarAlerta('warning', 'Orçamento cancelado!');
+            }
+        }
+
+        function imprimirOrcamento(id) {
+            const orcamento = orcamentos.find(o => o.id === id);
+            if (!orcamento) return;
+            
+            const printArea = document.getElementById('printArea');
+            
+            let html = `
+                <div class="print-header">
+                    <h2>ORÇAMENTO #${orcamento.id}</h2>
+                    <p>Data: ${orcamento.data} | Validade: ${orcamento.dataValidade}</p>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <h3>Cliente: ${orcamento.cliente}</h3>
+                    ${orcamento.telefone ? `<p>Telefone: ${orcamento.telefone}</p>` : ''}
+                    ${orcamento.email ? `<p>E-mail: ${orcamento.email}</p>` : ''}
+                </div>
+                
+                <table class="print-table">
+                    <thead>
+                        <tr>
+                            <th>Produto</th>
+                            <th>Quantidade</th>
+                            <th>Preço Unit.</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${orcamento.itens.map(item => `
+                            <tr>
+                                <td>${item.nome}</td>
+                                <td>${item.quantidade}</td>
+                                <td>R$ ${item.preco.toFixed(2).replace('.', ',')}</td>
+                                <td>R$ ${(item.preco * item.quantidade).toFixed(2).replace('.', ',')}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+                
+                <div class="print-footer">
+                    <h3>Total: R$ ${orcamento.valorTotal.toFixed(2).replace('.', ',')}</h3>
+                    ${orcamento.observacoes ? `<p><strong>Observações:</strong> ${orcamento.observacoes}</p>` : ''}
+                    <p>Status: ${orcamento.status}</p>
+                </div>
+            `;
+            
+            printArea.innerHTML = html;
+            printArea.style.display = 'block';
+            
+            window.print();
+            
+            printArea.style.display = 'none';
+        }
+
+        function imprimirSaidas() {
+            const printArea = document.getElementById('printArea');
+            const hoje = new Date().toLocaleDateString('pt-BR');
+            
+            let html = `
+                <div class="print-header">
+                    <h2>RELATÓRIO DE MOVIMENTAÇÕES</h2>
+                    <p>Data da impressão: ${hoje}</p>
+                </div>
+                
+                <table class="print-table">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Produto</th>
+                            <th>Quantidade</th>
+                            <th>Motivo</th>
+                            <th>Destino</th>
+                            <th>Tipo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${saidas.slice().reverse().map(s => `
+                            <tr>
+                                <td>${s.data}</td>
+                                <td>${s.produto}</td>
+                                <td>${s.tipo === 'saida' ? '-' : '+'}${s.quantidade}</td>
+                                <td>${s.motivo}</td>
+                                <td>${s.destino || '-'}</td>
+                                <td>${s.tipo === 'saida' ? 'Saída' : 'Devolução'}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+                
+                <div class="print-footer">
+                    <p>Total de registros: ${saidas.length}</p>
+                </div>
+            `;
+            
+            printArea.innerHTML = html;
+            printArea.style.display = 'block';
+            
+            window.print();
+            
+            printArea.style.display = 'none';
+        }
+
+        function exportarRelatorio(tipo) {
+            if (tipo === 'pdf') {
+                window.print();
+            } else if (tipo === 'excel') {
+                let csv = 'Código,Produto,Categoria,Localização,Estoque Mínimo,Saldo,Preço,Status\n';
+                
+                produtos.forEach(p => {
+                    const status = p.saldo <= p.estoqueMinimo ? 'Baixo' : 'Normal';
+                    csv += `"${p.codigo}","${p.nome}","${p.categoria}","${p.localizacao}",${p.estoqueMinimo},${p.saldo},${p.preco},"${status}"\n`;
+                });
+                
+                const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                const url = URL.createObjectURL(blob);
+                
+                link.setAttribute('href', url);
+                link.setAttribute('download', `estoque_${new Date().toLocaleDateString('pt-BR')}.csv`);
+                link.style.display = 'none';
+                
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+
+        function mostrarAlerta(tipo, mensagem) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${tipo}`;
+            
+            const icon = tipo === 'success' ? '✅' : tipo === 'warning' ? '⚠️' : '❌';
+            const title = tipo === 'success' ? 'Sucesso!' : tipo === 'warning' ? 'Atenção!' : 'Erro!';
+            
+            alertDiv.innerHTML = `
+                <div class="alert-icon">${icon}</div>
+                <div class="alert-content">
+                    <div class="alert-title">${title}</div>
+                    <div class="alert-message">${mensagem}</div>
+                </div>
+                <button class="alert-close" onclick="this.parentElement.remove()">✕</button>
+            `;
+            
+            document.body.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                if (alertDiv.parentElement) {
+                    alertDiv.remove();
+                }
+            }, 5000);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            setTheme(savedTheme);
+            
+            initSupabase();
+            carregarDados();
+            
+            document.addEventListener('change', function(e) {
+                if (e.target.id && e.target.id.startsWith('produto-') && typeof atualizarEstoqueDisponivel === 'function') {
+                    atualizarEstoqueDisponivel();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
