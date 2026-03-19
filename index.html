@@ -359,18 +359,42 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
     </div>
 
     <div id="page-minhaOrdem" class="page">
-      <div class="ordem-form-wrap">
+      <div class="ordem-form-wrap" style="max-width:860px">
         <div class="card">
-          <div class="card-header"><h3>Nova Ordem de Serviço</h3><p class="card-sub">Preencha os dados da solicitação</p></div>
+          <div class="card-header"><h3>Nova Ordem de Serviço</h3><p class="card-sub">Preencha os dados e confirme cada kit antes de enviar</p></div>
           <div class="card-body">
-            <div class="form-grid">
-              <div class="form-group"><label>Produto Solicitado *</label><select id="ordemProduto"><option value="">Selecione o produto...</option></select></div>
-              <div class="form-group"><label>Quantidade *</label><input type="number" id="ordemQtd" placeholder="Ex: 10" min="1"/></div>
+
+            <!-- Dados gerais -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px">
               <div class="form-group"><label>Prioridade</label><select id="ordemPrioridade"><option value="baixa">Baixa</option><option value="media" selected>Média</option><option value="alta">Alta</option><option value="urgente">Urgente</option></select></div>
               <div class="form-group"><label>Data Necessária</label><input type="date" id="ordemData"/></div>
-              <div class="form-group full-width"><label>Descrição / Justificativa *</label><textarea id="ordemDescricao" rows="4" placeholder="Descreva o motivo da solicitação..."></textarea></div>
+              <div class="form-group full-width" style="grid-column:1/-1"><label>Descrição / Justificativa *</label><textarea id="ordemDescricao" rows="3" placeholder="Descreva o motivo da solicitação..."></textarea></div>
             </div>
-            <div class="form-actions"><button class="btn-primary" onclick="criarOrdem()">✈ Enviar Ordem</button></div>
+
+            <!-- Kits confirmados -->
+            <div id="pageKitsConfirmados" style="margin-bottom:16px"></div>
+
+            <!-- Seção de adição de kit -->
+            <div id="pageKitSection" style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:16px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                  <select id="ordemTipo" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:7px 12px;color:var(--text);font-family:inherit;font-size:0.875rem">
+                    <option value="">Selecione o tipo de kit...</option>
+                    <option value="inversor">⚡ Inversor</option>
+                    <option value="padrao_entrada">🔌 Padrão de Entrada</option>
+                    <option value="personalizado">📦 Personalizado</option>
+                  </select>
+                  <button type="button" class="btn-outline" style="padding:6px 12px;font-size:0.82rem" onclick="addLinhaOrdem('page')">+ Produto</button>
+                </div>
+                <button type="button" class="btn-primary" style="background:#10B981;padding:7px 18px;font-size:0.82rem" onclick="confirmarKit('page')">✔ Confirmar Kit</button>
+              </div>
+              <div id="pageOrdemItens" style="display:flex;flex-direction:column;gap:6px"></div>
+              <p style="font-size:0.72rem;color:var(--text-3);margin-top:8px">Selecione o tipo, adicione os produtos e clique em "✔ Confirmar Kit". Repita para cada kit (Inversor, Padrão de Entrada, etc.).</p>
+            </div>
+
+            <div class="form-actions">
+              <button class="btn-primary" onclick="criarOrdem()">✈ Enviar Ordem</button>
+            </div>
           </div>
         </div>
       </div>
@@ -474,17 +498,14 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
 </div>
 
 <div id="modalOrdem" class="modal-overlay hidden">
-  <div class="modal">
+  <div class="modal" style="max-width:780px">
     <div class="modal-header"><h3>Nova Ordem de Serviço</h3><button class="modal-close" onclick="closeModal('modalOrdem')">×</button></div>
-    <div class="modal-body">
-      <div class="form-grid">
-        <div class="form-group full-width"><label>Produto Solicitado *</label>
-          <select id="modalOrdemProduto">
-            <option value="">Selecione o produto...</option>
-          </select>
-        </div>
-        <div class="form-group"><label>Quantidade *</label><input type="number" id="modalOrdemQtd" placeholder="Ex: 10" min="1"/></div>
-        <div class="form-group"><label>Prioridade</label>
+    <div class="modal-body" style="padding:20px 24px">
+
+      <!-- Dados gerais -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px">
+        <div class="form-group">
+          <label>Prioridade</label>
           <select id="modalOrdemPrioridade">
             <option value="baixa">Baixa</option>
             <option value="media" selected>Média</option>
@@ -493,10 +514,32 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
           </select>
         </div>
         <div class="form-group"><label>Data Necessária</label><input type="date" id="modalOrdemData"/></div>
-        <div class="form-group full-width"><label>Descrição / Justificativa *</label>
-          <textarea id="modalOrdemDescricao" rows="3" placeholder="Descreva o motivo da solicitação..."></textarea>
+        <div class="form-group full-width" style="grid-column:1/-1"><label>Descrição / Justificativa *</label>
+          <textarea id="modalOrdemDescricao" rows="2" placeholder="Descreva o motivo da solicitação..."></textarea>
         </div>
       </div>
+
+      <!-- Área de kits confirmados -->
+      <div id="modalKitsConfirmados" style="margin-bottom:16px"></div>
+
+      <!-- Seção de adição de kit -->
+      <div id="modalKitSection" style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);padding:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <select id="modalOrdemTipo" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:7px 12px;color:var(--text);font-family:inherit;font-size:0.875rem">
+              <option value="">Selecione o tipo de kit...</option>
+              <option value="inversor">⚡ Inversor</option>
+              <option value="padrao_entrada">🔌 Padrão de Entrada</option>
+              <option value="personalizado">📦 Personalizado</option>
+            </select>
+            <button type="button" class="btn-outline" style="padding:6px 12px;font-size:0.78rem" onclick="addLinhaOrdem('modal')">+ Produto</button>
+          </div>
+          <button type="button" class="btn-primary" style="padding:7px 16px;font-size:0.82rem" onclick="confirmarKit('modal')">✔ Confirmar Kit</button>
+        </div>
+        <div id="modalOrdemItens" style="display:flex;flex-direction:column;gap:6px"></div>
+        <p style="font-size:0.72rem;color:var(--text-3);margin-top:8px">Selecione o tipo, adicione os produtos e clique em "Confirmar Kit". Você pode confirmar múltiplos kits.</p>
+      </div>
+
     </div>
     <div class="modal-footer">
       <button class="btn-ghost" onclick="closeModal('modalOrdem')">Cancelar</button>
@@ -990,63 +1033,188 @@ async function salvarSaida() {
 }
 
 // Ordens de Serviço
-async function criarOrdem() {
-    const prodId = document.getElementById('ordemProduto').value;
-    const qtd = parseInt(document.getElementById('ordemQtd').value);
-    const desc = document.getElementById('ordemDescricao').value.trim();
-    
-    if (!prodId || !qtd || !desc) {
-        showToast('Preencha todos os campos obrigatórios.', 'error');
+
+// ============================================
+// KITS DE ORDEM DE SERVIÇO (MULTI-KIT)
+// ============================================
+
+const KIT_LABELS = {
+    inversor: '⚡ Inversor',
+    padrao_entrada: '🔌 Padrão de Entrada',
+    personalizado: '📦 Personalizado'
+};
+
+// Estado: itens sendo editados agora (linha a linha)
+const _ordemItens = { modal: [], page: [] };
+// Kits já confirmados (array de { tipo, label, itens[] })
+const _kitsConfirmados = { modal: [], page: [] };
+
+function buildSelectProdutos(selectedId, qtd, idx, ctx) {
+    const opts = state.produtos.map(p =>
+        '<option value="' + p.id + '"' + (p.id === selectedId ? ' selected' : '') + '>' +
+        p.nome + ' (Saldo: ' + (p.saldo_atual || 0) + ')' +
+        '</option>'
+    ).join('');
+    return '<div style="display:flex;gap:8px;align-items:center;margin-bottom:4px" id="itemOrdem_' + ctx + '_' + idx + '">' +
+        '<select style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px;color:var(--text);font-family:inherit;font-size:0.875rem"' +
+        ' onchange="atualizaItemOrdem(this,' + idx + ',&quot;' + ctx + '&quot;)">' +
+        '<option value="">Selecione o produto...</option>' + opts + '</select>' +
+        '<input type="number" value="' + (qtd || 1) + '" min="1" placeholder="Qtd"' +
+        ' style="width:80px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px;color:var(--text);font-family:inherit;font-size:0.875rem"' +
+        ' oninput="atualizaQtdOrdem(this,' + idx + ',&quot;' + ctx + '&quot;)" />' +
+        '<button type="button" onclick="removeLinhaOrdem(' + idx + ',&quot;' + ctx + '&quot;)" style="background:none;border:1px solid var(--border);border-radius:6px;padding:5px 9px;cursor:pointer;color:var(--red);font-size:0.85rem">✕</button>' +
+        '</div>';
+}
+
+function addLinhaOrdem(ctx) {
+    const idx = Date.now();
+    _ordemItens[ctx].push({ idx, produto_id: '', quantidade: 1 });
+    renderLinhasOrdem(ctx);
+}
+
+function removeLinhaOrdem(idx, ctx) {
+    _ordemItens[ctx] = _ordemItens[ctx].filter(i => i.idx !== idx);
+    renderLinhasOrdem(ctx);
+}
+
+function atualizaItemOrdem(sel, idx, ctx) {
+    const item = _ordemItens[ctx].find(i => i.idx === idx);
+    if (item) item.produto_id = sel.value;
+}
+
+function atualizaQtdOrdem(inp, idx, ctx) {
+    const item = _ordemItens[ctx].find(i => i.idx === idx);
+    if (item) item.quantidade = parseInt(inp.value) || 1;
+}
+
+function renderLinhasOrdem(ctx) {
+    const container = document.getElementById(ctx === 'modal' ? 'modalOrdemItens' : 'pageOrdemItens');
+    if (!container) return;
+    if (_ordemItens[ctx].length === 0) {
+        container.innerHTML = '<p style="font-size:0.8rem;color:var(--text-3);padding:6px 0">Clique em "+ Produto" para adicionar materiais a este kit.</p>';
         return;
     }
-    
+    container.innerHTML = _ordemItens[ctx].map(i => buildSelectProdutos(i.produto_id, i.quantidade, i.idx, ctx)).join('');
+}
+
+function confirmarKit(ctx) {
+    const tipoId = ctx === 'modal' ? 'modalOrdemTipo' : 'ordemTipo';
+    const tipo = document.getElementById(tipoId).value;
+    if (!tipo) { showToast('Selecione o tipo de kit antes de confirmar.', 'error'); return; }
+
+    const itens = _ordemItens[ctx].filter(i => i.produto_id);
+    if (itens.length === 0) { showToast('Adicione ao menos um produto ao kit.', 'error'); return; }
+
+    // Verificar estoque de cada item
+    for (const item of itens) {
+        const prod = state.produtos.find(p => p.id === item.produto_id);
+        if (prod && (prod.saldo_atual || 0) < item.quantidade) {
+            showToast('Estoque insuficiente para "' + prod.nome + '"! Disponível: ' + (prod.saldo_atual || 0), 'error');
+            return;
+        }
+    }
+
+    // Enriquecer itens com dados do produto
+    const itensCompletos = itens.map(i => ({
+        ...i,
+        produto: state.produtos.find(p => p.id === i.produto_id)
+    }));
+
+    _kitsConfirmados[ctx].push({ tipo, label: KIT_LABELS[tipo] || tipo, itens: itensCompletos });
+    _ordemItens[ctx] = [];
+
+    // Reset tipo selector
+    document.getElementById(tipoId).value = '';
+    renderLinhasOrdem(ctx);
+    renderKitsConfirmados(ctx);
+    showToast('Kit "' + (KIT_LABELS[tipo] || tipo) + '" confirmado!', 'success');
+}
+
+function removerKitConfirmado(ctx, kitIdx) {
+    _kitsConfirmados[ctx].splice(kitIdx, 1);
+    renderKitsConfirmados(ctx);
+}
+
+function renderKitsConfirmados(ctx) {
+    const containerId = ctx === 'modal' ? 'modalKitsConfirmados' : 'pageKitsConfirmados';
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    if (_kitsConfirmados[ctx].length === 0) { container.innerHTML = ''; return; }
+
+    container.innerHTML = _kitsConfirmados[ctx].map((kit, ki) => {
+        const rows = kit.itens.map(item => {
+            const p = item.produto;
+            return '<tr>' +
+                '<td style="padding:6px 10px;font-size:0.84rem;border-bottom:1px solid var(--border-soft)">' + (p ? p.nome : '—') + '</td>' +
+                '<td style="padding:6px 10px;font-size:0.84rem;border-bottom:1px solid var(--border-soft);color:var(--text-2)">' + (p ? (p.codigo || '—') : '—') + '</td>' +
+                '<td style="padding:6px 10px;font-size:0.84rem;border-bottom:1px solid var(--border-soft);color:var(--text-2)">' + (p ? (p.localizacao || '—') : '—') + '</td>' +
+                '<td style="padding:6px 10px;font-size:0.84rem;border-bottom:1px solid var(--border-soft);font-weight:600;color:var(--accent);text-align:center">' + item.quantidade + '</td>' +
+                '<td style="padding:6px 10px;font-size:0.84rem;border-bottom:1px solid var(--border-soft);color:var(--green);text-align:center">' + (p ? (p.saldo_atual || 0) : '—') + '</td>' +
+                '</tr>';
+        }).join('');
+
+        return '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:10px;overflow:hidden">' +
+            '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--accent-soft);border-bottom:1px solid var(--border)">' +
+            '<span style="font-weight:600;font-size:0.875rem;color:var(--accent)">' + kit.label + '</span>' +
+            '<button type="button" onclick="removerKitConfirmado(&quot;' + ctx + '&quot;,' + ki + ')" style="background:none;border:none;cursor:pointer;color:var(--red);font-size:0.8rem;padding:2px 6px">✕ Remover</button>' +
+            '</div>' +
+            '<table style="width:100%;border-collapse:collapse">' +
+            '<thead><tr style="background:var(--surface-2)">' +
+            '<th style="padding:6px 10px;font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-3);text-align:left">Produto</th>' +
+            '<th style="padding:6px 10px;font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-3);text-align:left">Código</th>' +
+            '<th style="padding:6px 10px;font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-3);text-align:left">Localização</th>' +
+            '<th style="padding:6px 10px;font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-3);text-align:center">Qtd</th>' +
+            '<th style="padding:6px 10px;font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-3);text-align:center">Saldo</th>' +
+            '</tr></thead><tbody>' + rows + '</tbody></table>' +
+            '</div>';
+    }).join('');
+}
+
+function onTipoKitChange(ctx) {} // mantido por compatibilidade
+
+async function criarOrdem() {
+    const desc = document.getElementById('ordemDescricao').value.trim();
+    const kits = _kitsConfirmados['page'];
+
+    if (!desc) { showToast('Preencha a descrição/justificativa.', 'error'); return; }
+    if (kits.length === 0) { showToast('Confirme ao menos um kit antes de enviar.', 'error'); return; }
+
+    // Todos os itens de todos os kits
+    const todosItens = kits.flatMap(k => k.itens.map(i => ({ ...i, kit_tipo: k.tipo, kit_label: k.label })));
+    const primeiroProd = todosItens[0];
+    const kitLabel = kits.map(k => k.label).join(' + ');
+
     const ordem = {
         numero: 'OS-' + String(state.ordens.length + 1).padStart(4, '0'),
         solicitante_id: state.currentUser.id,
         solicitante_nome: state.currentUser.nome,
-        produto_id: prodId,
-        quantidade: qtd,
+        produto_id: primeiroProd.produto_id,
+        quantidade: primeiroProd.quantidade,
         prioridade: document.getElementById('ordemPrioridade').value,
-        data_necessaria: document.getElementById('ordemData').value,
-        descricao: desc,
+        data_necessaria: document.getElementById('ordemData').value || null,
+        descricao: '[' + kitLabel + '] ' + desc,
         status: 'pendente',
-        usuario_id: state.currentUser.id
+        usuario_id: state.currentUser.id,
+        itens_json: JSON.stringify(kits)
     };
-    
+
     try {
-        const { data, error } = await sb
-            .from('ordens')
-            .insert([ordem])
-            .select('*, produto:produtos(*)')
-            .single();
-            
+        const { data, error } = await sb.from('ordens').insert([ordem]).select('*, produto:produtos(*)').single();
         if (error) throw error;
 
-        // Enriquecer com dados do solicitante já disponíveis no state
-        const ordemCompleta = {
-            ...data,
-            solicitante: state.currentUser
-        };
-        
-        state.ordens.unshift(ordemCompleta);
-        
-        // Limpar formulário
-        document.getElementById('ordemProduto').selectedIndex = 0;
-        document.getElementById('ordemQtd').value = '';
+        state.ordens.unshift({ ...data, solicitante: state.currentUser });
+        _kitsConfirmados['page'] = [];
+        _ordemItens['page'] = [];
+        renderLinhasOrdem('page');
+        renderKitsConfirmados('page');
         document.getElementById('ordemDescricao').value = '';
         document.getElementById('ordemData').value = '';
         document.getElementById('ordemPrioridade').value = 'media';
-        
+
         showToast('Ordem enviada com sucesso!', 'success');
         updateBadges();
-        
-        if (document.getElementById('page-ordens').classList.contains('active')) {
-            renderOrdens();
-        }
-        if (document.getElementById('page-minhasOrdens').classList.contains('active')) {
-            renderMinhasOrdens();
-        }
-        
+        if (document.getElementById('page-minhasOrdens').classList.contains('active')) renderMinhasOrdens();
+
     } catch (error) {
         console.error('Erro ao criar ordem:', error);
         showToast('Erro ao criar ordem: ' + (error.message || ''), 'error');
@@ -1054,60 +1222,71 @@ async function criarOrdem() {
 }
 
 async function criarOrdemModal() {
-    const prodId = document.getElementById('modalOrdemProduto').value;
-    const qtd = parseInt(document.getElementById('modalOrdemQtd').value);
     const desc = document.getElementById('modalOrdemDescricao').value.trim();
-    
-    if (!prodId || !qtd || !desc) {
-        showToast('Preencha todos os campos obrigatórios.', 'error');
-        return;
-    }
-    
+    const kits = _kitsConfirmados['modal'];
+
+    if (!desc) { showToast('Preencha a descrição/justificativa.', 'error'); return; }
+    if (kits.length === 0) { showToast('Confirme ao menos um kit antes de criar.', 'error'); return; }
+
+    const todosItens = kits.flatMap(k => k.itens.map(i => ({ ...i, kit_tipo: k.tipo, kit_label: k.label })));
+    const primeiroProd = todosItens[0];
+    const kitLabel = kits.map(k => k.label).join(' + ');
+
     const ordem = {
         numero: 'OS-' + String(state.ordens.length + 1).padStart(4, '0'),
         solicitante_id: state.currentUser.id,
         solicitante_nome: state.currentUser.nome,
-        produto_id: prodId,
-        quantidade: qtd,
+        produto_id: primeiroProd.produto_id,
+        quantidade: primeiroProd.quantidade,
         prioridade: document.getElementById('modalOrdemPrioridade').value,
-        data_necessaria: document.getElementById('modalOrdemData').value,
-        descricao: desc,
+        data_necessaria: document.getElementById('modalOrdemData').value || null,
+        descricao: '[' + kitLabel + '] ' + desc,
         status: 'pendente',
-        usuario_id: state.currentUser.id
+        usuario_id: state.currentUser.id,
+        itens_json: JSON.stringify(kits)
     };
-    
+
     try {
-        const { data, error } = await sb
-            .from('ordens')
-            .insert([ordem])
-            .select('*, produto:produtos(*)')
-            .single();
-            
+        const { data, error } = await sb.from('ordens').insert([ordem]).select('*, produto:produtos(*)').single();
         if (error) throw error;
 
-        // Enriquecer com dados do solicitante já disponíveis no state
-        const ordemCompleta = {
-            ...data,
-            solicitante: state.currentUser
-        };
-        
-        state.ordens.unshift(ordemCompleta);
-        
+        state.ordens.unshift({ ...data, solicitante: state.currentUser });
+        _kitsConfirmados['modal'] = [];
+        _ordemItens['modal'] = [];
         closeModal('modalOrdem');
+
         showToast('Ordem criada com sucesso!', 'success');
         updateBadges();
-        
-        if (document.getElementById('page-ordens').classList.contains('active')) {
-            renderOrdens();
-        }
-        if (document.getElementById('page-minhasOrdens').classList.contains('active')) {
-            renderMinhasOrdens();
-        }
-        
+        if (document.getElementById('page-ordens').classList.contains('active')) renderOrdens();
+        if (document.getElementById('page-minhasOrdens').classList.contains('active')) renderMinhasOrdens();
+
     } catch (error) {
         console.error('Erro ao criar ordem:', error);
         showToast('Erro ao criar ordem: ' + (error.message || ''), 'error');
     }
+}
+
+
+// Extrai lista plana de itens do itens_json (suporta formato antigo e novo)
+function extrairItensOrdem(ordemAtual) {
+    let raw = [];
+    try { raw = ordemAtual.itens_json ? JSON.parse(ordemAtual.itens_json) : []; } catch(e) {}
+
+    if (!raw.length) {
+        // Sem itens_json: usar produto principal
+        return [{ produto_id: ordemAtual.produto_id, quantidade: ordemAtual.quantidade }];
+    }
+
+    // Formato novo: array de kits [{ tipo, label, itens: [{produto_id, quantidade, ...}] }]
+    if (raw[0] && raw[0].itens && Array.isArray(raw[0].itens)) {
+        return raw.flatMap(kit => kit.itens.map(i => ({
+            produto_id: i.produto_id,
+            quantidade: i.quantidade
+        })));
+    }
+
+    // Formato antigo: array plano [{ produto_id, quantidade }]
+    return raw.map(i => ({ produto_id: i.produto_id, quantidade: i.quantidade }));
 }
 
 async function updateOrdemStatus(status) {
@@ -1117,43 +1296,45 @@ async function updateOrdemStatus(status) {
     try {
         const ordemAtual = state.ordens.find(o => o.id === id);
 
-        // Se concluindo, verificar estoque e dar baixa
+        // Se concluindo, verificar estoque e dar baixa em todos os itens
         if (status === 'concluida' && ordemAtual) {
-            const produto = state.produtos.find(p => p.id === ordemAtual.produto_id);
-            
-            if (!produto) {
-                showToast('Produto não encontrado.', 'error');
-                return;
+            // Garantir produtos atualizados antes de verificar
+            if (!state.produtos.length) await carregarDados();
+
+            const itens = extrairItensOrdem(ordemAtual);
+
+            // Verificar estoque de todos antes de dar baixa
+            for (const item of itens) {
+                const prod = state.produtos.find(p => p.id === item.produto_id);
+                if (!prod) {
+                    showToast('Produto ID "' + item.produto_id + '" não encontrado no estado local. Recarregue a página e tente novamente.', 'error');
+                    return;
+                }
+                if ((prod.saldo_atual || 0) < item.quantidade) {
+                    showToast('Estoque insuficiente para "' + prod.nome + '"! Disponível: ' + (prod.saldo_atual || 0) + ' — Necessário: ' + item.quantidade, 'error');
+                    return;
+                }
             }
-            if ((produto.estoque || produto.quantidade || 0) < ordemAtual.quantidade) {
-                showToast('Estoque insuficiente! Disponível: ' + (produto.estoque || produto.quantidade || 0) + ' — Necessário: ' + ordemAtual.quantidade, 'error');
-                return;
+
+            // Dar baixa em cada item
+            for (const item of itens) {
+                const prod = state.produtos.find(p => p.id === item.produto_id);
+                const saida = {
+                    produto_id: item.produto_id,
+                    quantidade: item.quantidade,
+                    motivo: 'Ordem de Serviço ' + (ordemAtual.numero || id),
+                    responsavel: state.currentUser.nome,
+                    data: new Date().toISOString(),
+                    observacoes: 'Saída automática ao concluir OS'
+                };
+                const { error: saidaError } = await sb.from('saidas').insert([saida]);
+                if (saidaError) throw saidaError;
+                const novoEstoque = (prod.saldo_atual || 0) - item.quantidade;
+                await sb.from('produtos').update({ saldo_atual: novoEstoque }).eq('id', item.produto_id);
+                const iProd = state.produtos.findIndex(p => p.id === item.produto_id);
+                if (iProd !== -1) state.produtos[iProd].saldo_atual = novoEstoque;
+                state.saidas.unshift({ ...saida, produto: prod });
             }
-
-            // Registrar saída automática
-            const saida = {
-                produto_id: ordemAtual.produto_id,
-                quantidade: ordemAtual.quantidade,
-                motivo: 'Ordem de Serviço ' + (ordemAtual.numero || id),
-                responsavel: state.currentUser.nome,
-                data: new Date().toISOString(),
-                observacoes: 'Saída automática ao concluir OS'
-            };
-            const { error: saidaError } = await sb.from('saidas').insert([saida]);
-            if (saidaError) throw saidaError;
-
-            // Atualizar estoque do produto no banco (campo: saldo_atual)
-            const novoEstoque = (produto.saldo_atual || 0) - ordemAtual.quantidade;
-            const { error: estoqueError } = await sb
-                .from('produtos')
-                .update({ saldo_atual: novoEstoque })
-                .eq('id', ordemAtual.produto_id);
-            if (estoqueError) throw estoqueError;
-
-            // Atualizar state local
-            const iProd = state.produtos.findIndex(p => p.id === ordemAtual.produto_id);
-            if (iProd !== -1) state.produtos[iProd].saldo_atual = novoEstoque;
-            state.saidas.unshift({ ...saida, produto });
         }
 
         // Atualizar status da ordem
@@ -1185,43 +1366,42 @@ async function quickUpdateOrdem(id, status) {
     try {
         const ordemAtual = state.ordens.find(o => o.id === id);
 
-        // Se concluindo, verificar estoque e dar baixa
+        // Se concluindo, verificar estoque e dar baixa em todos os itens
         if (status === 'concluida' && ordemAtual) {
-            const produto = state.produtos.find(p => p.id === ordemAtual.produto_id);
+            const itens = extrairItensOrdem(ordemAtual);
 
-            if (!produto) {
-                showToast('Produto não encontrado.', 'error');
-                return;
+            // Verificar estoque de todos antes de dar baixa
+            for (const item of itens) {
+                const prod = state.produtos.find(p => p.id === item.produto_id);
+                if (!prod) {
+                    showToast('Produto ID "' + item.produto_id + '" não encontrado no estado local. Recarregue a página e tente novamente.', 'error');
+                    return;
+                }
+                if ((prod.saldo_atual || 0) < item.quantidade) {
+                    showToast('Estoque insuficiente para "' + prod.nome + '"! Disponível: ' + (prod.saldo_atual || 0) + ' — Necessário: ' + item.quantidade, 'error');
+                    return;
+                }
             }
-            if ((produto.saldo_atual || 0) < ordemAtual.quantidade) {
-                showToast('Estoque insuficiente! Disponível: ' + (produto.saldo_atual || 0) + ' — Necessário: ' + ordemAtual.quantidade, 'error');
-                return;
+
+            // Dar baixa em cada item
+            for (const item of itens) {
+                const prod = state.produtos.find(p => p.id === item.produto_id);
+                const saida = {
+                    produto_id: item.produto_id,
+                    quantidade: item.quantidade,
+                    motivo: 'Ordem de Serviço ' + (ordemAtual.numero || id),
+                    responsavel: state.currentUser.nome,
+                    data: new Date().toISOString(),
+                    observacoes: 'Saída automática ao concluir OS'
+                };
+                const { error: saidaError } = await sb.from('saidas').insert([saida]);
+                if (saidaError) throw saidaError;
+                const novoEstoque = (prod.saldo_atual || 0) - item.quantidade;
+                await sb.from('produtos').update({ saldo_atual: novoEstoque }).eq('id', item.produto_id);
+                const iProd = state.produtos.findIndex(p => p.id === item.produto_id);
+                if (iProd !== -1) state.produtos[iProd].saldo_atual = novoEstoque;
+                state.saidas.unshift({ ...saida, produto: prod });
             }
-
-            // Registrar saída automática
-            const saida = {
-                produto_id: ordemAtual.produto_id,
-                quantidade: ordemAtual.quantidade,
-                motivo: 'Ordem de Serviço ' + (ordemAtual.numero || id),
-                responsavel: state.currentUser.nome,
-                data: new Date().toISOString(),
-                observacoes: 'Saída automática ao concluir OS'
-            };
-            const { error: saidaError } = await sb.from('saidas').insert([saida]);
-            if (saidaError) throw saidaError;
-
-            // Atualizar estoque do produto no banco (campo: saldo_atual)
-            const novoEstoque = (produto.saldo_atual || 0) - ordemAtual.quantidade;
-            const { error: estoqueError } = await sb
-                .from('produtos')
-                .update({ saldo_atual: novoEstoque })
-                .eq('id', ordemAtual.produto_id);
-            if (estoqueError) throw estoqueError;
-
-            // Atualizar state local
-            const iProd = state.produtos.findIndex(p => p.id === ordemAtual.produto_id);
-            if (iProd !== -1) state.produtos[iProd].saldo_atual = novoEstoque;
-            state.saidas.unshift({ ...saida, produto });
         }
 
         const { data, error } = await sb
@@ -1728,92 +1908,110 @@ const ST = {
 function printOrdem(id) {
     const o = state.ordens.find(x => x.id === id);
     if (!o) return;
-    const p = o.produto || state.produtos.find(x => x.id === o.produto_id);
+
+    // Parse kits
+    let kits = [];
+    try { kits = o.itens_json ? JSON.parse(o.itens_json) : []; } catch(e) {}
+    // Legacy: single product
+    if (!kits.length || !kits[0].itens) {
+        const p = o.produto || state.produtos.find(x => x.id === o.produto_id);
+        kits = [{ label: 'Produto', itens: [{ produto_id: o.produto_id, quantidade: o.quantidade, produto: p }] }];
+    }
+
     const pr = PR[o.prioridade] || PR.media;
     const st = ST[o.status] || ST.pendente;
-    const f = o.fornecedor || state.fornecedores.find(x => x.id === (p && p.fornecedor_id)) || null;
 
-    const win = window.open('', '_blank', 'width=800,height=600');
+    // Build kit tables HTML
+    const kitsHtml = kits.map(kit => {
+        const rows = kit.itens.map(item => {
+            const p = item.produto || state.produtos.find(x => x.id === item.produto_id);
+            return '<tr>' +
+                '<td>' + (p ? p.nome : '—') + '</td>' +
+                '<td>' + (p ? (p.codigo || '—') : '—') + '</td>' +
+                '<td>' + (p ? (p.categoria || '—') : '—') + '</td>' +
+                '<td>' + (p ? (p.localizacao || '—') : '—') + '</td>' +
+                '<td style="text-align:center;font-weight:700;color:#3B82F6">' + item.quantidade + '</td>' +
+                '<td style="text-align:center;color:#059669">' + (p ? (p.saldo_atual || 0) : '—') + '</td>' +
+                '</tr>';
+        }).join('');
+        return '<div class="kit-block">' +
+            '<div class="kit-header">' + kit.label + '</div>' +
+            '<table><thead><tr>' +
+            '<th>Produto</th><th>Código</th><th>Categoria</th><th>Localização</th>' +
+            '<th style="text-align:center">Qtd</th><th style="text-align:center">Saldo</th>' +
+            '</tr></thead><tbody>' + rows + '</tbody></table>' +
+            '</div>';
+    }).join('');
+
+    const win = window.open('', '_blank', 'width=900,height=700');
     win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"/>
-<title>Ordem de Serviço ${o.numero || ''}</title>
+<title>OS ${o.numero || ''}</title>
 <style>
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'Segoe UI',Arial,sans-serif;color:#1E293B;background:#fff;padding:40px}
-  .header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #3B82F6;padding-bottom:20px;margin-bottom:28px}
-  .logo{display:flex;align-items:center;gap:10px}
-  .logo svg{flex-shrink:0}
-  .logo-text{font-size:1.3rem;font-weight:700;color:#1E293B}
-  .os-number{text-align:right}
-  .os-number h2{font-size:1.5rem;font-weight:700;color:#3B82F6}
-  .os-number p{font-size:0.8rem;color:#64748B;margin-top:4px}
-  .badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:600}
-  .badge-pendente{background:#FEF9C3;color:#854D0E}
-  .badge-em_andamento{background:#DBEAFE;color:#1E40AF}
-  .badge-concluida{background:#DCFCE7;color:#166534}
-  .badge-cancelada{background:#F1F5F9;color:#475569}
-  .badge-baixa{background:#F1F5F9;color:#475569}
-  .badge-media{background:#FEF9C3;color:#854D0E}
-  .badge-alta{background:#FEE2E2;color:#991B1B}
-  .badge-urgente{background:#FEE2E2;color:#991B1B}
-  .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px}
-  .section{background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:18px}
-  .section h3{font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94A3B8;margin-bottom:12px}
-  .field{margin-bottom:10px}
-  .field label{font-size:0.72rem;font-weight:600;color:#64748B;display:block;margin-bottom:2px}
-  .field span{font-size:0.9rem;color:#1E293B}
-  .desc-box{background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:18px;margin-bottom:24px}
-  .desc-box h3{font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94A3B8;margin-bottom:8px}
-  .desc-box p{font-size:0.9rem;color:#1E293B;line-height:1.6}
-  .signatures{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:40px}
-  .sig{border-top:1px solid #CBD5E1;padding-top:8px;text-align:center;font-size:0.78rem;color:#64748B}
-  .footer{margin-top:32px;text-align:center;font-size:0.72rem;color:#94A3B8;border-top:1px solid #E2E8F0;padding-top:16px}
-  @media print{body{padding:20px}}
-</style>
-</head><body>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;color:#1E293B;background:#fff;padding:36px}
+.header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #3B82F6;padding-bottom:18px;margin-bottom:24px}
+.logo-text{font-size:1.2rem;font-weight:700;color:#1E293B}
+.logo-sub{font-size:0.75rem;color:#64748B;margin-top:2px}
+.os-num{text-align:right}
+.os-num h2{font-size:1.6rem;font-weight:700;color:#3B82F6}
+.os-num p{font-size:0.78rem;color:#64748B;margin-top:3px}
+.badges{display:flex;gap:6px;justify-content:flex-end;margin-top:8px}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:0.72rem;font-weight:600}
+.info-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:22px;padding:16px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px}
+.info-item label{font-size:0.68rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#94A3B8;display:block;margin-bottom:3px}
+.info-item span{font-size:0.875rem;color:#1E293B;font-weight:500}
+.desc-box{background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:14px;margin-bottom:20px}
+.desc-box label{font-size:0.68rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#94A3B8;display:block;margin-bottom:6px}
+.kit-block{margin-bottom:18px;border:1px solid #E2E8F0;border-radius:8px;overflow:hidden}
+.kit-header{background:#EFF6FF;color:#1E40AF;font-weight:700;font-size:0.875rem;padding:10px 14px;border-bottom:1px solid #BFDBFE}
+table{width:100%;border-collapse:collapse}
+th{background:#F8FAFC;padding:7px 12px;font-size:0.68rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:#64748B;text-align:left;border-bottom:1px solid #E2E8F0}
+td{padding:8px 12px;font-size:0.84rem;border-bottom:1px solid #F1F5F9;color:#1E293B}
+tr:last-child td{border-bottom:none}
+.signatures{display:grid;grid-template-columns:1fr 1fr;gap:50px;margin-top:36px}
+.sig{border-top:1px solid #CBD5E1;padding-top:8px;text-align:center;font-size:0.78rem;color:#64748B}
+.footer{margin-top:28px;text-align:center;font-size:0.7rem;color:#94A3B8;border-top:1px solid #E2E8F0;padding-top:14px}
+@media print{body{padding:18px}@page{margin:1cm}}
+</style></head><body>
+
 <div class="header">
-  <div class="logo">
-    <svg width="32" height="32" viewBox="0 0 32 32" fill="none"><rect x="2" y="2" width="12" height="12" rx="3" fill="#3B82F6"/><rect x="18" y="2" width="12" height="12" rx="3" fill="#3B82F6" opacity="0.5"/><rect x="2" y="18" width="12" height="12" rx="3" fill="#3B82F6" opacity="0.5"/><rect x="18" y="18" width="12" height="12" rx="3" fill="#3B82F6"/></svg>
-    <div><div class="logo-text">StockFlow</div><div style="font-size:0.75rem;color:#64748B">Sistema de Gestão de Estoque</div></div>
+  <div>
+    <svg width="28" height="28" viewBox="0 0 32 32" fill="none" style="vertical-align:middle;margin-right:8px"><rect x="2" y="2" width="12" height="12" rx="3" fill="#3B82F6"/><rect x="18" y="2" width="12" height="12" rx="3" fill="#3B82F6" opacity="0.5"/><rect x="2" y="18" width="12" height="12" rx="3" fill="#3B82F6" opacity="0.5"/><rect x="18" y="18" width="12" height="12" rx="3" fill="#3B82F6"/></svg>
+    <span class="logo-text">StockFlow</span>
+    <div class="logo-sub">Sistema de Gestão de Estoque</div>
   </div>
-  <div class="os-number">
+  <div class="os-num">
     <h2>${o.numero || 'S/N'}</h2>
-    <p>Emitida em ${new Date().toLocaleDateString('pt-BR', {day:'2-digit',month:'long',year:'numeric'})}</p>
-    <div style="margin-top:8px;display:flex;gap:6px;justify-content:flex-end">
-      <span class="badge badge-${o.status || 'pendente'}">${st.label}</span>
-      <span class="badge badge-${o.prioridade || 'media'}">${pr.label}</span>
+    <p>Emitida em ${new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'})}</p>
+    <div class="badges">
+      <span class="badge" style="background:#DBEAFE;color:#1E40AF">${st.label}</span>
+      <span class="badge" style="background:#FEF9C3;color:#854D0E">${pr.label}</span>
     </div>
   </div>
 </div>
 
-<div class="grid">
-  <div class="section">
-    <h3>Solicitante</h3>
-    <div class="field"><label>Nome</label><span>${o.solicitante_nome || '—'}</span></div>
-    <div class="field"><label>Data da Solicitação</label><span>${formatDate(o.criado_em)}</span></div>
-    ${o.data_necessaria ? '<div class="field"><label>Data Necessária</label><span>' + formatDate(o.data_necessaria) + '</span></div>' : ''}
-  </div>
-  <div class="section">
-    <h3>Produto Solicitado</h3>
-    <div class="field"><label>Nome</label><span>${p ? p.nome : '—'}</span></div>
-    <div class="field"><label>Código</label><span>${p ? (p.codigo || '—') : '—'}</span></div>
-    <div class="field"><label>Quantidade</label><span style="font-size:1.1rem;font-weight:700;color:#3B82F6">${o.quantidade || 0} unidades</span></div>
-    ${p && p.localizacao ? '<div class="field"><label>Localização</label><span>' + p.localizacao + '</span></div>' : ''}
-  </div>
+<div class="info-grid">
+  <div class="info-item"><label>Solicitante</label><span>${o.solicitante_nome || '—'}</span></div>
+  <div class="info-item"><label>Data da Solicitação</label><span>${formatDate(o.criado_em)}</span></div>
+  <div class="info-item"><label>Data Necessária</label><span>${o.data_necessaria ? formatDate(o.data_necessaria) : '—'}</span></div>
 </div>
 
-${o.descricao ? '<div class="desc-box"><h3>Descrição / Justificativa</h3><p>' + o.descricao + '</p></div>' : ''}
+${o.descricao ? '<div class="desc-box"><label>Descrição / Justificativa</label><p style="font-size:0.875rem;line-height:1.6">' + o.descricao + '</p></div>' : ''}
+
+${kitsHtml}
 
 <div class="signatures">
-  <div class="sig">Assinatura do Solicitante<br><br>${o.solicitante_nome || ''}</div>
-  <div class="sig">Assinatura do Responsável<br><br>&nbsp;</div>
+  <div class="sig">Assinatura do Solicitante<br><br><br>${o.solicitante_nome || ''}</div>
+  <div class="sig">Assinatura do Responsável<br><br><br>&nbsp;</div>
 </div>
 
-<div class="footer">StockFlow — Documento gerado automaticamente em ${new Date().toLocaleString('pt-BR')} — ${o.numero || ''}</div>
+<div class="footer">StockFlow · Documento gerado em ${new Date().toLocaleString('pt-BR')} · ${o.numero || ''}</div>
 </body></html>`);
     win.document.close();
     win.focus();
-    setTimeout(() => { win.print(); }, 400);
+    setTimeout(() => win.print(), 500);
 }
+
 
 function renderOrdens(filter = '', sf = '') {
     filter = filter || '';
