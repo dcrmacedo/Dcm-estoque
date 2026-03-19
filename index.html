@@ -1146,43 +1146,74 @@ async function quickUpdateOrdem(id, status) {
 
 // Usuários
 async function salvarUsuario() {
-    // Primeiro criar usuário no Auth
+    const nome = document.getElementById('usuNome').value.trim();
     const email = document.getElementById('usuEmail').value.trim();
     const password = document.getElementById('usuSenha').value.trim();
-    
+    const perfil = document.getElementById('usuPerfil').value;
+
+    if (!nome || !email || !password) {
+        showToast('Preencha todos os campos obrigatórios.', 'error');
+        return;
+    }
+    if (password.length < 6) {
+        showToast('A senha deve ter no mínimo 6 caracteres.', 'error');
+        return;
+    }
+
     try {
+        // Salvar sessão atual do admin
+        const { data: { session: adminSession } } = await sb.auth.getSession();
+
+        // Criar o novo usuário no Supabase Auth
         const { data: authData, error: authError } = await sb.auth.signUp({
-            email: email,
-            password: password
+            email,
+            password,
+            options: { data: { nome, perfil } }
         });
-        
+
         if (authError) throw authError;
-        
-        // Depois inserir na tabela usuarios
+        if (!authData.user) throw new Error('Não foi possível criar o usuário.');
+
+        const novoUserId = authData.user.id;
+
+        // Restaurar sessão do admin imediatamente
+        if (adminSession) {
+            await sb.auth.setSession({
+                access_token: adminSession.access_token,
+                refresh_token: adminSession.refresh_token
+            });
+        }
+
+        // Inserir na tabela usuarios com a sessão do admin restaurada
         const usuario = {
-            id: authData.user.id,
-            nome: document.getElementById('usuNome').value.trim(),
-            email: email,
-            perfil: document.getElementById('usuPerfil').value,
-            status: 'ativo'
+            id: novoUserId,
+            nome,
+            email,
+            perfil,
+            status: 'ativo',
+            criado_em: new Date().toISOString()
         };
-        
+
         const { data, error } = await sb
             .from('usuarios')
             .insert([usuario])
             .select()
             .single();
-            
+
         if (error) throw error;
-        
+
         state.usuarios.unshift(data);
         closeModal('modalUsuario');
+        document.getElementById('usuNome').value = '';
+        document.getElementById('usuEmail').value = '';
+        document.getElementById('usuSenha').value = '';
+        document.getElementById('usuPerfil').value = 'user';
         renderUsuarios();
-        showToast('Usuário criado com sucesso!');
-        
+        showToast('Usuário "' + nome + '" criado com sucesso!');
+
     } catch (error) {
         console.error('Erro ao criar usuário:', error);
-        showToast('Erro ao criar usuário: ' + error.message, 'error');
+        showToast('Erro: ' + (error.message || 'Não foi possível criar o usuário.'), 'error');
     }
 }
 
