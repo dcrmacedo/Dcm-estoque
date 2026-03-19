@@ -674,9 +674,15 @@ async function carregarDados() {
         // Carregar ordens
         const { data: ordens, error: errOrd } = await sb
             .from('ordens')
-            .select('*, produto:produtos(*), solicitante:usuarios(*)')
+            .select('*, produto:produtos(*)')
             .order('criado_em', { ascending: false });
-        if (!errOrd) state.ordens = ordens || [];
+        if (!errOrd) {
+            // Enriquecer ordens com dados de solicitante do state.usuarios quando disponível
+            state.ordens = (ordens || []).map(o => ({
+                ...o,
+                solicitante: state.usuarios.find(u => u.id === o.solicitante_id) || null
+            }));
+        }
         
         // Carregar usuários (apenas para admin)
         if (state.currentUser?.perfil === 'admin') {
@@ -1011,12 +1017,18 @@ async function criarOrdem() {
         const { data, error } = await sb
             .from('ordens')
             .insert([ordem])
-            .select('*, produto:produtos(*), solicitante:usuarios(*)')
+            .select('*, produto:produtos(*)')
             .single();
             
         if (error) throw error;
+
+        // Enriquecer com dados do solicitante já disponíveis no state
+        const ordemCompleta = {
+            ...data,
+            solicitante: state.currentUser
+        };
         
-        state.ordens.unshift(data);
+        state.ordens.unshift(ordemCompleta);
         
         // Limpar formulário
         document.getElementById('ordemProduto').selectedIndex = 0;
@@ -1037,7 +1049,7 @@ async function criarOrdem() {
         
     } catch (error) {
         console.error('Erro ao criar ordem:', error);
-        showToast('Erro ao criar ordem.', 'error');
+        showToast('Erro ao criar ordem: ' + (error.message || ''), 'error');
     }
 }
 
@@ -1068,12 +1080,18 @@ async function criarOrdemModal() {
         const { data, error } = await sb
             .from('ordens')
             .insert([ordem])
-            .select('*, produto:produtos(*), solicitante:usuarios(*)')
+            .select('*, produto:produtos(*)')
             .single();
             
         if (error) throw error;
+
+        // Enriquecer com dados do solicitante já disponíveis no state
+        const ordemCompleta = {
+            ...data,
+            solicitante: state.currentUser
+        };
         
-        state.ordens.unshift(data);
+        state.ordens.unshift(ordemCompleta);
         
         closeModal('modalOrdem');
         showToast('Ordem criada com sucesso!', 'success');
@@ -1088,7 +1106,7 @@ async function criarOrdemModal() {
         
     } catch (error) {
         console.error('Erro ao criar ordem:', error);
-        showToast('Erro ao criar ordem.', 'error');
+        showToast('Erro ao criar ordem: ' + (error.message || ''), 'error');
     }
 }
 
@@ -1171,8 +1189,20 @@ async function salvarUsuario() {
             options: { data: { nome, perfil } }
         });
 
-        if (authError) throw authError;
-        if (!authData.user) throw new Error('Não foi possível criar o usuário.');
+        if (authError) {
+            if (authError.message.includes('rate limit') || authError.status === 429) {
+                showToast('⚠️ Limite de emails atingido. Desative "Confirm email" em Authentication → Providers → Email no Supabase e tente novamente.', 'error');
+            } else {
+                showToast('Erro Auth: ' + authError.message, 'error');
+            }
+            return;
+        }
+
+        // Se o usuário já existia mas não estava confirmado, authData.user pode vir sem session
+        if (!authData.user) {
+            showToast('Erro: não foi possível criar o usuário. Verifique se o e-mail já está cadastrado.', 'error');
+            return;
+        }
 
         const novoUserId = authData.user.id;
 
@@ -1184,25 +1214,39 @@ async function salvarUsuario() {
             });
         }
 
-        // Inserir na tabela usuarios com a sessão do admin restaurada
-        const usuario = {
-            id: novoUserId,
-            nome,
-            email,
-            perfil,
-            status: 'ativo',
-            criado_em: new Date().toISOString()
-        };
-
-        const { data, error } = await sb
+        // Verificar se já existe na tabela usuarios (pode ter sido criado antes)
+        const { data: existente } = await sb
             .from('usuarios')
-            .insert([usuario])
-            .select()
-            .single();
+            .select('id')
+            .eq('id', novoUserId)
+            .maybeSingle();
+
+        let data, error;
+
+        if (existente) {
+            // Atualizar registro existente
+            ({ data, error } = await sb
+                .from('usuarios')
+                .update({ nome, perfil, status: 'ativo' })
+                .eq('id', novoUserId)
+                .select()
+                .single());
+        } else {
+            // Inserir novo registro
+            ({ data, error } = await sb
+                .from('usuarios')
+                .insert([{ id: novoUserId, nome, email, perfil, status: 'ativo', criado_em: new Date().toISOString() }])
+                .select()
+                .single());
+        }
 
         if (error) throw error;
 
-        state.usuarios.unshift(data);
+        // Atualizar estado local
+        const idx = state.usuarios.findIndex(u => u.id === novoUserId);
+        if (idx >= 0) state.usuarios[idx] = data;
+        else state.usuarios.unshift(data);
+
         closeModal('modalUsuario');
         document.getElementById('usuNome').value = '';
         document.getElementById('usuEmail').value = '';
