@@ -377,7 +377,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
     </div>
 
     <div id="page-minhasOrdens" class="page">
-      <div class="card"><div class="card-header"><h3>Minhas Ordens de Serviço</h3></div><div class="card-body no-pad"><table class="table"><thead><tr><th>#</th><th>Produto</th><th>Qtd</th><th>Prioridade</th><th>Status</th><th>Data</th></tr></thead><tbody id="tbodyMinhasOrdens"><tr><td colspan="6" class="empty">Você não possui ordens abertas</td></tr></tbody></table></div></div>
+      <div class="card"><div class="card-header"><h3>Minhas Ordens de Serviço</h3></div><div class="card-body no-pad"><table class="table"><thead><tr><th>#</th><th>Produto</th><th>Qtd</th><th>Prioridade</th><th>Status</th><th>Data</th><th>Ações</th></tr></thead><tbody id="tbodyMinhasOrdens"><tr><td colspan="7" class="empty">Você não possui ordens abertas</td></tr></tbody></table></div></div>
     </div>
   </main>
 </div>
@@ -1115,9 +1115,51 @@ async function updateOrdemStatus(status) {
     if (!id) return;
     
     try {
+        const ordemAtual = state.ordens.find(o => o.id === id);
+
+        // Se concluindo, verificar estoque e dar baixa
+        if (status === 'concluida' && ordemAtual) {
+            const produto = state.produtos.find(p => p.id === ordemAtual.produto_id);
+            
+            if (!produto) {
+                showToast('Produto não encontrado.', 'error');
+                return;
+            }
+            if ((produto.estoque || produto.quantidade || 0) < ordemAtual.quantidade) {
+                showToast('Estoque insuficiente! Disponível: ' + (produto.estoque || produto.quantidade || 0) + ' — Necessário: ' + ordemAtual.quantidade, 'error');
+                return;
+            }
+
+            // Registrar saída automática
+            const saida = {
+                produto_id: ordemAtual.produto_id,
+                quantidade: ordemAtual.quantidade,
+                motivo: 'Ordem de Serviço ' + (ordemAtual.numero || id),
+                responsavel: state.currentUser.nome,
+                data: new Date().toISOString(),
+                observacoes: 'Saída automática ao concluir OS'
+            };
+            const { error: saidaError } = await sb.from('saidas').insert([saida]);
+            if (saidaError) throw saidaError;
+
+            // Atualizar estoque do produto no banco (campo: saldo_atual)
+            const novoEstoque = (produto.saldo_atual || 0) - ordemAtual.quantidade;
+            const { error: estoqueError } = await sb
+                .from('produtos')
+                .update({ saldo_atual: novoEstoque })
+                .eq('id', ordemAtual.produto_id);
+            if (estoqueError) throw estoqueError;
+
+            // Atualizar state local
+            const iProd = state.produtos.findIndex(p => p.id === ordemAtual.produto_id);
+            if (iProd !== -1) state.produtos[iProd].saldo_atual = novoEstoque;
+            state.saidas.unshift({ ...saida, produto });
+        }
+
+        // Atualizar status da ordem
         const { data, error } = await sb
             .from('ordens')
-            .update({ status: status })
+            .update({ status, concluida_em: status === 'concluida' ? new Date().toISOString() : null })
             .eq('id', id)
             .select()
             .single();
@@ -1125,24 +1167,66 @@ async function updateOrdemStatus(status) {
         if (error) throw error;
         
         const index = state.ordens.findIndex(o => o.id === id);
-        if (index !== -1) state.ordens[index] = data;
+        if (index !== -1) state.ordens[index] = { ...state.ordens[index], ...data };
         
         closeModal('modalOrdemDetalhe');
         renderOrdens(document.getElementById('searchOrdens').value, state.filtroOrdens);
-        showToast('Status atualizado!');
+        showToast(status === 'concluida' ? '✅ Ordem concluída e estoque atualizado!' : 'Status atualizado!');
         updateBadges();
+        if (document.getElementById('page-dashboard').classList.contains('active')) renderDashboard();
         
     } catch (error) {
         console.error('Erro ao atualizar status:', error);
-        showToast('Erro ao atualizar status.', 'error');
+        showToast('Erro ao atualizar status: ' + (error.message || ''), 'error');
     }
 }
 
 async function quickUpdateOrdem(id, status) {
     try {
+        const ordemAtual = state.ordens.find(o => o.id === id);
+
+        // Se concluindo, verificar estoque e dar baixa
+        if (status === 'concluida' && ordemAtual) {
+            const produto = state.produtos.find(p => p.id === ordemAtual.produto_id);
+
+            if (!produto) {
+                showToast('Produto não encontrado.', 'error');
+                return;
+            }
+            if ((produto.saldo_atual || 0) < ordemAtual.quantidade) {
+                showToast('Estoque insuficiente! Disponível: ' + (produto.saldo_atual || 0) + ' — Necessário: ' + ordemAtual.quantidade, 'error');
+                return;
+            }
+
+            // Registrar saída automática
+            const saida = {
+                produto_id: ordemAtual.produto_id,
+                quantidade: ordemAtual.quantidade,
+                motivo: 'Ordem de Serviço ' + (ordemAtual.numero || id),
+                responsavel: state.currentUser.nome,
+                data: new Date().toISOString(),
+                observacoes: 'Saída automática ao concluir OS'
+            };
+            const { error: saidaError } = await sb.from('saidas').insert([saida]);
+            if (saidaError) throw saidaError;
+
+            // Atualizar estoque do produto no banco (campo: saldo_atual)
+            const novoEstoque = (produto.saldo_atual || 0) - ordemAtual.quantidade;
+            const { error: estoqueError } = await sb
+                .from('produtos')
+                .update({ saldo_atual: novoEstoque })
+                .eq('id', ordemAtual.produto_id);
+            if (estoqueError) throw estoqueError;
+
+            // Atualizar state local
+            const iProd = state.produtos.findIndex(p => p.id === ordemAtual.produto_id);
+            if (iProd !== -1) state.produtos[iProd].saldo_atual = novoEstoque;
+            state.saidas.unshift({ ...saida, produto });
+        }
+
         const { data, error } = await sb
             .from('ordens')
-            .update({ status: status })
+            .update({ status, concluida_em: status === 'concluida' ? new Date().toISOString() : null })
             .eq('id', id)
             .select()
             .single();
@@ -1150,11 +1234,12 @@ async function quickUpdateOrdem(id, status) {
         if (error) throw error;
         
         const index = state.ordens.findIndex(o => o.id === id);
-        if (index !== -1) state.ordens[index] = data;
+        if (index !== -1) state.ordens[index] = { ...state.ordens[index], ...data };
         
         renderOrdens(document.getElementById('searchOrdens').value, state.filtroOrdens);
-        showToast('Status atualizado!');
+        showToast(status === 'concluida' ? '✅ Ordem concluída e estoque atualizado!' : 'Status atualizado!');
         updateBadges();
+        if (document.getElementById('page-dashboard').classList.contains('active')) renderDashboard();
         
     } catch (error) {
         console.error('Erro ao atualizar status:', error);
@@ -1636,6 +1721,100 @@ const ST = {
     cancelada: { label: 'Cancelada', cls: 'tag-gray' }
 };
 
+
+// ============================================
+// IMPRESSÃO DE ORDEM DE SERVIÇO
+// ============================================
+function printOrdem(id) {
+    const o = state.ordens.find(x => x.id === id);
+    if (!o) return;
+    const p = o.produto || state.produtos.find(x => x.id === o.produto_id);
+    const pr = PR[o.prioridade] || PR.media;
+    const st = ST[o.status] || ST.pendente;
+    const f = o.fornecedor || state.fornecedores.find(x => x.id === (p && p.fornecedor_id)) || null;
+
+    const win = window.open('', '_blank', 'width=800,height=600');
+    win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"/>
+<title>Ordem de Serviço ${o.numero || ''}</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',Arial,sans-serif;color:#1E293B;background:#fff;padding:40px}
+  .header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #3B82F6;padding-bottom:20px;margin-bottom:28px}
+  .logo{display:flex;align-items:center;gap:10px}
+  .logo svg{flex-shrink:0}
+  .logo-text{font-size:1.3rem;font-weight:700;color:#1E293B}
+  .os-number{text-align:right}
+  .os-number h2{font-size:1.5rem;font-weight:700;color:#3B82F6}
+  .os-number p{font-size:0.8rem;color:#64748B;margin-top:4px}
+  .badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:600}
+  .badge-pendente{background:#FEF9C3;color:#854D0E}
+  .badge-em_andamento{background:#DBEAFE;color:#1E40AF}
+  .badge-concluida{background:#DCFCE7;color:#166534}
+  .badge-cancelada{background:#F1F5F9;color:#475569}
+  .badge-baixa{background:#F1F5F9;color:#475569}
+  .badge-media{background:#FEF9C3;color:#854D0E}
+  .badge-alta{background:#FEE2E2;color:#991B1B}
+  .badge-urgente{background:#FEE2E2;color:#991B1B}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px}
+  .section{background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:18px}
+  .section h3{font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94A3B8;margin-bottom:12px}
+  .field{margin-bottom:10px}
+  .field label{font-size:0.72rem;font-weight:600;color:#64748B;display:block;margin-bottom:2px}
+  .field span{font-size:0.9rem;color:#1E293B}
+  .desc-box{background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:18px;margin-bottom:24px}
+  .desc-box h3{font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94A3B8;margin-bottom:8px}
+  .desc-box p{font-size:0.9rem;color:#1E293B;line-height:1.6}
+  .signatures{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:40px}
+  .sig{border-top:1px solid #CBD5E1;padding-top:8px;text-align:center;font-size:0.78rem;color:#64748B}
+  .footer{margin-top:32px;text-align:center;font-size:0.72rem;color:#94A3B8;border-top:1px solid #E2E8F0;padding-top:16px}
+  @media print{body{padding:20px}}
+</style>
+</head><body>
+<div class="header">
+  <div class="logo">
+    <svg width="32" height="32" viewBox="0 0 32 32" fill="none"><rect x="2" y="2" width="12" height="12" rx="3" fill="#3B82F6"/><rect x="18" y="2" width="12" height="12" rx="3" fill="#3B82F6" opacity="0.5"/><rect x="2" y="18" width="12" height="12" rx="3" fill="#3B82F6" opacity="0.5"/><rect x="18" y="18" width="12" height="12" rx="3" fill="#3B82F6"/></svg>
+    <div><div class="logo-text">StockFlow</div><div style="font-size:0.75rem;color:#64748B">Sistema de Gestão de Estoque</div></div>
+  </div>
+  <div class="os-number">
+    <h2>${o.numero || 'S/N'}</h2>
+    <p>Emitida em ${new Date().toLocaleDateString('pt-BR', {day:'2-digit',month:'long',year:'numeric'})}</p>
+    <div style="margin-top:8px;display:flex;gap:6px;justify-content:flex-end">
+      <span class="badge badge-${o.status || 'pendente'}">${st.label}</span>
+      <span class="badge badge-${o.prioridade || 'media'}">${pr.label}</span>
+    </div>
+  </div>
+</div>
+
+<div class="grid">
+  <div class="section">
+    <h3>Solicitante</h3>
+    <div class="field"><label>Nome</label><span>${o.solicitante_nome || '—'}</span></div>
+    <div class="field"><label>Data da Solicitação</label><span>${formatDate(o.criado_em)}</span></div>
+    ${o.data_necessaria ? '<div class="field"><label>Data Necessária</label><span>' + formatDate(o.data_necessaria) + '</span></div>' : ''}
+  </div>
+  <div class="section">
+    <h3>Produto Solicitado</h3>
+    <div class="field"><label>Nome</label><span>${p ? p.nome : '—'}</span></div>
+    <div class="field"><label>Código</label><span>${p ? (p.codigo || '—') : '—'}</span></div>
+    <div class="field"><label>Quantidade</label><span style="font-size:1.1rem;font-weight:700;color:#3B82F6">${o.quantidade || 0} unidades</span></div>
+    ${p && p.localizacao ? '<div class="field"><label>Localização</label><span>' + p.localizacao + '</span></div>' : ''}
+  </div>
+</div>
+
+${o.descricao ? '<div class="desc-box"><h3>Descrição / Justificativa</h3><p>' + o.descricao + '</p></div>' : ''}
+
+<div class="signatures">
+  <div class="sig">Assinatura do Solicitante<br><br>${o.solicitante_nome || ''}</div>
+  <div class="sig">Assinatura do Responsável<br><br>&nbsp;</div>
+</div>
+
+<div class="footer">StockFlow — Documento gerado automaticamente em ${new Date().toLocaleString('pt-BR')} — ${o.numero || ''}</div>
+</body></html>`);
+    win.document.close();
+    win.focus();
+    setTimeout(() => { win.print(); }, 400);
+}
+
 function renderOrdens(filter = '', sf = '') {
     filter = filter || '';
     sf = sf || state.filtroOrdens || 'todas';
@@ -1665,7 +1844,7 @@ function renderOrdens(filter = '', sf = '') {
         const pr = PR[o.prioridade] || PR.media;
         const st = ST[o.status] || ST.pendente;
         
-        let ac = '<button class="tbl-btn" onclick="verOrdem(\'' + o.id + '\')">👁️ Ver</button>';
+        let ac = '<button class="tbl-btn" onclick="verOrdem(\'' + o.id + '\')">👁️ Ver</button><button class="tbl-btn" onclick="printOrdem(\'' + o.id + '\')" title="Imprimir OS">🖨️</button>';
         if (o.status === 'pendente') ac += '<button class="tbl-btn success" onclick="quickUpdateOrdem(\'' + o.id + '\',\'em_andamento\')">▶</button>';
         if (o.status !== 'concluida' && o.status !== 'cancelada') ac += '<button class="tbl-btn" onclick="quickUpdateOrdem(\'' + o.id + '\',\'concluida\')">✓</button>';
         
@@ -1717,7 +1896,7 @@ function renderMinhasOrdens() {
     const tb = document.getElementById('tbodyMinhasOrdens');
     
     if (!list.length) {
-        tb.innerHTML = '<tr><td colspan="6" class="empty">Você não possui ordens abertas</td></tr>';
+        tb.innerHTML = '<tr><td colspan="7" class="empty">Você não possui ordens abertas</td></tr>';
         return;
     }
     
@@ -1726,7 +1905,7 @@ function renderMinhasOrdens() {
         const pr = PR[o.prioridade] || PR.media;
         const st = ST[o.status] || ST.pendente;
         
-        return '<tr><td><code style="font-size:0.78rem;font-family:monospace;">' + (o.numero || '') + '</code></td><td>' + (p ? p.nome : '—') + '</td><td>' + (o.quantidade || 0) + '</td><td><span class="tag ' + pr.cls + '">' + pr.label + '</span></td><td><span class="tag ' + st.cls + '">' + st.label + '</span></td><td>' + formatDate(o.criado_em) + '</td></tr>';
+        return '<tr><td><code style="font-size:0.78rem;font-family:monospace;">' + (o.numero || '') + '</code></td><td>' + (p ? p.nome : '—') + '</td><td>' + (o.quantidade || 0) + '</td><td><span class="tag ' + pr.cls + '">' + pr.label + '</span></td><td><span class="tag ' + st.cls + '">' + st.label + '</span></td><td>' + formatDate(o.criado_em) + '</td><td><div class="tbl-actions"><button class="tbl-btn" onclick="printOrdem(\'' + o.id + '\')" title="Imprimir OS">🖨️ Imprimir</button></div></td></tr>';
     }).join('');
 }
 
