@@ -1159,7 +1159,7 @@ async function updateOrdemStatus(status) {
         // Atualizar status da ordem
         const { data, error } = await sb
             .from('ordens')
-            .update({ status, concluida_em: status === 'concluida' ? new Date().toISOString() : null })
+            .update({ status })
             .eq('id', id)
             .select()
             .single();
@@ -1226,7 +1226,7 @@ async function quickUpdateOrdem(id, status) {
 
         const { data, error } = await sb
             .from('ordens')
-            .update({ status, concluida_em: status === 'concluida' ? new Date().toISOString() : null })
+            .update({ status })
             .eq('id', id)
             .select()
             .single();
