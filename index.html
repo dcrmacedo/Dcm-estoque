@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<link rel="icon" href="https://pfst.cf2.poecdn.net/base/image/fa391d909c82f3cbde6ea0e3f705ed649c544780d640740752e1af9484c576e4?w=222&h=219&pmaid=589441570">
+<title>DCM — Gestão de Estoque</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <!-- Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -175,9 +176,9 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
     </div>
     <h1 class="login-title">Bem-vindo de volta</h1>
     <p class="login-sub">Acesse sua conta para continuar</p>
-    <div class="form-group"><label>E-mail</label><input type="email" id="loginEmail" placeholder="seu@email.com" value="admin@demo.com"/></div>
-    <div class="form-group"><label>Senha</label><input type="password" id="loginPassword" placeholder="••••••••" value="admin123" onkeydown="if(event.key==='Enter')doLogin()"/></div>
-    <div class="login-demo-hint">Use: <b><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="d8b9bcb5b1b698bcbdb5b7f6bbb7b5">[email&#160;protected]</a></b> / <b>admin123</b> (após criar no Supabase Auth)</div>
+    <div class="form-group"><label>E-mail</label><input type="email" id="loginEmail" placeholder="seu@email.com" value=""/></div>
+    <div class="form-group"><label>Senha</label><input type="password" id="loginPassword" placeholder="••••••••" value="" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+    
     <button class="btn-primary full" onclick="doLogin()">Entrar</button>
     <p id="loginError" class="login-error"></p>
   </div>
@@ -187,7 +188,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
   <aside class="sidebar">
     <div class="sidebar-header">
       <svg width="22" height="22" viewBox="0 0 32 32" fill="none"><rect x="2" y="2" width="12" height="12" rx="3" fill="#3B82F6"/><rect x="18" y="2" width="12" height="12" rx="3" fill="#3B82F6" opacity="0.5"/><rect x="2" y="18" width="12" height="12" rx="3" fill="#3B82F6" opacity="0.5"/><rect x="18" y="18" width="12" height="12" rx="3" fill="#3B82F6"/></svg>
-      <span class="logo-text">DCM SANISU</span>
+      <span class="logo-text">DCM - ESTOQUE</span>
     </div>
     <nav class="sidebar-nav">
       <div class="nav-section" id="adminMenu">
@@ -321,28 +322,157 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
     </div>
 
     <div id="page-relatorios" class="page">
-      <div class="relatorios-grid">
-        <div class="card relatorio-card" onclick="gerarRelatorioPDF('produtos')">
-          <div class="relatorio-icon blue"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div>
-          <div><div class="relatorio-title">Relatório de Estoque</div><div class="relatorio-desc">Posição atual de todos os produtos</div></div>
-          <svg class="relatorio-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+
+      <!-- Tabs de relatório -->
+      <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap">
+        <button class="filter-tab active" id="relTab-estoque"    onclick="switchRelatorio('estoque',this)">ESTOQUE</button>
+        <button class="filter-tab"        id="relTab-movimentacoes" onclick="switchRelatorio('movimentacoes',this)">MOVIMENTAÇÕES/button>
+        <button class="filter-tab"        id="relTab-ordens"    onclick="switchRelatorio('ordens',this)">ORDENS DE SERVIÇO</button>
+        <button class="filter-tab"        id="relTab-fornecedores" onclick="switchRelatorio('fornecedores',this)">FORNECEDORES</button>
+      </div>
+
+      <!-- ── ESTOQUE ── -->
+      <div id="relatorio-estoque">
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-body" style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
+            <div class="form-group" style="margin:0;min-width:180px">
+              <label>Categoria</label>
+              <select id="relEstoqueCategoria" onchange="renderRelEstoque()">
+                <option value="">Todas as categorias</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin:0;min-width:180px">
+              <label>Localização</label>
+              <select id="relEstoqueLocalizacao" onchange="renderRelEstoque()">
+                <option value="">Todas as localizações</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin:0;min-width:140px">
+              <label>Status</label>
+              <select id="relEstoqueStatus" onchange="renderRelEstoque()">
+                <option value="">Todos</option>
+                <option value="critico">Crítico (abaixo do mínimo)</option>
+                <option value="normal">Normal</option>
+              </select>
+            </div>
+            <button class="btn-outline" style="margin-left:auto" onclick="imprimirRelatorio('estoque')">🖨️ Imprimir</button>
+            <button class="btn-outline green" onclick="gerarRelatorioExcel('produtos')">📊 Excel</button>
+          </div>
         </div>
-        <div class="card relatorio-card" onclick="gerarRelatorioPDF('movimentacoes')">
-          <div class="relatorio-icon green"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 20V10M12 20V4M6 20v-6"/></svg></div>
-          <div><div class="relatorio-title">Movimentações</div><div class="relatorio-desc">Histórico de entradas e saídas</div></div>
-          <svg class="relatorio-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </div>
-        <div class="card relatorio-card" onclick="gerarRelatorioPDF('fornecedores')">
-          <div class="relatorio-icon amber"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
-          <div><div class="relatorio-title">Fornecedores</div><div class="relatorio-desc">Lista completa de fornecedores</div></div>
-          <svg class="relatorio-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </div>
-        <div class="card relatorio-card" onclick="gerarRelatorioPDF('ordens')">
-          <div class="relatorio-icon purple"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
-          <div><div class="relatorio-title">Ordens de Serviço</div><div class="relatorio-desc">Histórico de ordens solicitadas</div></div>
-          <svg class="relatorio-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        <div class="card">
+          <div class="card-header" style="display:flex;justify-content:space-between;align-items:center">
+            <h3>Relatório de Estoque</h3>
+            <span id="relEstoqueCount" style="font-size:0.8rem;color:var(--text-2)"></span>
+          </div>
+          <div class="card-body no-pad">
+            <table class="table">
+              <thead><tr><th>Código</th><th>Produto</th><th>Categoria</th><th>Localização</th><th>Estoque Mín.</th><th>Saldo Atual</th><th>Status</th></tr></thead>
+              <tbody id="tbodyRelEstoque"><tr><td colspan="7" class="empty">Carregando...</td></tr></tbody>
+            </table>
+          </div>
         </div>
       </div>
+
+      <!-- ── MOVIMENTAÇÕES ── -->
+      <div id="relatorio-movimentacoes" class="hidden">
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-body" style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
+            <div class="form-group" style="margin:0">
+              <label>Tipo</label>
+              <select id="relMovTipo" onchange="renderRelMovimentacoes()">
+                <option value="">Todas</option>
+                <option value="entrada">Entradas</option>
+                <option value="saida">Saídas</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin:0">
+              <label>Data inicial</label>
+              <input type="date" id="relMovDataInicio" onchange="renderRelMovimentacoes()" style="padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface-2);color:var(--text);font-family:inherit"/>
+            </div>
+            <div class="form-group" style="margin:0">
+              <label>Data final</label>
+              <input type="date" id="relMovDataFim" onchange="renderRelMovimentacoes()" style="padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface-2);color:var(--text);font-family:inherit"/>
+            </div>
+            <button class="btn-ghost" onclick="limparFiltrosMov()" style="padding:8px 12px">✕ Limpar</button>
+            <button class="btn-outline" style="margin-left:auto" onclick="imprimirRelatorio('movimentacoes')">🖨️ Imprimir</button>
+            <button class="btn-outline green" onclick="gerarRelatorioExcel('movimentacoes')">📊 Excel</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header" style="display:flex;justify-content:space-between;align-items:center">
+            <h3>Movimentações</h3>
+            <span id="relMovCount" style="font-size:0.8rem;color:var(--text-2)"></span>
+          </div>
+          <div class="card-body no-pad">
+            <table class="table">
+              <thead><tr><th>Data</th><th>Tipo</th><th>Produto</th><th>Quantidade</th><th>Responsável</th><th>Motivo / Fornecedor</th></tr></thead>
+              <tbody id="tbodyRelMov"><tr><td colspan="6" class="empty">Carregando...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── ORDENS ── -->
+      <div id="relatorio-ordens" class="hidden">
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-body" style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
+            <div class="form-group" style="margin:0">
+              <label>Status</label>
+              <select id="relOrdemStatus" onchange="renderRelOrdens()">
+                <option value="">Todas</option>
+                <option value="pendente">Pendentes</option>
+                <option value="em_andamento">Em andamento</option>
+                <option value="concluida">Concluídas</option>
+                <option value="cancelada">Canceladas</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin:0">
+              <label>Data inicial</label>
+              <input type="date" id="relOrdemDataInicio" onchange="renderRelOrdens()" style="padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface-2);color:var(--text);font-family:inherit"/>
+            </div>
+            <div class="form-group" style="margin:0">
+              <label>Data final</label>
+              <input type="date" id="relOrdemDataFim" onchange="renderRelOrdens()" style="padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface-2);color:var(--text);font-family:inherit"/>
+            </div>
+            <button class="btn-ghost" onclick="limparFiltrosOrdemRel()" style="padding:8px 12px">✕ Limpar</button>
+            <button class="btn-outline" style="margin-left:auto" onclick="imprimirRelatorio('ordens')">🖨️ Imprimir</button>
+            <button class="btn-outline green" onclick="gerarRelatorioExcel('ordens')">📊 Excel</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header" style="display:flex;justify-content:space-between;align-items:center">
+            <h3>Ordens de Serviço</h3>
+            <span id="relOrdemCount" style="font-size:0.8rem;color:var(--text-2)"></span>
+          </div>
+          <div class="card-body no-pad">
+            <table class="table">
+              <thead><tr><th>#</th><th>Solicitante</th><th>Produto</th><th>Qtd</th><th>Prioridade</th><th>Status</th><th>Data</th></tr></thead>
+              <tbody id="tbodyRelOrdens"><tr><td colspan="7" class="empty">Carregando...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── FORNECEDORES ── -->
+      <div id="relatorio-fornecedores" class="hidden">
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-body" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+            <span style="font-size:0.875rem;color:var(--text-2)">Lista completa de fornecedores cadastrados</span>
+            <button class="btn-outline" style="margin-left:auto" onclick="imprimirRelatorio('fornecedores')">🖨️ Imprimir</button>
+            <button class="btn-outline green" onclick="gerarRelatorioExcel('fornecedores')">📊 Excel</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>Fornecedores</h3></div>
+          <div class="card-body no-pad">
+            <table class="table">
+              <thead><tr><th>Nome</th><th>CNPJ</th><th>Contato</th><th>E-mail</th><th>Telefone</th></tr></thead>
+              <tbody id="tbodyRelFornecedores"><tr><td colspan="5" class="empty">Carregando...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
     </div>
 
     <div id="page-usuarios" class="page">
@@ -543,6 +673,50 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
     <div class="modal-footer">
       <button class="btn-ghost" onclick="closeModal('modalOrdem')">Cancelar</button>
       <button class="btn-primary" onclick="criarOrdemModal()">✈ Criar Ordem</button>
+    </div>
+  </div>
+</div>
+
+<div id="modalEditOrdem" class="modal-overlay hidden">
+  <div class="modal" style="max-width:780px">
+    <div class="modal-header"><h3 id="modalEditOrdemTitle">Editar Ordem de Serviço</h3><button class="modal-close" onclick="closeModal('modalEditOrdem')">×</button></div>
+    <div class="modal-body" style="padding:20px 24px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px">
+        <div class="form-group">
+          <label>Prioridade</label>
+          <select id="editOrdemPrioridade">
+            <option value="baixa">Baixa</option>
+            <option value="media">Média</option>
+            <option value="alta">Alta</option>
+            <option value="urgente">Urgente</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Data Necessária</label><input type="date" id="editOrdemData"/></div>
+        <div class="form-group full-width" style="grid-column:1/-1"><label>Descrição / Justificativa *</label>
+          <textarea id="editOrdemDescricao" rows="2"></textarea>
+        </div>
+      </div>
+      <div id="editKitsConfirmados" style="margin-bottom:16px"></div>
+      <div id="editKitSection" style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);padding:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <select id="editOrdemTipo" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:7px 12px;color:var(--text);font-family:inherit;font-size:0.875rem">
+              <option value="">Selecione o tipo de kit...</option>
+              <option value="inversor">⚡ Inversor</option>
+              <option value="padrao_entrada">🔌 Padrão de Entrada</option>
+              <option value="personalizado">📦 Personalizado</option>
+            </select>
+            <button type="button" class="btn-outline" style="padding:6px 12px;font-size:0.82rem" onclick="addLinhaOrdem('edit')">+ Produto</button>
+          </div>
+          <button type="button" class="btn-primary" style="background:#10B981;padding:7px 18px;font-size:0.82rem" onclick="confirmarKit('edit')">✔ Confirmar Kit</button>
+        </div>
+        <div id="editOrdemItens" style="display:flex;flex-direction:column;gap:6px"></div>
+        <p style="font-size:0.72rem;color:var(--text-3);margin-top:8px">Adicione novos kits ou remova os existentes. Clique em "Salvar Alterações" quando terminar.</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeModal('modalEditOrdem')">Cancelar</button>
+      <button class="btn-primary" onclick="salvarEdicaoOrdem()">💾 Salvar Alterações</button>
     </div>
   </div>
 </div>
@@ -1044,9 +1218,9 @@ const KIT_LABELS = {
 };
 
 // Estado: itens sendo editados agora (linha a linha)
-const _ordemItens = { modal: [], page: [] };
+const _ordemItens = { modal: [], page: [], edit: [] };
 // Kits já confirmados (array de { tipo, label, itens[] })
-const _kitsConfirmados = { modal: [], page: [] };
+const _kitsConfirmados = { modal: [], page: [], edit: [] };
 
 function buildSelectProdutos(selectedId, qtd, idx, ctx) {
     const opts = state.produtos.map(p =>
@@ -1087,7 +1261,7 @@ function atualizaQtdOrdem(inp, idx, ctx) {
 }
 
 function renderLinhasOrdem(ctx) {
-    const container = document.getElementById(ctx === 'modal' ? 'modalOrdemItens' : 'pageOrdemItens');
+    const container = document.getElementById(ctx === 'modal' ? 'modalOrdemItens' : ctx === 'edit' ? 'editOrdemItens' : 'pageOrdemItens');
     if (!container) return;
     if (_ordemItens[ctx].length === 0) {
         container.innerHTML = '<p style="font-size:0.8rem;color:var(--text-3);padding:6px 0">Clique em "+ Produto" para adicionar materiais a este kit.</p>';
@@ -1097,7 +1271,7 @@ function renderLinhasOrdem(ctx) {
 }
 
 function confirmarKit(ctx) {
-    const tipoId = ctx === 'modal' ? 'modalOrdemTipo' : 'ordemTipo';
+    const tipoId = ctx === 'modal' ? 'modalOrdemTipo' : ctx === 'edit' ? 'editOrdemTipo' : 'ordemTipo';
     const tipo = document.getElementById(tipoId).value;
     if (!tipo) { showToast('Selecione o tipo de kit antes de confirmar.', 'error'); return; }
 
@@ -1135,7 +1309,7 @@ function removerKitConfirmado(ctx, kitIdx) {
 }
 
 function renderKitsConfirmados(ctx) {
-    const containerId = ctx === 'modal' ? 'modalKitsConfirmados' : 'pageKitsConfirmados';
+    const containerId = ctx === 'modal' ? 'modalKitsConfirmados' : ctx === 'edit' ? 'editKitsConfirmados' : 'pageKitsConfirmados';
     const container = document.getElementById(containerId);
     if (!container) return;
     if (_kitsConfirmados[ctx].length === 0) { container.innerHTML = ''; return; }
@@ -1295,51 +1469,52 @@ async function updateOrdemStatus(status) {
     try {
         const ordemAtual = state.ordens.find(o => o.id === id);
 
-        // Se concluindo, verificar estoque e dar baixa em todos os itens
+        // Se concluindo, dar baixa SOMENTE se ainda não foi descontado
         if (status === 'concluida' && ordemAtual) {
-            // Garantir produtos atualizados antes de verificar
-            if (!state.produtos.length) await carregarDados();
+            if (ordemAtual.estoque_descontado) {
+                // Já foi descontado antes — apenas atualiza o status, sem mexer no estoque
+                showToast('ℹ️ Estoque já havia sido descontado anteriormente. Nenhuma baixa adicional foi feita.', 'info');
+            } else {
+                if (!state.produtos.length) await carregarDados();
+                const itens = extrairItensOrdem(ordemAtual);
 
-            const itens = extrairItensOrdem(ordemAtual);
-
-            // Verificar estoque de todos antes de dar baixa
-            for (const item of itens) {
-                const prod = state.produtos.find(p => p.id === item.produto_id);
-                if (!prod) {
-                    showToast('Produto ID "' + item.produto_id + '" não encontrado no estado local. Recarregue a página e tente novamente.', 'error');
-                    return;
+                for (const item of itens) {
+                    const prod = state.produtos.find(p => p.id === item.produto_id);
+                    if (!prod) {
+                        showToast('Produto não encontrado. Recarregue a página e tente novamente.', 'error');
+                        return;
+                    }
+                    if ((prod.saldo_atual || 0) < item.quantidade) {
+                        showToast('Estoque insuficiente para "' + prod.nome + '"! Disponível: ' + (prod.saldo_atual || 0) + ' — Necessário: ' + item.quantidade, 'error');
+                        return;
+                    }
                 }
-                if ((prod.saldo_atual || 0) < item.quantidade) {
-                    showToast('Estoque insuficiente para "' + prod.nome + '"! Disponível: ' + (prod.saldo_atual || 0) + ' — Necessário: ' + item.quantidade, 'error');
-                    return;
-                }
-            }
 
-            // Dar baixa em cada item
-            for (const item of itens) {
-                const prod = state.produtos.find(p => p.id === item.produto_id);
-                const saida = {
-                    produto_id: item.produto_id,
-                    quantidade: item.quantidade,
-                    motivo: 'Ordem de Serviço ' + (ordemAtual.numero || id),
-                    responsavel: state.currentUser.nome,
-                    data: new Date().toISOString(),
-                    observacoes: 'Saída automática ao concluir OS'
-                };
-                const { error: saidaError } = await sb.from('saidas').insert([saida]);
-                if (saidaError) throw saidaError;
-                const novoEstoque = (prod.saldo_atual || 0) - item.quantidade;
-                await sb.from('produtos').update({ saldo_atual: novoEstoque }).eq('id', item.produto_id);
-                const iProd = state.produtos.findIndex(p => p.id === item.produto_id);
-                if (iProd !== -1) state.produtos[iProd].saldo_atual = novoEstoque;
-                state.saidas.unshift({ ...saida, produto: prod });
+                for (const item of itens) {
+                    const prod = state.produtos.find(p => p.id === item.produto_id);
+                    const saida = {
+                        produto_id: item.produto_id,
+                        quantidade: item.quantidade,
+                        motivo: 'Ordem de Serviço ' + (ordemAtual.numero || id),
+                        responsavel: state.currentUser.nome,
+                        data: new Date().toISOString(),
+                        observacoes: 'Saída automática ao concluir OS'
+                    };
+                    const { error: saidaError } = await sb.from('saidas').insert([saida]);
+                    if (saidaError) throw saidaError;
+                    const novoEstoque = (prod.saldo_atual || 0) - item.quantidade;
+                    await sb.from('produtos').update({ saldo_atual: novoEstoque }).eq('id', item.produto_id);
+                    const iProd = state.produtos.findIndex(p => p.id === item.produto_id);
+                    if (iProd !== -1) state.produtos[iProd].saldo_atual = novoEstoque;
+                    state.saidas.unshift({ ...saida, produto: prod });
+                }
             }
         }
 
-        // Atualizar status da ordem
+        // Atualizar status e marcar estoque_descontado=true ao concluir
         const { data, error } = await sb
             .from('ordens')
-            .update({ status })
+            .update({ status, ...(status === 'concluida' ? { estoque_descontado: true } : {}) })
             .eq('id', id)
             .select()
             .single();
@@ -1365,47 +1540,49 @@ async function quickUpdateOrdem(id, status) {
     try {
         const ordemAtual = state.ordens.find(o => o.id === id);
 
-        // Se concluindo, verificar estoque e dar baixa em todos os itens
+        // Se concluindo, dar baixa SOMENTE se ainda não foi descontado
         if (status === 'concluida' && ordemAtual) {
-            const itens = extrairItensOrdem(ordemAtual);
+            if (ordemAtual.estoque_descontado) {
+                showToast('ℹ️ Estoque já havia sido descontado anteriormente. Nenhuma baixa adicional foi feita.', 'info');
+            } else {
+                const itens = extrairItensOrdem(ordemAtual);
 
-            // Verificar estoque de todos antes de dar baixa
-            for (const item of itens) {
-                const prod = state.produtos.find(p => p.id === item.produto_id);
-                if (!prod) {
-                    showToast('Produto ID "' + item.produto_id + '" não encontrado no estado local. Recarregue a página e tente novamente.', 'error');
-                    return;
+                for (const item of itens) {
+                    const prod = state.produtos.find(p => p.id === item.produto_id);
+                    if (!prod) {
+                        showToast('Produto não encontrado. Recarregue a página e tente novamente.', 'error');
+                        return;
+                    }
+                    if ((prod.saldo_atual || 0) < item.quantidade) {
+                        showToast('Estoque insuficiente para "' + prod.nome + '"! Disponível: ' + (prod.saldo_atual || 0) + ' — Necessário: ' + item.quantidade, 'error');
+                        return;
+                    }
                 }
-                if ((prod.saldo_atual || 0) < item.quantidade) {
-                    showToast('Estoque insuficiente para "' + prod.nome + '"! Disponível: ' + (prod.saldo_atual || 0) + ' — Necessário: ' + item.quantidade, 'error');
-                    return;
-                }
-            }
 
-            // Dar baixa em cada item
-            for (const item of itens) {
-                const prod = state.produtos.find(p => p.id === item.produto_id);
-                const saida = {
-                    produto_id: item.produto_id,
-                    quantidade: item.quantidade,
-                    motivo: 'Ordem de Serviço ' + (ordemAtual.numero || id),
-                    responsavel: state.currentUser.nome,
-                    data: new Date().toISOString(),
-                    observacoes: 'Saída automática ao concluir OS'
-                };
-                const { error: saidaError } = await sb.from('saidas').insert([saida]);
-                if (saidaError) throw saidaError;
-                const novoEstoque = (prod.saldo_atual || 0) - item.quantidade;
-                await sb.from('produtos').update({ saldo_atual: novoEstoque }).eq('id', item.produto_id);
-                const iProd = state.produtos.findIndex(p => p.id === item.produto_id);
-                if (iProd !== -1) state.produtos[iProd].saldo_atual = novoEstoque;
-                state.saidas.unshift({ ...saida, produto: prod });
-            }
-        }
+                for (const item of itens) {
+                    const prod = state.produtos.find(p => p.id === item.produto_id);
+                    const saida = {
+                        produto_id: item.produto_id,
+                        quantidade: item.quantidade,
+                        motivo: 'Ordem de Serviço ' + (ordemAtual.numero || id),
+                        responsavel: state.currentUser.nome,
+                        data: new Date().toISOString(),
+                        observacoes: 'Saída automática ao concluir OS'
+                    };
+                    const { error: saidaError } = await sb.from('saidas').insert([saida]);
+                    if (saidaError) throw saidaError;
+                    const novoEstoque = (prod.saldo_atual || 0) - item.quantidade;
+                    await sb.from('produtos').update({ saldo_atual: novoEstoque }).eq('id', item.produto_id);
+                    const iProd = state.produtos.findIndex(p => p.id === item.produto_id);
+                    if (iProd !== -1) state.produtos[iProd].saldo_atual = novoEstoque;
+                    state.saidas.unshift({ ...saida, produto: prod });
+                }
+            } // end else estoque_descontado
+        } // end if concluida
 
         const { data, error } = await sb
             .from('ordens')
-            .update({ status })
+            .update({ status, ...(status === 'concluida' ? { estoque_descontado: true } : {}) })
             .eq('id', id)
             .select()
             .single();
@@ -1557,7 +1734,13 @@ async function deleteUsuario(id) {
 function formatDate(iso) {
     if (!iso) return '—';
     try {
-        return new Date(iso).toLocaleDateString('pt-BR');
+        // Se for só data (YYYY-MM-DD), adiciona T12:00:00 para evitar
+        // que o fuso horário UTC-3 volte um dia ao converter
+        var str = String(iso);
+        if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+            str = str + 'T12:00:00';
+        }
+        return new Date(str).toLocaleDateString('pt-BR');
     } catch (e) {
         return '—';
     }
@@ -1639,6 +1822,7 @@ function showPage(page) {
         populateProdutoSelect('ordemProduto');
     }
     if (page === 'minhasOrdens') renderMinhasOrdens();
+    if (page === 'relatorios') { renderRelEstoque(); renderRelFornecedores(); }
 }
 
 function updateDate() {
@@ -1661,7 +1845,7 @@ function openModal(id) {
     if (id === 'modalProduto') {
         populateFornecedorSelect('prodFornecedor');
         document.getElementById('btnSalvarProduto').onclick = salvarProduto;
-        document.getElementById('modalProdutoTitle').textContent = state.editingProdutoId ? '✏️ Editar Produto' : '+ Novo Produto';
+        document.getElementById('modalProdutoTitle').textContent = state.editingProdutoId ? 'Editar Produto' : '+ Novo Produto';
     }
     if (id === 'modalEntrada') {
         populateProdutoSelect('entradaProduto');
@@ -1765,7 +1949,7 @@ function renderProdutos(filter = '') {
             '<div class="prod-img"><img src="' + p.imagem + '" onerror="this.parentNode.innerHTML=\'📦\'"/></div>' : 
             '<div class="prod-img">📦</div>';
         
-        return '<tr><td>' + img + '</td><td><code style="font-family:monospace;font-size:0.8rem;">' + (p.codigo || '') + '</code></td><td>' + (p.nome || '') + '</td><td>' + (p.categoria || '—') + '</td><td>' + (p.localizacao || '—') + '</td><td>' + (p.estoque_minimo || 0) + '</td><td><strong>' + (p.saldo_atual || 0) + '</strong></td><td>' + st + '</td><td><div class="tbl-actions"><button class="tbl-btn" onclick="editProduto(\'' + p.id + '\')">✏️ Editar</button><button class="tbl-btn danger" onclick="deleteProduto(\'' + p.id + '\')">🗑️</button></div></td></tr>';
+        return '<tr><td>' + img + '</td><td><code style="font-family:monospace;font-size:0.8rem;">' + (p.codigo || '') + '</code></td><td>' + (p.nome || '') + '</td><td>' + (p.categoria || '—') + '</td><td>' + (p.localizacao || '—') + '</td><td>' + (p.estoque_minimo || 0) + '</td><td><strong>' + (p.saldo_atual || 0) + '</strong></td><td>' + st + '</td><td><div class="tbl-actions"><button class="tbl-btn" onclick="editProduto(\'' + p.id + '\')">Editar</button><button class="tbl-btn danger" onclick="deleteProduto(\'' + p.id + '\')">🗑️</button></div></td></tr>';
     }).join('');
 }
 
@@ -1790,7 +1974,7 @@ async function editProduto(id) {
     document.getElementById('prodPreco').value = p.preco_unitario || '';
     document.getElementById('prodImgUrl').value = p.imagem || '';
     
-    document.getElementById('modalProdutoTitle').textContent = '✏️ Editar Produto';
+    document.getElementById('modalProdutoTitle').textContent = 'Editar Produto';
     document.getElementById('btnSalvarProduto').onclick = salvarProduto;
     document.getElementById('modalProduto').classList.remove('hidden');
 }
@@ -1976,7 +2160,7 @@ tr:last-child td{border-bottom:none}
 <div class="header">
   <div>
     <svg width="28" height="28" viewBox="0 0 32 32" fill="none" style="vertical-align:middle;margin-right:8px"><rect x="2" y="2" width="12" height="12" rx="3" fill="#3B82F6"/><rect x="18" y="2" width="12" height="12" rx="3" fill="#3B82F6" opacity="0.5"/><rect x="2" y="18" width="12" height="12" rx="3" fill="#3B82F6" opacity="0.5"/><rect x="18" y="18" width="12" height="12" rx="3" fill="#3B82F6"/></svg>
-    <span class="logo-text">DCM</span>
+    <span class="logo-text">DCM - ESTOQUE</span>
     <div class="logo-sub">Sistema de Gestão de Estoque</div>
   </div>
   <div class="os-num">
@@ -2012,6 +2196,169 @@ ${kitsHtml}
 }
 
 
+// ============================================
+// EDITAR E DELETAR ORDENS DE SERVIÇO
+// ============================================
+
+async function editarOrdem(id) {
+    const o = state.ordens.find(x => x.id === id);
+    if (!o) return;
+    if (o.status === 'concluida') {
+        if (!confirm('Esta ordem está CONCLUÍDA. Deseja reabri-la e voltar ao status Pendente?\n\nAtenção: o estoque já foi descontado quando ela foi concluída.')) return;
+        const { error } = await sb.from('ordens').update({ status: 'pendente' }).eq('id', id);
+        if (error) { showToast('Erro ao reabrir a ordem.', 'error'); return; }
+        const idx = state.ordens.findIndex(x => x.id === id);
+        if (idx !== -1) state.ordens[idx].status = 'pendente';
+        o.status = 'pendente';
+        renderOrdens(document.getElementById('searchOrdens') ? document.getElementById('searchOrdens').value : '', state.filtroOrdens);
+        showToast('Ordem reaberta como Pendente.', 'info');
+    }
+    state.editingOrdemId = id;
+    document.getElementById('modalEditOrdemTitle').textContent = 'Editar ' + (o.numero || 'Ordem');
+    document.getElementById('editOrdemPrioridade').value = o.prioridade || 'media';
+    document.getElementById('editOrdemData').value = o.data_necessaria ? o.data_necessaria.split('T')[0] : '';
+    document.getElementById('editOrdemDescricao').value = (o.descricao || '').replace(/^\[.*?\]\s*/, '');
+    _kitsConfirmados['edit'] = [];
+    _ordemItens['edit'] = [];
+    try {
+        const raw = o.itens_json ? JSON.parse(o.itens_json) : [];
+        if (raw.length && raw[0].itens) {
+            _kitsConfirmados['edit'] = raw.map(function(kit) { return {
+                tipo: kit.tipo, label: KIT_LABELS[kit.tipo] || kit.label || kit.tipo,
+                itens: kit.itens.map(function(i) { return Object.assign({}, i, { produto: state.produtos.find(function(p) { return p.id === i.produto_id; }) }); })
+            }; });
+        } else if (raw.length) {
+            _kitsConfirmados['edit'] = [{ tipo: 'personalizado', label: '📦 Personalizado',
+                itens: raw.map(function(i) { return Object.assign({}, i, { produto: state.produtos.find(function(p) { return p.id === i.produto_id; }) }); }) }];
+        } else {
+            var p0 = o.produto || state.produtos.find(function(x) { return x.id === o.produto_id; });
+            _kitsConfirmados['edit'] = [{ tipo: 'personalizado', label: '📦 Personalizado',
+                itens: [{ produto_id: o.produto_id, quantidade: o.quantidade, produto: p0 }] }];
+        }
+    } catch(e) { _kitsConfirmados['edit'] = []; }
+    renderKitsConfirmados('edit');
+    renderLinhasOrdem('edit');
+    document.getElementById('editOrdemTipo').value = '';
+    document.getElementById('modalEditOrdem').classList.remove('hidden');
+}
+
+async function salvarEdicaoOrdem() {
+    var id = state.editingOrdemId;
+    if (!id) return;
+    var ordemAtual = state.ordens.find(function(o) { return o.id === id; });
+    if (!ordemAtual) return;
+
+    var desc = document.getElementById('editOrdemDescricao').value.trim();
+    var kits = _kitsConfirmados['edit'];
+    if (!desc) { showToast('Preencha a descrição.', 'error'); return; }
+    if (!kits.length) { showToast('Adicione ao menos um kit.', 'error'); return; }
+
+    var todosItens = kits.reduce(function(acc, k) { return acc.concat(k.itens); }, []);
+    var primeiroProd = todosItens[0];
+    var kitLabel = kits.map(function(k) { return k.label; }).join(' + ');
+
+    // Se a ordem já foi concluída e teve estoque descontado,
+    // identificar produtos NOVOS (que não existiam antes) para descontar apenas eles
+    var itensNovos = [];
+    if (ordemAtual.estoque_descontado) {
+        var itensOriginais = extrairItensOrdem(ordemAtual);
+        // Montar mapa de qtd original por produto
+        var mapaOriginal = {};
+        itensOriginais.forEach(function(i) {
+            mapaOriginal[i.produto_id] = (mapaOriginal[i.produto_id] || 0) + i.quantidade;
+        });
+        // Montar mapa de qtd nova por produto
+        var mapaNovo = {};
+        todosItens.forEach(function(i) {
+            mapaNovo[i.produto_id] = (mapaNovo[i.produto_id] || 0) + i.quantidade;
+        });
+        // Calcular diferença: o que aumentou ou é novo
+        Object.keys(mapaNovo).forEach(function(prodId) {
+            var qtdNova = mapaNovo[prodId];
+            var qtdOriginal = mapaOriginal[prodId] || 0;
+            var diff = qtdNova - qtdOriginal;
+            if (diff > 0) {
+                itensNovos.push({ produto_id: prodId, quantidade: diff });
+            }
+        });
+
+        // Verificar estoque dos itens novos/aumentados
+        for (var i = 0; i < itensNovos.length; i++) {
+            var item = itensNovos[i];
+            var prod = state.produtos.find(function(p) { return p.id === item.produto_id; });
+            if (!prod) { showToast('Produto não encontrado. Recarregue a página.', 'error'); return; }
+            if ((prod.saldo_atual || 0) < item.quantidade) {
+                showToast('Estoque insuficiente para "' + prod.nome + '"! Disponível: ' + (prod.saldo_atual || 0) + ' — Necessário adicional: ' + item.quantidade, 'error');
+                return;
+            }
+        }
+    }
+
+    var updates = {
+        produto_id: primeiroProd.produto_id,
+        quantidade: primeiroProd.quantidade,
+        prioridade: document.getElementById('editOrdemPrioridade').value,
+        data_necessaria: document.getElementById('editOrdemData').value || null,
+        descricao: '[' + kitLabel + '] ' + desc,
+        itens_json: JSON.stringify(kits)
+    };
+
+    try {
+        var res = await sb.from('ordens').update(updates).eq('id', id).select('*, produto:produtos(*)').single();
+        if (res.error) throw res.error;
+
+        // Descontar apenas os itens novos/aumentados
+        if (itensNovos.length > 0) {
+            for (var j = 0; j < itensNovos.length; j++) {
+                var item = itensNovos[j];
+                var prod = state.produtos.find(function(p) { return p.id === item.produto_id; });
+                var saida = {
+                    produto_id: item.produto_id,
+                    quantidade: item.quantidade,
+                    motivo: 'Ordem de Serviço ' + (ordemAtual.numero || id) + ' (adição na edição)',
+                    responsavel: state.currentUser.nome,
+                    data: new Date().toISOString(),
+                    observacoes: 'Saída automática — produto adicionado na edição da OS'
+                };
+                await sb.from('saidas').insert([saida]);
+                var novoSaldo = (prod.saldo_atual || 0) - item.quantidade;
+                await sb.from('produtos').update({ saldo_atual: novoSaldo }).eq('id', item.produto_id);
+                var iProd = state.produtos.findIndex(function(p) { return p.id === item.produto_id; });
+                if (iProd !== -1) state.produtos[iProd].saldo_atual = novoSaldo;
+                state.saidas.unshift(Object.assign({}, saida, { produto: prod }));
+            }
+            showToast('Ordem atualizada! ' + itensNovos.length + ' produto(s) novo(s) descontado(s) do estoque.');
+        } else {
+            showToast('Ordem atualizada com sucesso!');
+        }
+
+        var idx = state.ordens.findIndex(function(o) { return o.id === id; });
+        if (idx !== -1) state.ordens[idx] = Object.assign({}, state.ordens[idx], res.data);
+        _kitsConfirmados['edit'] = []; _ordemItens['edit'] = [];
+        closeModal('modalEditOrdem');
+        renderOrdens(document.getElementById('searchOrdens') ? document.getElementById('searchOrdens').value : '', state.filtroOrdens);
+
+    } catch(err) { showToast('Erro ao salvar: ' + (err.message || ''), 'error'); }
+}
+
+async function deletarOrdem(id) {
+    var o = state.ordens.find(function(x) { return x.id === id; });
+    if (!o) return;
+    var msg = o.status === 'concluida'
+        ? 'Esta ordem está CONCLUÍDA. Excluir não vai restaurar o estoque descontado. Confirma?'
+        : 'Excluir a ordem ' + (o.numero || '') + '? Esta ação não pode ser desfeita.';
+    if (!confirm(msg)) return;
+    try {
+        var res = await sb.from('ordens').delete().eq('id', id);
+        if (res.error) throw res.error;
+        state.ordens = state.ordens.filter(function(x) { return x.id !== id; });
+        renderOrdens(document.getElementById('searchOrdens') ? document.getElementById('searchOrdens').value : '', state.filtroOrdens);
+        updateBadges();
+        showToast('Ordem excluída.', 'info');
+    } catch(err) { showToast('Erro ao excluir: ' + (err.message || ''), 'error'); }
+}
+
+
 function renderOrdens(filter = '', sf = '') {
     filter = filter || '';
     sf = sf || state.filtroOrdens || 'todas';
@@ -2041,9 +2388,12 @@ function renderOrdens(filter = '', sf = '') {
         const pr = PR[o.prioridade] || PR.media;
         const st = ST[o.status] || ST.pendente;
         
-        let ac = '<button class="tbl-btn" onclick="verOrdem(\'' + o.id + '\')">👁️ Ver</button><button class="tbl-btn" onclick="printOrdem(\'' + o.id + '\')" title="Imprimir OS">🖨️</button>';
+        let ac = '<button class="tbl-btn" onclick="verOrdem(\'' + o.id + '\')">Ver</button>';
+        ac += '<button class="tbl-btn" onclick="editarOrdem(\'' + o.id + '\')">Editar</button>';
+        ac += '<button class="tbl-btn" onclick="printOrdem(\'' + o.id + '\')" title="Imprimir OS">🖨️</button>';
         if (o.status === 'pendente') ac += '<button class="tbl-btn success" onclick="quickUpdateOrdem(\'' + o.id + '\',\'em_andamento\')">▶</button>';
         if (o.status !== 'concluida' && o.status !== 'cancelada') ac += '<button class="tbl-btn" onclick="quickUpdateOrdem(\'' + o.id + '\',\'concluida\')">✓</button>';
+        ac += '<button class="tbl-btn danger" onclick="deletarOrdem(\'' + o.id + '\')">🗑️</button>';
         
         return '<tr><td><code style="font-size:0.78rem;font-family:monospace;">' + (o.numero || '') + '</code></td><td>' + (o.solicitante_nome || '') + '</td><td>' + (p ? p.nome : '—') + '</td><td>' + (o.quantidade || 0) + '</td><td><span class="tag ' + pr.cls + '">' + pr.label + '</span></td><td><span class="tag ' + st.cls + '">' + st.label + '</span></td><td>' + formatDate(o.criado_em) + '</td><td><div class="tbl-actions">' + ac + '</div></td></tr>';
     }).join('');
@@ -2125,6 +2475,275 @@ function filterUsuarios() {
 }
 
 // Funções de relatórios
+// ============================================
+// RELATÓRIOS INTERATIVOS
+// ============================================
+
+function switchRelatorio(tipo, btn) {
+    ['estoque','movimentacoes','ordens','fornecedores'].forEach(function(t) {
+        var el = document.getElementById('relatorio-' + t);
+        if (el) el.classList.add('hidden');
+        var tab = document.getElementById('relTab-' + t);
+        if (tab) tab.classList.remove('active');
+    });
+    var show = document.getElementById('relatorio-' + tipo);
+    if (show) show.classList.remove('hidden');
+    if (btn) btn.classList.add('active');
+
+    if (tipo === 'estoque') renderRelEstoque();
+    else if (tipo === 'movimentacoes') renderRelMovimentacoes();
+    else if (tipo === 'ordens') renderRelOrdens();
+    else if (tipo === 'fornecedores') renderRelFornecedores();
+}
+
+function popularFiltrosEstoque() {
+    var cats = [...new Set(state.produtos.map(function(p) { return p.categoria; }).filter(Boolean))].sort();
+    var locs = [...new Set(state.produtos.map(function(p) { return p.localizacao; }).filter(Boolean))].sort();
+    var selCat = document.getElementById('relEstoqueCategoria');
+    var selLoc = document.getElementById('relEstoqueLocalizacao');
+    if (selCat && selCat.options.length <= 1) {
+        cats.forEach(function(c) { selCat.add(new Option(c, c)); });
+    }
+    if (selLoc && selLoc.options.length <= 1) {
+        locs.forEach(function(l) { selLoc.add(new Option(l, l)); });
+    }
+}
+
+function renderRelEstoque() {
+    popularFiltrosEstoque();
+    var cat = document.getElementById('relEstoqueCategoria').value;
+    var loc = document.getElementById('relEstoqueLocalizacao').value;
+    var st  = document.getElementById('relEstoqueStatus').value;
+
+    var list = state.produtos.filter(function(p) {
+        if (cat && p.categoria !== cat) return false;
+        if (loc && p.localizacao !== loc) return false;
+        if (st === 'critico' && (p.saldo_atual || 0) > (p.estoque_minimo || 0)) return false;
+        if (st === 'normal'  && (p.saldo_atual || 0) <= (p.estoque_minimo || 0)) return false;
+        return true;
+    });
+
+    var count = document.getElementById('relEstoqueCount');
+    if (count) count.textContent = list.length + ' produto(s)';
+
+    var tb = document.getElementById('tbodyRelEstoque');
+    if (!list.length) { tb.innerHTML = '<tr><td colspan="7" class="empty">Nenhum produto encontrado com os filtros selecionados</td></tr>'; return; }
+    tb.innerHTML = list.map(function(p) {
+        var critico = (p.saldo_atual || 0) <= (p.estoque_minimo || 0);
+        return '<tr>' +
+            '<td><code style="font-size:0.78rem">' + (p.codigo || '—') + '</code></td>' +
+            '<td><strong>' + (p.nome || '') + '</strong></td>' +
+            '<td>' + (p.categoria || '—') + '</td>' +
+            '<td>' + (p.localizacao || '—') + '</td>' +
+            '<td style="text-align:center">' + (p.estoque_minimo || 0) + '</td>' +
+            '<td style="text-align:center;font-weight:600;color:' + (critico ? 'var(--red)' : 'var(--green)') + '">' + (p.saldo_atual || 0) + '</td>' +
+            '<td><span class="tag ' + (critico ? 'tag-red' : 'tag-green') + '">' + (critico ? 'Crítico' : 'Normal') + '</span></td>' +
+            '</tr>';
+    }).join('');
+}
+
+function renderRelMovimentacoes() {
+    var tipo  = document.getElementById('relMovTipo').value;
+    var di    = document.getElementById('relMovDataInicio').value;
+    var df    = document.getElementById('relMovDataFim').value;
+
+    var entradas = tipo !== 'saida' ? state.entradas.map(function(e) {
+        return { tipo: 'Entrada', data: e.data || e.criado_em, produto: e.produto || state.produtos.find(function(p) { return p.id === e.produto_id; }),
+            quantidade: e.quantidade, responsavel: e.responsavel, extra: (e.fornecedor || state.fornecedores.find(function(f) { return f.id === e.fornecedor_id; }) || {}).nome || '—' };
+    }) : [];
+    var saidas = tipo !== 'entrada' ? state.saidas.map(function(s) {
+        return { tipo: 'Saída', data: s.data || s.criado_em, produto: s.produto || state.produtos.find(function(p) { return p.id === s.produto_id; }),
+            quantidade: s.quantidade, responsavel: s.responsavel, extra: s.motivo || '—' };
+    }) : [];
+
+    var list = entradas.concat(saidas).filter(function(m) {
+        var d = new Date(m.data);
+        if (di && d < new Date(di)) return false;
+        if (df && d > new Date(df + 'T23:59:59')) return false;
+        return true;
+    }).sort(function(a, b) { return new Date(b.data) - new Date(a.data); });
+
+    var count = document.getElementById('relMovCount');
+    if (count) count.textContent = list.length + ' movimentação(ões)';
+
+    var tb = document.getElementById('tbodyRelMov');
+    if (!list.length) { tb.innerHTML = '<tr><td colspan="6" class="empty">Nenhuma movimentação encontrada</td></tr>'; return; }
+    tb.innerHTML = list.map(function(m) {
+        var isEntrada = m.tipo === 'Entrada';
+        return '<tr>' +
+            '<td>' + formatDate(m.data) + '</td>' +
+            '<td><span class="tag ' + (isEntrada ? 'tag-green' : 'tag-red') + '">' + m.tipo + '</span></td>' +
+            '<td>' + (m.produto ? m.produto.nome : '—') + '</td>' +
+            '<td style="text-align:center;font-weight:600;color:' + (isEntrada ? 'var(--green)' : 'var(--red)') + '">' + (isEntrada ? '+' : '-') + (m.quantidade || 0) + '</td>' +
+            '<td>' + (m.responsavel || '—') + '</td>' +
+            '<td>' + m.extra + '</td>' +
+            '</tr>';
+    }).join('');
+}
+
+function limparFiltrosMov() {
+    document.getElementById('relMovTipo').value = '';
+    document.getElementById('relMovDataInicio').value = '';
+    document.getElementById('relMovDataFim').value = '';
+    renderRelMovimentacoes();
+}
+
+function renderRelOrdens() {
+    var st = document.getElementById('relOrdemStatus').value;
+    var di = document.getElementById('relOrdemDataInicio').value;
+    var df = document.getElementById('relOrdemDataFim').value;
+
+    var list = state.ordens.filter(function(o) {
+        if (st && o.status !== st) return false;
+        var d = new Date(o.criado_em);
+        if (di && d < new Date(di)) return false;
+        if (df && d > new Date(df + 'T23:59:59')) return false;
+        return true;
+    });
+
+    var count = document.getElementById('relOrdemCount');
+    if (count) count.textContent = list.length + ' ordem(ns)';
+
+    var tb = document.getElementById('tbodyRelOrdens');
+    if (!list.length) { tb.innerHTML = '<tr><td colspan="7" class="empty">Nenhuma ordem encontrada</td></tr>'; return; }
+    tb.innerHTML = list.map(function(o) {
+        var p = o.produto || state.produtos.find(function(x) { return x.id === o.produto_id; });
+        var pr = PR[o.prioridade] || PR.media;
+        var stObj = ST[o.status] || ST.pendente;
+        return '<tr>' +
+            '<td><code style="font-size:0.78rem">' + (o.numero || '') + '</code></td>' +
+            '<td>' + (o.solicitante_nome || '—') + '</td>' +
+            '<td>' + (p ? p.nome : '—') + '</td>' +
+            '<td style="text-align:center">' + (o.quantidade || 0) + '</td>' +
+            '<td><span class="tag ' + pr.cls + '">' + pr.label + '</span></td>' +
+            '<td><span class="tag ' + stObj.cls + '">' + stObj.label + '</span></td>' +
+            '<td>' + formatDate(o.criado_em) + '</td>' +
+            '</tr>';
+    }).join('');
+}
+
+function limparFiltrosOrdemRel() {
+    document.getElementById('relOrdemStatus').value = '';
+    document.getElementById('relOrdemDataInicio').value = '';
+    document.getElementById('relOrdemDataFim').value = '';
+    renderRelOrdens();
+}
+
+function renderRelFornecedores() {
+    var tb = document.getElementById('tbodyRelFornecedores');
+    if (!state.fornecedores.length) { tb.innerHTML = '<tr><td colspan="5" class="empty">Nenhum fornecedor cadastrado</td></tr>'; return; }
+    tb.innerHTML = state.fornecedores.map(function(f) {
+        return '<tr>' +
+            '<td><strong>' + (f.nome || '') + '</strong></td>' +
+            '<td>' + (f.cnpj || '—') + '</td>' +
+            '<td>' + (f.contato || '—') + '</td>' +
+            '<td>' + (f.email || '—') + '</td>' +
+            '<td>' + (f.telefone || '—') + '</td>' +
+            '</tr>';
+    }).join('');
+}
+
+function imprimirRelatorio(tipo) {
+    var titulo = '', headers = '', rows = '', filtrosDesc = '';
+
+    if (tipo === 'estoque') {
+        titulo = 'Relatório de Estoque';
+        var cat = document.getElementById('relEstoqueCategoria').value;
+        var loc = document.getElementById('relEstoqueLocalizacao').value;
+        var st  = document.getElementById('relEstoqueStatus').value;
+        filtrosDesc = [cat ? 'Categoria: ' + cat : '', loc ? 'Localização: ' + loc : '', st ? 'Status: ' + (st === 'critico' ? 'Crítico' : 'Normal') : ''].filter(Boolean).join(' | ');
+        headers = '<tr><th>Código</th><th>Produto</th><th>Categoria</th><th>Localização</th><th>Mínimo</th><th>Saldo</th><th>Status</th></tr>';
+        var list = state.produtos.filter(function(p) {
+            if (cat && p.categoria !== cat) return false;
+            if (loc && p.localizacao !== loc) return false;
+            if (st === 'critico' && (p.saldo_atual || 0) > (p.estoque_minimo || 0)) return false;
+            if (st === 'normal'  && (p.saldo_atual || 0) <= (p.estoque_minimo || 0)) return false;
+            return true;
+        });
+        rows = list.map(function(p) {
+            var critico = (p.saldo_atual || 0) <= (p.estoque_minimo || 0);
+            return '<tr><td>' + (p.codigo || '—') + '</td><td>' + (p.nome || '') + '</td><td>' + (p.categoria || '—') + '</td><td>' + (p.localizacao || '—') + '</td><td style="text-align:center">' + (p.estoque_minimo || 0) + '</td><td style="text-align:center;font-weight:700;color:' + (critico ? '#DC2626' : '#059669') + '">' + (p.saldo_atual || 0) + '</td><td>' + (critico ? 'Crítico' : 'Normal') + '</td></tr>';
+        }).join('');
+
+    } else if (tipo === 'movimentacoes') {
+        titulo = 'Relatório de Movimentações';
+        var tipoMov = document.getElementById('relMovTipo').value;
+        var di = document.getElementById('relMovDataInicio').value;
+        var df = document.getElementById('relMovDataFim').value;
+        filtrosDesc = [tipoMov ? 'Tipo: ' + (tipoMov === 'entrada' ? 'Entradas' : 'Saídas') : 'Todas', di ? 'De: ' + formatDate(di) : '', df ? 'Até: ' + formatDate(df) : ''].filter(Boolean).join(' | ');
+        headers = '<tr><th>Data</th><th>Tipo</th><th>Produto</th><th>Quantidade</th><th>Responsável</th><th>Motivo / Fornecedor</th></tr>';
+        var entradas2 = tipoMov !== 'saida' ? state.entradas.map(function(e) {
+            return { tipo: 'Entrada', data: e.data || e.criado_em, produto: e.produto || state.produtos.find(function(p) { return p.id === e.produto_id; }), quantidade: e.quantidade, responsavel: e.responsavel, extra: (e.fornecedor || {}).nome || '—' };
+        }) : [];
+        var saidas2 = tipoMov !== 'entrada' ? state.saidas.map(function(s) {
+            return { tipo: 'Saída', data: s.data || s.criado_em, produto: s.produto || state.produtos.find(function(p) { return p.id === s.produto_id; }), quantidade: s.quantidade, responsavel: s.responsavel, extra: s.motivo || '—' };
+        }) : [];
+        var listMov = entradas2.concat(saidas2).filter(function(m) {
+            var d = new Date(m.data);
+            if (di && d < new Date(di)) return false;
+            if (df && d > new Date(df + 'T23:59:59')) return false;
+            return true;
+        }).sort(function(a, b) { return new Date(b.data) - new Date(a.data); });
+        rows = listMov.map(function(m) {
+            return '<tr><td>' + formatDate(m.data) + '</td><td style="color:' + (m.tipo === 'Entrada' ? '#059669' : '#DC2626') + ';font-weight:600">' + m.tipo + '</td><td>' + (m.produto ? m.produto.nome : '—') + '</td><td style="text-align:center;font-weight:700">' + (m.tipo === 'Entrada' ? '+' : '-') + (m.quantidade || 0) + '</td><td>' + (m.responsavel || '—') + '</td><td>' + m.extra + '</td></tr>';
+        }).join('');
+
+    } else if (tipo === 'ordens') {
+        titulo = 'Relatório de Ordens de Serviço';
+        var stOrd = document.getElementById('relOrdemStatus').value;
+        var diOrd = document.getElementById('relOrdemDataInicio').value;
+        var dfOrd = document.getElementById('relOrdemDataFim').value;
+        filtrosDesc = [stOrd ? 'Status: ' + (ST[stOrd] ? ST[stOrd].label : stOrd) : 'Todas', diOrd ? 'De: ' + formatDate(diOrd) : '', dfOrd ? 'Até: ' + formatDate(dfOrd) : ''].filter(Boolean).join(' | ');
+        headers = '<tr><th>#</th><th>Solicitante</th><th>Produto</th><th>Qtd</th><th>Prioridade</th><th>Status</th><th>Data</th></tr>';
+        var listOrd = state.ordens.filter(function(o) {
+            if (stOrd && o.status !== stOrd) return false;
+            var d = new Date(o.criado_em);
+            if (diOrd && d < new Date(diOrd)) return false;
+            if (dfOrd && d > new Date(dfOrd + 'T23:59:59')) return false;
+            return true;
+        });
+        rows = listOrd.map(function(o) {
+            var p = o.produto || state.produtos.find(function(x) { return x.id === o.produto_id; });
+            var prObj = PR[o.prioridade] || PR.media;
+            var stObj = ST[o.status] || ST.pendente;
+            return '<tr><td>' + (o.numero || '') + '</td><td>' + (o.solicitante_nome || '—') + '</td><td>' + (p ? p.nome : '—') + '</td><td style="text-align:center">' + (o.quantidade || 0) + '</td><td>' + prObj.label + '</td><td>' + stObj.label + '</td><td>' + formatDate(o.criado_em) + '</td></tr>';
+        }).join('');
+
+    } else if (tipo === 'fornecedores') {
+        titulo = 'Relatório de Fornecedores';
+        filtrosDesc = 'Todos os fornecedores';
+        headers = '<tr><th>Nome</th><th>CNPJ</th><th>Contato</th><th>E-mail</th><th>Telefone</th></tr>';
+        rows = state.fornecedores.map(function(f) {
+            return '<tr><td>' + (f.nome || '') + '</td><td>' + (f.cnpj || '—') + '</td><td>' + (f.contato || '—') + '</td><td>' + (f.email || '—') + '</td><td>' + (f.telefone || '—') + '</td></tr>';
+        }).join('');
+    }
+
+    var win = window.open('', '_blank', 'width=900,height=700');
+    win.document.write('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"/><title>' + titulo + '</title><style>' +
+        '*{box-sizing:border-box;margin:0;padding:0}body{font-family:Segoe UI,Arial,sans-serif;color:#1E293B;padding:32px}' +
+        '.header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #3B82F6;padding-bottom:16px;margin-bottom:20px}' +
+        '.logo{font-size:1.1rem;font-weight:700;color:#1E293B}.sub{font-size:0.75rem;color:#64748B;margin-top:2px}' +
+        '.title{text-align:right}.title h2{font-size:1.3rem;font-weight:700;color:#3B82F6}.title p{font-size:0.75rem;color:#64748B;margin-top:3px}' +
+        '.filtros{background:#F8FAFC;border:1px solid #E2E8F0;border-radius:6px;padding:8px 14px;margin-bottom:16px;font-size:0.78rem;color:#64748B}' +
+        'table{width:100%;border-collapse:collapse}th{background:#F8FAFC;padding:8px 12px;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#64748B;text-align:left;border-bottom:2px solid #E2E8F0}' +
+        'td{padding:8px 12px;font-size:0.84rem;border-bottom:1px solid #F1F5F9;color:#1E293B}tr:last-child td{border-bottom:none}tr:hover td{background:#FAFBFC}' +
+        '.footer{margin-top:24px;text-align:center;font-size:0.7rem;color:#94A3B8;border-top:1px solid #E2E8F0;padding-top:12px}' +
+        '@media print{body{padding:16px}@page{margin:1cm}}' +
+        '</style></head><body>' +
+        '<div class="header">' +
+        '<div><div class="logo">DCM</div><div class="sub">Sistema de Gestão de Estoque</div></div>' +
+        '<div class="title"><h2>' + titulo + '</h2><p>Emitido em ' + new Date().toLocaleString('pt-BR') + '</p></div>' +
+        '</div>' +
+        (filtrosDesc ? '<div class="filtros">🔍 Filtros aplicados: ' + filtrosDesc + '</div>' : '') +
+        '<table><thead>' + headers + '</thead><tbody>' + (rows || '<tr><td colspan="10" style="text-align:center;padding:20px;color:#94A3B8">Nenhum dado encontrado</td></tr>') + '</tbody></table>' +
+        '<div class="footer">DCM - ESTOQUE · Documento gerado em ' + new Date().toLocaleString('pt-BR') + '</div>' +
+        '</body></html>');
+    win.document.close();
+    win.focus();
+    setTimeout(function() { win.print(); }, 400);
+}
+
+
 function gerarRelatorioPDF(tipo) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
