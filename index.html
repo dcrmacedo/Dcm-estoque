@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<link rel="icon" href="https://pfst.cf2.poecdn.net/base/image/fa391d909c82f3cbde6ea0e3f705ed649c544780d640740752e1af9484c576e4?w=222&h=219&pmaid=589441570">
+<link rel="btn-icon" href="https://pfst.cf2.poecdn.net/base/image/fa391d909c82f3cbde6ea0e3f705ed649c544780d640740752e1af9484c576e4?w=222&h=219&pmaid=589441570">
 <title>DCM — Gestão de Estoque</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -109,6 +109,16 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
 .empty{text-align:center;color:var(--text-3);padding:32px!important;font-size:0.875rem}
 .prod-img{width:36px;height:36px;border-radius:6px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:1.1rem;border:1px solid var(--border)}
 .prod-img img{width:100%;height:100%;object-fit:cover;border-radius:6px;cursor:zoom-in;transition:opacity 0.15s}
+.ac-wrap{position:relative;flex:1}
+.ac-input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px;color:var(--text);font-family:inherit;font-size:0.875rem;outline:none}
+.ac-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,130,246,0.1)}
+.ac-dropdown{position:absolute;top:calc(100% + 2px);left:0;right:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-md);z-index:300;max-height:220px;overflow-y:auto;display:none}
+.ac-dropdown.open{display:block}
+.ac-item{padding:8px 12px;cursor:pointer;font-size:0.875rem;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.ac-item:hover,.ac-item.active{background:var(--accent-soft)}
+.ac-item-nome{color:var(--text);font-weight:500}
+.ac-item-info{font-size:0.75rem;color:var(--text-2);white-space:nowrap}
+.ac-empty{padding:10px 12px;font-size:0.82rem;color:var(--text-3);text-align:center}
 .prod-img img:hover{opacity:0.85}
 .lightbox-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:zoom-out;animation:fadeIn 0.2s ease}
 .lightbox-overlay img{max-width:90vw;max-height:88vh;object-fit:contain;border-radius:10px;box-shadow:0 20px 60px rgba(0,0,0,0.5)}
@@ -1316,20 +1326,84 @@ const _ordemItens = { modal: [], page: [], edit: [] };
 const _kitsConfirmados = { modal: [], page: [], edit: [] };
 
 function buildSelectProdutos(selectedId, qtd, idx, ctx) {
-    const opts = state.produtos.map(p =>
-        '<option value="' + p.id + '"' + (p.id === selectedId ? ' selected' : '') + '>' +
-        p.nome + ' (Saldo: ' + (p.saldo_atual || 0) + ')' +
-        '</option>'
-    ).join('');
+    const prod = selectedId ? state.produtos.find(p => p.id === selectedId) : null;
+    const nomeInicial = prod ? prod.nome + ' (Saldo: ' + (prod.saldo_atual || 0) + ')' : '';
+    const acId = 'ac_' + ctx + '_' + idx;
+    const ddId = 'dd_' + ctx + '_' + idx;
     return '<div style="display:flex;gap:8px;align-items:center;margin-bottom:4px" id="itemOrdem_' + ctx + '_' + idx + '">' +
-        '<select style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px;color:var(--text);font-family:inherit;font-size:0.875rem"' +
-        ' onchange="atualizaItemOrdem(this,' + idx + ',&quot;' + ctx + '&quot;)">' +
-        '<option value="">Selecione o produto...</option>' + opts + '</select>' +
+        '<div class="ac-wrap">' +
+            '<input class="ac-input" id="' + acId + '" type="text" placeholder="Buscar produto pelo nome..." autocomplete="off"' +
+            ' value="' + nomeInicial.replace(/"/g,'') + '"' +
+            ' data-idx="' + idx + '" data-ctx="' + ctx + '"' +
+            ' oninput="acFiltrar(this)"' +
+            ' onfocus="acAbrir(this)"' +
+            ' data-dd="' + ddId + '" onblur="setTimeout(function(){acFechar(this.dataset.dd)},180)"/>' +
+            '<div class="ac-dropdown" id="' + ddId + '"></div>' +
+        '</div>' +
         '<input type="number" value="' + (qtd || 1) + '" min="1" placeholder="Qtd"' +
         ' style="width:80px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px;color:var(--text);font-family:inherit;font-size:0.875rem"' +
         ' oninput="atualizaQtdOrdem(this,' + idx + ',&quot;' + ctx + '&quot;)" />' +
         '<button type="button" onclick="removeLinhaOrdem(' + idx + ',&quot;' + ctx + '&quot;)" style="background:none;border:1px solid var(--border);border-radius:6px;padding:5px 9px;cursor:pointer;color:var(--red);font-size:0.85rem">✕</button>' +
         '</div>';
+}
+
+// ── Autocomplete helpers ──────────────────────────────────────
+function acFiltrar(inp) {
+    var q = inp.value.toLowerCase();
+    var ddId = inp.id.replace('ac_', 'dd_');
+    var dd = document.getElementById(ddId);
+    if (!dd) return;
+    var lista = state.produtos.filter(function(p) {
+        return !q || (p.nome||'').toLowerCase().includes(q) || (p.codigo||'').toLowerCase().includes(q);
+    }).slice(0, 30);
+    acRenderDropdown(dd, lista, inp);
+}
+
+function acAbrir(inp) {
+    var q = inp.value.toLowerCase();
+    var ddId = inp.id.replace('ac_', 'dd_');
+    var dd = document.getElementById(ddId);
+    if (!dd) return;
+    var lista = state.produtos.filter(function(p) {
+        return !q || (p.nome||'').toLowerCase().includes(q) || (p.codigo||'').toLowerCase().includes(q);
+    }).slice(0, 30);
+    acRenderDropdown(dd, lista, inp);
+}
+
+function acRenderDropdown(dd, lista, inp) {
+    if (!lista.length) {
+        dd.innerHTML = '<div class="ac-empty">Nenhum produto encontrado</div>';
+    } else {
+        dd.innerHTML = lista.map(function(p) {
+            var low = p.estoque_minimo > 0 && (p.saldo_atual||0) <= p.estoque_minimo;
+            return '<div class="ac-item" data-pid="' + p.id + '" data-iid="' + inp.id + '" onmousedown="acSelecionar(this.dataset.pid,this.dataset.iid)">' +
+                '<span class="ac-item-nome">' + (p.nome||'') + '</span>' +
+                '<span class="ac-item-info" style="color:' + (low ? 'var(--red)' : 'var(--green)') + '">' +
+                (p.codigo ? p.codigo + ' · ' : '') + 'Saldo: ' + (p.saldo_atual||0) + '</span>' +
+                '</div>';
+        }).join('');
+    }
+    dd.classList.add('open');
+}
+
+function acSelecionar(prodId, inpId) {
+    var inp = document.getElementById(inpId);
+    if (!inp) return;
+    var prod = state.produtos.find(function(p) { return p.id === prodId; });
+    if (!prod) return;
+    inp.value = prod.nome + ' (Saldo: ' + (prod.saldo_atual||0) + ')';
+    var ddId = inpId.replace('ac_', 'dd_');
+    acFechar(ddId);
+    // Update state
+    var idx = parseInt(inp.dataset.idx);
+    var ctx = inp.dataset.ctx;
+    var item = _ordemItens[ctx].find(function(i) { return i.idx === idx; });
+    if (item) item.produto_id = prodId;
+}
+
+function acFechar(ddId) {
+    var dd = document.getElementById(ddId);
+    if (dd) dd.classList.remove('open');
 }
 
 function addLinhaOrdem(ctx) {
