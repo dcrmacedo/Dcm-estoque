@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<link rel="btn-icon" href="https://pfst.cf2.poecdn.net/base/image/fa391d909c82f3cbde6ea0e3f705ed649c544780d640740752e1af9484c576e4?w=222&h=219&pmaid=589441570">
+<link rel="icon" href="https://pfst.cf2.poecdn.net/base/image/fa391d909c82f3cbde6ea0e3f705ed649c544780d640740752e1af9484c576e4?w=222&h=219&pmaid=589441570">
 <title>DCM — Gestão de Estoque</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -634,7 +634,16 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
     <div class="modal-header"><h3>Registrar Entrada</h3><button class="modal-close" onclick="closeModal('modalEntrada')">×</button></div>
     <div class="modal-body">
       <div class="form-grid">
-        <div class="form-group"><label>Produto *</label><select id="entradaProduto"><option value="">Selecione...</option></select></div>
+        <div class="form-group"><label>Produto *</label>
+          <div class="ac-wrap">
+            <input class="ac-input" id="entradaProdutoInput" type="text" placeholder="Buscar produto pelo nome ou código..." autocomplete="off"
+              oninput="acFiltrarSimples(this,'entradaProdutoId')"
+              onfocus="acFiltrarSimples(this,'entradaProdutoId')"
+              data-dd="ddEntradaProduto"
+              onblur="var dd=this.getAttribute('data-dd');setTimeout(function(){acFechar(dd)},180)"/>
+            <input type="hidden" id="entradaProdutoId"/>
+            <div class="ac-dropdown" id="ddEntradaProduto"></div>
+          </div></div>
         <div class="form-group"><label>Fornecedor</label><select id="entradaFornecedor"><option value="">Selecione...</option></select></div>
         <div class="form-group"><label>Quantidade *</label><input type="number" id="entradaQtd" placeholder="0" min="1"/></div>
         <div class="form-group"><label>Valor Unitário (R$)</label><input type="number" id="entradaValor" placeholder="0.00" step="0.01" min="0"/></div>
@@ -652,7 +661,16 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
     <div class="modal-header"><h3>Registrar Saída</h3><button class="modal-close" onclick="closeModal('modalSaida')">×</button></div>
     <div class="modal-body">
       <div class="form-grid">
-        <div class="form-group"><label>Produto *</label><select id="saidaProduto"><option value="">Selecione...</option></select></div>
+        <div class="form-group"><label>Produto *</label>
+          <div class="ac-wrap">
+            <input class="ac-input" id="saidaProdutoInput" type="text" placeholder="Buscar produto pelo nome ou código..." autocomplete="off"
+              oninput="acFiltrarSimples(this,'saidaProdutoId')"
+              onfocus="acFiltrarSimples(this,'saidaProdutoId')"
+              data-dd="ddSaidaProduto"
+              onblur="var dd=this.getAttribute('data-dd');setTimeout(function(){acFechar(dd)},180)"/>
+            <input type="hidden" id="saidaProdutoId"/>
+            <div class="ac-dropdown" id="ddSaidaProduto"></div>
+          </div></div>
         <div class="form-group"><label>Quantidade *</label><input type="number" id="saidaQtd" placeholder="0" min="1"/></div>
         <div class="form-group full-width"><label>Motivo *</label><input type="text" id="saidaMotivo" placeholder="Ex: Consumo interno, Venda..."/></div>
         <div class="form-group full-width"><label>Observações</label><textarea id="saidaObs" rows="2"></textarea></div>
@@ -1167,7 +1185,7 @@ async function deleteFornecedor(id) {
 
 // Entradas
 async function salvarEntrada() {
-    const prodId = document.getElementById('entradaProduto').value;
+    const prodId = document.getElementById('entradaProdutoId').value;
     const qtd = parseInt(document.getElementById('entradaQtd').value);
     
     if (!prodId || !qtd || qtd < 1) {
@@ -1237,7 +1255,7 @@ async function salvarEntrada() {
 
 // Saídas
 async function salvarSaida() {
-    const prodId = document.getElementById('saidaProduto').value;
+    const prodId = document.getElementById('saidaProdutoId').value;
     const qtd = parseInt(document.getElementById('saidaQtd').value);
     
     if (!prodId || !qtd || qtd < 1) {
@@ -1337,7 +1355,7 @@ function buildSelectProdutos(selectedId, qtd, idx, ctx) {
             ' data-idx="' + idx + '" data-ctx="' + ctx + '"' +
             ' oninput="acFiltrar(this)"' +
             ' onfocus="acAbrir(this)"' +
-            ' data-dd="' + ddId + '" onblur="setTimeout(function(){acFechar(this.dataset.dd)},180)"/>' +
+            ' data-dd="' + ddId + '" onblur="var dd=this.getAttribute(\'data-dd\');setTimeout(function(){acFechar(dd)},180)"/>' +
             '<div class="ac-dropdown" id="' + ddId + '"></div>' +
         '</div>' +
         '<input type="number" value="' + (qtd || 1) + '" min="1" placeholder="Qtd"' +
@@ -1348,6 +1366,52 @@ function buildSelectProdutos(selectedId, qtd, idx, ctx) {
 }
 
 // ── Autocomplete helpers ──────────────────────────────────────
+
+// For standalone inputs (entrada/saida) with a separate hidden id field
+function acFiltrarSimples(inp, hiddenId) {
+    var q = inp.value.toLowerCase();
+    var ddId = inp.getAttribute('data-dd');
+    var dd = document.getElementById(ddId);
+    if (!dd) return;
+    var lista = state.produtos.filter(function(p) {
+        return !q || (p.nome||'').toLowerCase().includes(q) || (p.codigo||'').toLowerCase().includes(q);
+    }).slice(0, 40);
+    if (!lista.length) {
+        dd.innerHTML = '<div class="ac-empty">Nenhum produto encontrado</div>';
+    } else {
+        dd.innerHTML = lista.map(function(p) {
+            var low = p.estoque_minimo > 0 && (p.saldo_atual||0) <= p.estoque_minimo;
+            var saldoColor = low ? 'var(--red)' : 'var(--green)';
+            return '<div class="ac-item"' +
+                ' data-pid="' + p.id + '"' +
+                ' data-nome="' + (p.nome||'').replace(/"/g,'') + ' (Saldo: ' + (p.saldo_atual||0) + ')"' +
+                ' data-inp="' + inp.id + '"' +
+                ' data-hid="' + hiddenId + '"' +
+                ' onmousedown="acSelecionarSimples(this)">' +
+                '<span class="ac-item-nome">' + (p.nome||'') + '</span>' +
+                '<span class="ac-item-info" style="color:' + saldoColor + '">' +
+                (p.codigo ? p.codigo + ' · ' : '') + 'Saldo: ' + (p.saldo_atual||0) +
+                (low ? ' ⚠️' : '') + '</span>' +
+                '</div>';
+        }).join('');
+    }
+    dd.classList.add('open');
+    // Clear hidden id if user is typing a new search
+    document.getElementById(hiddenId).value = '';
+}
+
+function acSelecionarSimples(el) {
+    var prodId  = el.dataset.pid;
+    var nome    = el.dataset.nome;
+    var inpId   = el.dataset.inp;
+    var hiddenId = el.dataset.hid;
+    var inp = document.getElementById(inpId);
+    var hid = document.getElementById(hiddenId);
+    if (inp) inp.value = nome;
+    if (hid) hid.value = prodId;
+    acFechar(inp ? inp.getAttribute('data-dd') : '');
+}
+
 function acFiltrar(inp) {
     var q = inp.value.toLowerCase();
     var ddId = inp.id.replace('ac_', 'dd_');
@@ -2037,11 +2101,11 @@ function openModal(id) {
         document.getElementById('modalProdutoTitle').textContent = state.editingProdutoId ? 'Editar Produto' : '+ Novo Produto';
     }
     if (id === 'modalEntrada') {
-        populateProdutoSelect('entradaProduto');
+        // autocomplete — no populate needed for entradaProduto
         populateFornecedorSelect('entradaFornecedor');
     }
     if (id === 'modalSaida') {
-        populateProdutoSelect('saidaProduto');
+        // autocomplete — no populate needed for saidaProduto
     }
     if (id === 'modalOrdem') {
         populateProdutoSelect('modalOrdemProduto');
@@ -2062,6 +2126,15 @@ function closeModal(id) {
         });
         m.querySelectorAll('textarea').forEach(el => el.value = '');
         m.querySelectorAll('select').forEach(el => el.selectedIndex = 0);
+        // Reset autocomplete inputs
+        ['entradaProdutoInput','saidaProdutoInput'].forEach(function(elId) {
+            var el = document.getElementById(elId);
+            if (el && m.contains(el)) { el.value = ''; }
+        });
+        ['entradaProdutoId','saidaProdutoId'].forEach(function(elId) {
+            var el = document.getElementById(elId);
+            if (el && m.contains(el)) el.value = '';
+        });
         // Reset image preview
         const wrap = document.getElementById('imgPreviewWrap');
         if (wrap) wrap.style.display = 'none';
