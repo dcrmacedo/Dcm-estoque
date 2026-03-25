@@ -15,7 +15,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-:root{--bg:#F4F6F9;--surface:#FFFFFF;--surface-2:#F8FAFC;--border:#E2E8F0;--border-soft:#EEF1F5;--sidebar-bg:#1A2035;--sidebar-hover:rgba(255,255,255,0.06);--sidebar-active:rgba(255,255,255,0.1);--sidebar-text:#94A3B8;--sidebar-text-active:#F1F5F9;--text:#1E293B;--text-2:#64748B;--text-3:#94A3B8;--accent:#3B82F6;--accent-soft:#EFF6FF;--accent-hover:#2563EB;--green:#10B981;--green-soft:#ECFDF5;--amber:#F59E0B;--amber-soft:#FFFBEB;--red:#EF4444;--red-soft:#FEF2F2;--purple:#8B5CF6;--purple-soft:#F5F3FF;--blue:#3B82F6;--blue-soft:#EFF6FF;--radius:10px;--radius-lg:14px;--shadow:0 1px 3px rgba(0,0,0,0.07),0 1px 2px rgba(0,0,0,0.05);--shadow-md:0 4px 16px rgba(0,0,0,0.08);--shadow-lg:0 10px 40px rgba(0,0,0,0.12);--sidebar-w:240px;--topbar-h:60px}
+:root{--bg:#F4F6F9;--surface:#FFFFFF;--surface-2:#F8FAFC;--border:#E2E8F0;--border-soft:#EEF1F5;--sidebar-bg:#1A2035;--sidebar-hover:rgba(255,255,255,0.06);--sidebar-active:rgba(255,255,255,0.1);--sidebar-text:#94A3B8;--sidebar-text-active:#F1F5F9;--text:#1E293B;--text-2:#64748B;--text-3:#94A3B8;--accent:#3B82F6;--accent-soft:#EFF6FF;--accent-hover:#2563EB;--green:#10B981;--green-soft:#ECFDF5;--amber:#F59E0B;--amber-soft:#FFFBEB;--red:#eb2e2e;--red-soft:#FEF2F2;--purple:#eb2e2e;--purple-soft:#F5F3FF;--blue:#3B82F6;--blue-soft:#EFF6FF;--radius:10px;--radius-lg:14px;--shadow:0 1px 3px rgba(0,0,0,0.07),0 1px 2px rgba(0,0,0,0.05);--shadow-md:0 4px 16px rgba(0,0,0,0.08);--shadow-lg:0 10px 40px rgba(0,0,0,0.12);--sidebar-w:240px;--topbar-h:60px}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{font-size:14px}
 body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.5;-webkit-font-smoothing:antialiased}
@@ -306,24 +306,32 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
       <div class="page-actions">
         <div class="search-box"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" id="searchEntradas" placeholder="Buscar entradas..." oninput="filterEntradas()"/></div>
         <div class="actions-right">
+          <button class="btn-outline danger" id="btnDelEntradas" style="display:none;border-color:var(--red);color:var(--red)" onclick="excluirSelecionados('entradas')">🗑️ Excluir Selecionados (<span id="cntEntradas">0</span>)</button>
           <button class="btn-outline" onclick="gerarRelatorioPDF('entradas')">📄 PDF</button>
           <button class="btn-outline green" onclick="gerarRelatorioExcel('entradas')">📊 Excel</button>
           <button class="btn-primary" onclick="openModal('modalEntrada')">+ Registrar Entrada</button>
         </div>
       </div>
-      <div class="card"><div class="card-body no-pad"><table class="table"><thead><tr><th>Data</th><th>Produto</th><th>Fornecedor</th><th>Qtd</th><th>Valor Unit.</th><th>Total</th><th>Responsável</th></tr></thead><tbody id="tbodyEntradas"><tr><td colspan="7" class="empty">Nenhuma entrada registrada</td></tr></tbody></table></div></div>
+      <div class="card"><div class="card-body no-pad"><table class="table"><thead><tr>
+        <th style="width:36px"><input type="checkbox" id="checkAllEntradas" onchange="toggleSelecionarTodos('entradas',this.checked)" style="cursor:pointer;width:15px;height:15px"/></th>
+        <th>Data</th><th>Produto</th><th>Fornecedor</th><th>Qtd</th><th>Valor Unit.</th><th>Total</th><th>Responsável</th>
+      </tr></thead><tbody id="tbodyEntradas"><tr><td colspan="8" class="empty">Nenhuma entrada registrada</td></tr></tbody></table></div></div>
     </div>
 
     <div id="page-saidas" class="page">
       <div class="page-actions">
         <div class="search-box"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" id="searchSaidas" placeholder="Buscar saídas..." oninput="filterSaidas()"/></div>
         <div class="actions-right">
+          <button class="btn-outline danger" id="btnDelSaidas" style="display:none;border-color:var(--red);color:var(--red)" onclick="excluirSelecionados('saidas')">🗑️ Excluir Selecionados (<span id="cntSaidas">0</span>)</button>
           <button class="btn-outline" onclick="gerarRelatorioPDF('saidas')">📄 PDF</button>
           <button class="btn-outline green" onclick="gerarRelatorioExcel('saidas')">📊 Excel</button>
           <button class="btn-primary" onclick="openModal('modalSaida')">+ Registrar Saída</button>
         </div>
       </div>
-      <div class="card"><div class="card-body no-pad"><table class="table"><thead><tr><th>Data</th><th>Produto</th><th>Qtd</th><th>Motivo</th><th>Responsável</th></tr></thead><tbody id="tbodySaidas"><tr><td colspan="5" class="empty">Nenhuma saída registrada</td></tr></tbody></table></div></div>
+      <div class="card"><div class="card-body no-pad"><table class="table"><thead><tr>
+        <th style="width:36px"><input type="checkbox" id="checkAllSaidas" onchange="toggleSelecionarTodos('saidas',this.checked)" style="cursor:pointer;width:15px;height:15px"/></th>
+        <th>Data</th><th>Produto</th><th>Qtd</th><th>Motivo</th><th>Responsável</th>
+      </tr></thead><tbody id="tbodySaidas"><tr><td colspan="6" class="empty">Nenhuma saída registrada</td></tr></tbody></table></div></div>
     </div>
 
     <div id="page-ordens" class="page">
@@ -395,6 +403,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
               <select id="relEstoqueStatus" onchange="renderRelEstoque()">
                 <option value="">Todos</option>
                 <option value="critico">Crítico (abaixo do mínimo)</option>
+                <option value="zerado">Zerado (saldo = 0)</option>
                 <option value="normal">Normal</option>
               </select>
             </div>
@@ -1715,34 +1724,61 @@ function extrairItensOrdem(ordemAtual) {
     return raw.map(i => ({ produto_id: i.produto_id, quantidade: i.quantidade }));
 }
 
+// ── Proteção contra duplo clique em operações críticas ───────
+let _operacaoEmAndamento = false;
+function _lockOp(btnEl) {
+    if (_operacaoEmAndamento) return false;
+    _operacaoEmAndamento = true;
+    if (btnEl) { btnEl.disabled = true; btnEl._txtOrig = btnEl.textContent; btnEl.textContent = 'Aguarde...'; }
+    return true;
+}
+function _unlockOp(btnEl) {
+    _operacaoEmAndamento = false;
+    if (btnEl) { btnEl.disabled = false; btnEl.textContent = btnEl._txtOrig || btnEl.textContent; }
+}
+
+
 async function updateOrdemStatus(status) {
     const id = state.editingOrdemId;
     if (!id) return;
-    
+
+    // Pegar botão clicado para desabilitar durante operação
+    const btnConcluir = document.querySelector('#modalOrdemDetalhe .btn-primary');
+    const btnCancelar = document.querySelector('#modalOrdemDetalhe .btn-outline[onclick*="cancelada"]');
+    const btnAndamento = document.querySelector('#modalOrdemDetalhe .btn-outline.amber');
+    const btnAtivo = status === 'concluida' ? btnConcluir : status === 'cancelada' ? btnCancelar : btnAndamento;
+
+    if (!_lockOp(btnAtivo)) {
+        showToast('Aguarde, operação em andamento...', 'info');
+        return;
+    }
+
     try {
         const ordemAtual = state.ordens.find(o => o.id === id);
 
         // Se concluindo, dar baixa SOMENTE se ainda não foi descontado
         if (status === 'concluida' && ordemAtual) {
             if (ordemAtual.estoque_descontado) {
-                // Já foi descontado antes — apenas atualiza o status, sem mexer no estoque
                 showToast('ℹ️ Estoque já havia sido descontado anteriormente. Nenhuma baixa adicional foi feita.', 'info');
+                // NÃO faz return — apenas atualiza o status normalmente
             } else {
                 if (!state.produtos.length) await carregarDados();
                 const itens = extrairItensOrdem(ordemAtual);
 
+                // 1. Verificar TODOS os itens antes de fazer qualquer baixa
                 for (const item of itens) {
                     const prod = state.produtos.find(p => p.id === item.produto_id);
                     if (!prod) {
-                        showToast('Produto não encontrado. Recarregue a página e tente novamente.', 'error');
-                        return;
+                        showToast('Produto não encontrado. Recarregue a página.', 'error');
+                        _unlockOp(btnAtivo); return;
                     }
                     if ((prod.saldo_atual || 0) < item.quantidade) {
                         showToast('Estoque insuficiente para "' + prod.nome + '"! Disponível: ' + (prod.saldo_atual || 0) + ' — Necessário: ' + item.quantidade, 'error');
-                        return;
+                        _unlockOp(btnAtivo); return;
                     }
                 }
 
+                // 2. Só chega aqui se TODOS os itens têm estoque suficiente
                 for (const item of itens) {
                     const prod = state.produtos.find(p => p.id === item.produto_id);
                     const saida = {
@@ -1756,7 +1792,8 @@ async function updateOrdemStatus(status) {
                     const { error: saidaError } = await sb.from('saidas').insert([saida]);
                     if (saidaError) throw saidaError;
                     const novoEstoque = (prod.saldo_atual || 0) - item.quantidade;
-                    await sb.from('produtos').update({ saldo_atual: novoEstoque }).eq('id', item.produto_id);
+                    const { error: estoqueError } = await sb.from('produtos').update({ saldo_atual: novoEstoque }).eq('id', item.produto_id);
+                    if (estoqueError) throw estoqueError;
                     const iProd = state.produtos.findIndex(p => p.id === item.produto_id);
                     if (iProd !== -1) state.produtos[iProd].saldo_atual = novoEstoque;
                     state.saidas.unshift({ ...saida, produto: prod });
@@ -1764,7 +1801,7 @@ async function updateOrdemStatus(status) {
             }
         }
 
-        // Atualizar status e marcar estoque_descontado=true ao concluir
+        // Só chega aqui se tudo deu certo — atualiza status no banco
         const { data, error } = await sb
             .from('ordens')
             .update({ status, ...(status === 'concluida' ? { estoque_descontado: true } : {}) })
@@ -1786,10 +1823,16 @@ async function updateOrdemStatus(status) {
     } catch (error) {
         console.error('Erro ao atualizar status:', error);
         showToast('Erro ao atualizar status: ' + (error.message || ''), 'error');
+    } finally {
+        _unlockOp(btnAtivo);
     }
 }
 
 async function quickUpdateOrdem(id, status) {
+    if (!_lockOp(null)) {
+        showToast('Aguarde, operação em andamento...', 'info');
+        return;
+    }
     try {
         const ordemAtual = state.ordens.find(o => o.id === id);
 
@@ -1797,21 +1840,24 @@ async function quickUpdateOrdem(id, status) {
         if (status === 'concluida' && ordemAtual) {
             if (ordemAtual.estoque_descontado) {
                 showToast('ℹ️ Estoque já havia sido descontado anteriormente. Nenhuma baixa adicional foi feita.', 'info');
+                // NÃO faz return — apenas atualiza o status normalmente
             } else {
                 const itens = extrairItensOrdem(ordemAtual);
 
+                // 1. Verificar TODOS antes de qualquer baixa
                 for (const item of itens) {
                     const prod = state.produtos.find(p => p.id === item.produto_id);
                     if (!prod) {
-                        showToast('Produto não encontrado. Recarregue a página e tente novamente.', 'error');
-                        return;
+                        showToast('Produto não encontrado. Recarregue a página.', 'error');
+                        _unlockOp(null); return;
                     }
                     if ((prod.saldo_atual || 0) < item.quantidade) {
                         showToast('Estoque insuficiente para "' + prod.nome + '"! Disponível: ' + (prod.saldo_atual || 0) + ' — Necessário: ' + item.quantidade, 'error');
-                        return;
+                        _unlockOp(null); return;
                     }
                 }
 
+                // 2. Todos têm estoque — dar baixa
                 for (const item of itens) {
                     const prod = state.produtos.find(p => p.id === item.produto_id);
                     const saida = {
@@ -1825,7 +1871,8 @@ async function quickUpdateOrdem(id, status) {
                     const { error: saidaError } = await sb.from('saidas').insert([saida]);
                     if (saidaError) throw saidaError;
                     const novoEstoque = (prod.saldo_atual || 0) - item.quantidade;
-                    await sb.from('produtos').update({ saldo_atual: novoEstoque }).eq('id', item.produto_id);
+                    const { error: estoqueError } = await sb.from('produtos').update({ saldo_atual: novoEstoque }).eq('id', item.produto_id);
+                    if (estoqueError) throw estoqueError;
                     const iProd = state.produtos.findIndex(p => p.id === item.produto_id);
                     if (iProd !== -1) state.produtos[iProd].saldo_atual = novoEstoque;
                     state.saidas.unshift({ ...saida, produto: prod });
@@ -1853,6 +1900,8 @@ async function quickUpdateOrdem(id, status) {
     } catch (error) {
         console.error('Erro ao atualizar status:', error);
         showToast('Erro ao atualizar status.', 'error');
+    } finally {
+        _unlockOp(null);
     }
 }
 
@@ -2535,16 +2584,92 @@ function renderEntradas(filter = '') {
     const tb = document.getElementById('tbodyEntradas');
     
     if (!list.length) {
-        tb.innerHTML = '<tr><td colspan="7" class="empty">Nenhuma entrada registrada</td></tr>';
+        tb.innerHTML = '<tr><td colspan="8" class="empty">Nenhuma entrada registrada</td></tr>';
         return;
     }
     
     tb.innerHTML = list.map(e => {
         const p = e.produto || state.produtos.find(x => x.id === e.produto_id);
         const f = e.fornecedor || state.fornecedores.find(x => x.id === e.fornecedor_id);
-        return '<tr><td>' + formatDate(e.data) + '</td><td>' + (p ? p.nome : '—') + '</td><td>' + (f ? f.nome : '—') + '</td><td><span class="tag tag-green">+' + (e.quantidade || 0) + '</span></td><td>' + formatCurrency(e.valor_unitario) + '</td><td>' + formatCurrency((e.valor_unitario || 0) * (e.quantidade || 0)) + '</td><td>' + (e.responsavel || '—') + '</td></tr>';
+        return '<tr>' +
+            '<td><input type="checkbox" class="chk-entrada" data-id="' + e.id + '" onchange="atualizarContador(&quot;entradas&quot;)" style="cursor:pointer;width:15px;height:15px"/></td>' +
+            '<td>' + formatDate(e.data) + '</td>' +
+            '<td>' + (p ? p.nome : '—') + '</td>' +
+            '<td>' + (f ? f.nome : '—') + '</td>' +
+            '<td><span class="tag tag-green">+' + (e.quantidade || 0) + '</span></td>' +
+            '<td>' + formatCurrency(e.valor_unitario) + '</td>' +
+            '<td>' + formatCurrency((e.valor_unitario || 0) * (e.quantidade || 0)) + '</td>' +
+            '<td>' + (e.responsavel || '—') + '</td>' +
+            '</tr>';
     }).join('');
 }
+
+// ============================================================
+// SELEÇÃO E EXCLUSÃO DE ENTRADAS / SAÍDAS
+// ============================================================
+function atualizarContador(tipo) {
+    const cls   = tipo === 'entradas' ? '.chk-entrada' : '.chk-saida';
+    const btnId = tipo === 'entradas' ? 'btnDelEntradas' : 'btnDelSaidas';
+    const cntId = tipo === 'entradas' ? 'cntEntradas'   : 'cntSaidas';
+    const checked = document.querySelectorAll(cls + ':checked').length;
+    const btn = document.getElementById(btnId);
+    const cnt = document.getElementById(cntId);
+    if (btn)  btn.style.display  = checked > 0 ? 'inline-flex' : 'none';
+    if (cnt)  cnt.textContent    = checked;
+    // Sync "selecionar todos" checkbox
+    const total   = document.querySelectorAll(cls).length;
+    const chkAll  = document.getElementById(tipo === 'entradas' ? 'checkAllEntradas' : 'checkAllSaidas');
+    if (chkAll) { chkAll.checked = checked > 0 && checked === total; chkAll.indeterminate = checked > 0 && checked < total; }
+}
+
+function toggleSelecionarTodos(tipo, checked) {
+    const cls = tipo === 'entradas' ? '.chk-entrada' : '.chk-saida';
+    document.querySelectorAll(cls).forEach(function(cb) { cb.checked = checked; });
+    atualizarContador(tipo);
+}
+
+async function excluirSelecionados(tipo) {
+    const cls    = tipo === 'entradas' ? '.chk-entrada' : '.chk-saida';
+    const ids    = Array.from(document.querySelectorAll(cls + ':checked')).map(function(cb) { return cb.dataset.id; });
+    if (!ids.length) return;
+
+    const label  = tipo === 'entradas' ? 'entrada(s)' : 'saída(s)';
+    if (!confirm('Excluir ' + ids.length + ' ' + label + '? Esta ação não pode ser desfeita.\n\nAtenção: o saldo dos produtos NÃO será restaurado automaticamente.')) return;
+
+    const tabela = tipo === 'entradas' ? 'entradas' : 'saidas';
+    try {
+        // Excluir em lotes de 50 para evitar URL muito longa
+        for (let i = 0; i < ids.length; i += 50) {
+            const lote = ids.slice(i, i + 50);
+            const { error } = await sb.from(tabela).delete().in('id', lote);
+            if (error) throw error;
+        }
+
+        // Atualizar state local
+        if (tipo === 'entradas') {
+            state.entradas = state.entradas.filter(function(e) { return !ids.includes(e.id); });
+            renderEntradas(document.getElementById('searchEntradas').value || '');
+            // Reset checkall
+            const ca = document.getElementById('checkAllEntradas');
+            if (ca) { ca.checked = false; ca.indeterminate = false; }
+            document.getElementById('btnDelEntradas').style.display = 'none';
+        } else {
+            state.saidas = state.saidas.filter(function(s) { return !ids.includes(s.id); });
+            renderSaidas(document.getElementById('searchSaidas').value || '');
+            const ca = document.getElementById('checkAllSaidas');
+            if (ca) { ca.checked = false; ca.indeterminate = false; }
+            document.getElementById('btnDelSaidas').style.display = 'none';
+        }
+
+        showToast(ids.length + ' ' + label + ' excluída(s) com sucesso.', 'info');
+        if (document.getElementById('page-dashboard').classList.contains('active')) renderDashboard();
+
+    } catch(err) {
+        console.error(err);
+        showToast('Erro ao excluir: ' + (err.message || ''), 'error');
+    }
+}
+
 
 function filterEntradas() {
     renderEntradas(document.getElementById('searchEntradas').value);
@@ -2566,13 +2691,20 @@ function renderSaidas(filter = '') {
     const tb = document.getElementById('tbodySaidas');
     
     if (!list.length) {
-        tb.innerHTML = '<tr><td colspan="5" class="empty">Nenhuma saída registrada</td></tr>';
+        tb.innerHTML = '<tr><td colspan="6" class="empty">Nenhuma saída registrada</td></tr>';
         return;
     }
     
     tb.innerHTML = list.map(s => {
         const p = s.produto || state.produtos.find(x => x.id === s.produto_id);
-        return '<tr><td>' + formatDate(s.data) + '</td><td>' + (p ? p.nome : '—') + '</td><td><span class="tag tag-amber">-' + (s.quantidade || 0) + '</span></td><td>' + (s.motivo || '—') + '</td><td>' + (s.responsavel || '—') + '</td></tr>';
+        return '<tr>' +
+            '<td><input type="checkbox" class="chk-saida" data-id="' + s.id + '" onchange="atualizarContador(&quot;saidas&quot;)" style="cursor:pointer;width:15px;height:15px"/></td>' +
+            '<td>' + formatDate(s.data) + '</td>' +
+            '<td>' + (p ? p.nome : '—') + '</td>' +
+            '<td><span class="tag tag-amber">-' + (s.quantidade || 0) + '</span></td>' +
+            '<td>' + (s.motivo || '—') + '</td>' +
+            '<td>' + (s.responsavel || '—') + '</td>' +
+            '</tr>';
     }).join('');
 }
 
@@ -3029,7 +3161,8 @@ function renderRelEstoque() {
     var list = state.produtos.filter(function(p) {
         if (cat && p.categoria !== cat) return false;
         if (loc && p.localizacao !== loc) return false;
-        if (st === 'critico' && (p.saldo_atual || 0) > (p.estoque_minimo || 0)) return false;
+        if (st === 'critico' && !((p.saldo_atual || 0) > 0 && (p.saldo_atual || 0) <= (p.estoque_minimo || 0))) return false;
+        if (st === 'zerado'  && (p.saldo_atual || 0) !== 0) return false;
         if (st === 'normal'  && (p.saldo_atual || 0) <= (p.estoque_minimo || 0)) return false;
         return true;
     });
@@ -3040,15 +3173,20 @@ function renderRelEstoque() {
     var tb = document.getElementById('tbodyRelEstoque');
     if (!list.length) { tb.innerHTML = '<tr><td colspan="7" class="empty">Nenhum produto encontrado com os filtros selecionados</td></tr>'; return; }
     tb.innerHTML = list.map(function(p) {
-        var critico = (p.saldo_atual || 0) <= (p.estoque_minimo || 0);
+        var saldo = p.saldo_atual || 0;
+        var zerado  = saldo === 0;
+        var critico = !zerado && saldo <= (p.estoque_minimo || 0);
+        var tagClass = zerado ? 'tag-purple' : (critico ? 'tag-red' : 'tag-green');
+        var tagLabel = zerado ? 'Zerado' : (critico ? 'Crítico' : 'Normal');
+        var saldoColor = zerado ? 'var(--purple)' : (critico ? 'var(--red)' : 'var(--green)');
         return '<tr>' +
             '<td><code style="font-size:0.78rem">' + (p.codigo || '—') + '</code></td>' +
             '<td><strong>' + (p.nome || '') + '</strong></td>' +
             '<td>' + (p.categoria || '—') + '</td>' +
             '<td>' + (p.localizacao || '—') + '</td>' +
             '<td style="text-align:center">' + (p.estoque_minimo || 0) + '</td>' +
-            '<td style="text-align:center;font-weight:600;color:' + (critico ? 'var(--red)' : 'var(--green)') + '">' + (p.saldo_atual || 0) + '</td>' +
-            '<td><span class="tag ' + (critico ? 'tag-red' : 'tag-green') + '">' + (critico ? 'Crítico' : 'Normal') + '</span></td>' +
+            '<td style="text-align:center;font-weight:600;color:' + saldoColor + '">' + saldo + '</td>' +
+            '<td><span class="tag ' + tagClass + '">' + tagLabel + '</span></td>' +
             '</tr>';
     }).join('');
 }
@@ -3162,18 +3300,23 @@ function imprimirRelatorio(tipo) {
         var cat = document.getElementById('relEstoqueCategoria').value;
         var loc = document.getElementById('relEstoqueLocalizacao').value;
         var st  = document.getElementById('relEstoqueStatus').value;
-        filtrosDesc = [cat ? 'Categoria: ' + cat : '', loc ? 'Localização: ' + loc : '', st ? 'Status: ' + (st === 'critico' ? 'Crítico' : 'Normal') : ''].filter(Boolean).join(' | ');
+        filtrosDesc = [cat ? 'Categoria: ' + cat : '', loc ? 'Localização: ' + loc : '', st ? 'Status: ' + (st === 'critico' ? 'Crítico' : st === 'zerado' ? 'Zerado' : 'Normal') : ''].filter(Boolean).join(' | ');
         headers = '<tr><th>Código</th><th>Produto</th><th>Categoria</th><th>Localização</th><th>Mínimo</th><th>Saldo</th><th>Status</th></tr>';
         var list = state.produtos.filter(function(p) {
             if (cat && p.categoria !== cat) return false;
             if (loc && p.localizacao !== loc) return false;
-            if (st === 'critico' && (p.saldo_atual || 0) > (p.estoque_minimo || 0)) return false;
+            if (st === 'critico' && !((p.saldo_atual || 0) > 0 && (p.saldo_atual || 0) <= (p.estoque_minimo || 0))) return false;
+            if (st === 'zerado'  && (p.saldo_atual || 0) !== 0) return false;
             if (st === 'normal'  && (p.saldo_atual || 0) <= (p.estoque_minimo || 0)) return false;
             return true;
         });
         rows = list.map(function(p) {
-            var critico = (p.saldo_atual || 0) <= (p.estoque_minimo || 0);
-            return '<tr><td>' + (p.codigo || '—') + '</td><td>' + (p.nome || '') + '</td><td>' + (p.categoria || '—') + '</td><td>' + (p.localizacao || '—') + '</td><td style="text-align:center">' + (p.estoque_minimo || 0) + '</td><td style="text-align:center;font-weight:700;color:' + (critico ? '#DC2626' : '#059669') + '">' + (p.saldo_atual || 0) + '</td><td>' + (critico ? 'Crítico' : 'Normal') + '</td></tr>';
+            var saldo = p.saldo_atual || 0;
+            var zerado = saldo === 0;
+            var critico = !zerado && saldo <= (p.estoque_minimo || 0);
+            var statusLabel = zerado ? 'Zerado' : (critico ? 'Crítico' : 'Normal');
+            var saldoColor = zerado ? '#7C3AED' : (critico ? '#DC2626' : '#059669');
+            return '<tr><td>' + (p.codigo || '—') + '</td><td>' + (p.nome || '') + '</td><td>' + (p.categoria || '—') + '</td><td>' + (p.localizacao || '—') + '</td><td style="text-align:center">' + (p.estoque_minimo || 0) + '</td><td style="text-align:center;font-weight:700;color:' + saldoColor + '">' + saldo + '</td><td>' + statusLabel + '</td></tr>';
         }).join('');
 
     } else if (tipo === 'movimentacoes') {
@@ -3274,7 +3417,7 @@ function gerarRelatorioPDF(tipo) {
                 p.localizacao || '—',
                 p.estoque_minimo || 0,
                 p.saldo_atual || 0,
-                p.saldo_atual <= p.estoque_minimo ? 'Crítico' : 'Normal'
+                (p.saldo_atual || 0) === 0 ? 'Zerado' : (p.saldo_atual <= p.estoque_minimo ? 'Crítico' : 'Normal')
             ]);
             break;
             
@@ -3412,7 +3555,7 @@ function gerarRelatorioExcel(tipo) {
                     p.localizacao || '—',
                     p.estoque_minimo || 0,
                     p.saldo_atual || 0,
-                    p.saldo_atual <= p.estoque_minimo ? 'Crítico' : 'Normal'
+                    (p.saldo_atual || 0) === 0 ? 'Zerado' : (p.saldo_atual <= p.estoque_minimo ? 'Crítico' : 'Normal')
                 ])
             ];
             break;
