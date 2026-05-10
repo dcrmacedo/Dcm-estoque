@@ -681,6 +681,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
             <div class="ac-dropdown" id="ddSaidaProduto"></div>
           </div></div>
         <div class="form-group"><label>Quantidade *</label><input type="number" id="saidaQtd" placeholder="0" min="1"/></div>
+        <div class="form-group"><label>Data *</label><input type="date" id="saidaData"/></div>
         <div class="form-group full-width"><label>Motivo *</label><input type="text" id="saidaMotivo" placeholder="Ex: Consumo interno, Venda..."/></div>
         <div class="form-group full-width"><label>Observações</label><textarea id="saidaObs" rows="2"></textarea></div>
       </div>
@@ -1278,12 +1279,16 @@ async function salvarSaida() {
         return;
     }
     
+    const saidaDataVal = document.getElementById('saidaData').value;
+    const saidaCriadoEm = saidaDataVal ? saidaDataVal + 'T12:00:00.000Z' : new Date().toISOString();
+
     const saida = {
         produto_id: prodId,
         quantidade: qtd,
         motivo: document.getElementById('saidaMotivo').value.trim(),
         observacoes: document.getElementById('saidaObs').value.trim(),
-        data: new Date().toISOString(),
+        data: saidaCriadoEm,
+        criado_em: saidaCriadoEm,
         responsavel: state.currentUser.nome,
         usuario_id: state.currentUser.id
     };
@@ -1626,12 +1631,19 @@ async function criarOrdem() {
         produto_id: primeiroProd.produto_id,
         quantidade: primeiroProd.quantidade,
         prioridade: document.getElementById('ordemPrioridade').value,
-        data_necessaria: document.getElementById('ordemData').value || null,
+        data_necessaria: document.getElementById('ordemData').value 
+            ? new Date(document.getElementById('ordemData').value + 'T12:00:00').toISOString().split('T')[0]
+            : null,
         descricao: '[' + kitLabel + '] ' + desc,
         status: 'pendente',
         usuario_id: state.currentUser.id,
         itens_json: JSON.stringify(kits)
     };
+
+    // Data de solicitação sempre igual à data marcada no calendário
+    if (ordem.data_necessaria) {
+        ordem.criado_em = ordem.data_necessaria + 'T12:00:00.000Z';
+    }
 
     try {
         const { data, error } = await sb.from('ordens').insert([ordem]).select('*, produto:produtos(*)').single();
@@ -1674,12 +1686,19 @@ async function criarOrdemModal() {
         produto_id: primeiroProd.produto_id,
         quantidade: primeiroProd.quantidade,
         prioridade: document.getElementById('modalOrdemPrioridade').value,
-        data_necessaria: document.getElementById('modalOrdemData').value || null,
+        data_necessaria: document.getElementById('modalOrdemData').value 
+            ? new Date(document.getElementById('modalOrdemData').value + 'T12:00:00').toISOString().split('T')[0]
+            : null,
         descricao: '[' + kitLabel + '] ' + desc,
         status: 'pendente',
         usuario_id: state.currentUser.id,
         itens_json: JSON.stringify(kits)
     };
+
+    // Data de solicitação sempre igual à data marcada no calendário
+    if (ordem.data_necessaria) {
+        ordem.criado_em = ordem.data_necessaria + 'T12:00:00.000Z';
+    }
 
     try {
         const { data, error } = await sb.from('ordens').insert([ordem]).select('*, produto:produtos(*)').single();
@@ -1786,7 +1805,8 @@ async function updateOrdemStatus(status) {
                         quantidade: item.quantidade,
                         motivo: 'Ordem de Serviço ' + (ordemAtual.numero || id),
                         responsavel: state.currentUser.nome,
-                        data: new Date().toISOString(),
+                        data: ordemAtual.data_necessaria ? ordemAtual.data_necessaria + 'T12:00:00.000Z' : new Date().toISOString(),
+                        criado_em: ordemAtual.data_necessaria ? ordemAtual.data_necessaria + 'T12:00:00.000Z' : new Date().toISOString(),
                         observacoes: 'Saída automática ao concluir OS'
                     };
                     const { error: saidaError } = await sb.from('saidas').insert([saida]);
@@ -1865,7 +1885,8 @@ async function quickUpdateOrdem(id, status) {
                         quantidade: item.quantidade,
                         motivo: 'Ordem de Serviço ' + (ordemAtual.numero || id),
                         responsavel: state.currentUser.nome,
-                        data: new Date().toISOString(),
+                        data: ordemAtual.data_necessaria ? ordemAtual.data_necessaria + 'T12:00:00.000Z' : new Date().toISOString(),
+                        criado_em: ordemAtual.data_necessaria ? ordemAtual.data_necessaria + 'T12:00:00.000Z' : new Date().toISOString(),
                         observacoes: 'Saída automática ao concluir OS'
                     };
                     const { error: saidaError } = await sb.from('saidas').insert([saida]);
@@ -2154,7 +2175,7 @@ function openModal(id) {
         populateFornecedorSelect('entradaFornecedor');
     }
     if (id === 'modalSaida') {
-        // autocomplete — no populate needed for saidaProduto
+        document.getElementById('saidaData').value = new Date().toISOString().split('T')[0];
     }
     if (id === 'modalOrdem') {
         populateProdutoSelect('modalOrdemProduto');
@@ -2941,7 +2962,9 @@ async function salvarEdicaoOrdem() {
         produto_id: primeiroProd.produto_id,
         quantidade: primeiroProd.quantidade,
         prioridade: document.getElementById('editOrdemPrioridade').value,
-        data_necessaria: document.getElementById('editOrdemData').value || null,
+        data_necessaria: document.getElementById('editOrdemData').value 
+            ? new Date(document.getElementById('editOrdemData').value + 'T12:00:00').toISOString().split('T')[0]
+            : null,
         descricao: '[' + kitLabel + '] ' + desc,
         itens_json: JSON.stringify(kits)
     };
