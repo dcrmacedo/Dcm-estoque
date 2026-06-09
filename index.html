@@ -404,6 +404,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
   /* Nav labels visíveis no bottom nav */
   .nav-item .nav-label-mobile{display:block;font-size:0.58rem;text-align:center;margin-top:2px;color:inherit}
 }
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
@@ -2275,9 +2276,12 @@ async function criarOrdem() {
         equipe_id: document.getElementById('ordemEquipe').value || null
     };
 
-    // Data de solicitação sempre igual à data marcada no calendário
+    // Se a data necessaria for passada, Data da Solicitacao = Data Necessaria
     if (ordem.data_necessaria) {
-        ordem.criado_em = ordem.data_necessaria + 'T12:00:00';
+        const hoje = new Date().toISOString().split('T')[0];
+        if (ordem.data_necessaria < hoje) {
+            ordem.criado_em = ordem.data_necessaria + 'T12:00:00';
+        }
     }
 
     try {
@@ -2331,9 +2335,12 @@ async function criarOrdemModal() {
         equipe_id: document.getElementById('modalOrdemEquipe').value || null
     };
 
-    // Data de solicitação sempre igual à data marcada no calendário
+    // Se a data necessaria for passada, Data da Solicitacao = Data Necessaria
     if (ordem.data_necessaria) {
-        ordem.criado_em = ordem.data_necessaria + 'T12:00:00';
+        const hoje = new Date().toISOString().split('T')[0];
+        if (ordem.data_necessaria < hoje) {
+            ordem.criado_em = ordem.data_necessaria + 'T12:00:00';
+        }
     }
 
     try {
@@ -2484,10 +2491,17 @@ async function updateOrdemStatus(status) {
     }
 }
 
-async function quickUpdateOrdem(id, status) {
+async function quickUpdateOrdem(id, status, btnEl) {
     if (!_lockOp(null)) {
         showToast('Aguarde, operação em andamento...', 'info');
         return;
+    }
+    // Animação de loading no botão
+    const _btn = btnEl || event?.target?.closest('button');
+    const _btnOrig = _btn ? _btn.innerHTML : null;
+    if (_btn) {
+        _btn.disabled = true;
+        _btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;animation:spin 0.7s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>';
     }
     try {
         const ordemAtual = state.ordens.find(o => o.id === id);
@@ -2559,6 +2573,7 @@ async function quickUpdateOrdem(id, status) {
         showToast('Erro ao atualizar status.', 'error');
     } finally {
         _unlockOp(null);
+        if (_btn && _btnOrig) { _btn.disabled = false; _btn.innerHTML = _btnOrig; }
     }
 }
 
@@ -5320,10 +5335,15 @@ function gerarRelatorioPDF(tipo) {
     let data = [];
     
     switch(tipo) {
-        case 'produtos':
-            title = 'Relatório de Produtos';
+        case 'produtos': {
+            const _q = (document.getElementById('searchProdutos')?.value || '').toLowerCase();
+            const _forn = document.getElementById('filtroProdutoFornecedor')?.value || '';
+            let _list = state.produtos;
+            if (_q) _list = _list.filter(p => (p.codigo||'').toLowerCase().includes(_q)||(p.nome||'').toLowerCase().includes(_q)||(p.categoria||'').toLowerCase().includes(_q));
+            if (_forn) _list = _list.filter(p => p.fornecedor_id === _forn);
+            title = 'Relatório de Produtos' + (_q || _forn ? ' (filtrado)' : '');
             headers = [['Código', 'Produto', 'Categoria', 'Localização', 'Estoque Mínimo', 'Saldo Atual', 'Status']];
-            data = state.produtos.map(p => [
+            data = _list.map(p => [
                 p.codigo || '',
                 p.nome || '',
                 p.categoria || '—',
@@ -5333,6 +5353,7 @@ function gerarRelatorioPDF(tipo) {
                 (p.saldo_atual || 0) === 0 ? 'Zerado' : (p.saldo_atual <= p.estoque_minimo ? 'Crítico' : 'Normal')
             ]);
             break;
+        }
             
         case 'fornecedores':
             title = 'Relatório de Fornecedores';
@@ -5457,11 +5478,16 @@ function gerarRelatorioExcel(tipo) {
     let sheetName = '';
     
     switch(tipo) {
-        case 'produtos':
+        case 'produtos': {
+            const _q = (document.getElementById('searchProdutos')?.value || '').toLowerCase();
+            const _forn = document.getElementById('filtroProdutoFornecedor')?.value || '';
+            let _list = state.produtos;
+            if (_q) _list = _list.filter(p => (p.codigo||'').toLowerCase().includes(_q)||(p.nome||'').toLowerCase().includes(_q)||(p.categoria||'').toLowerCase().includes(_q));
+            if (_forn) _list = _list.filter(p => p.fornecedor_id === _forn);
             sheetName = 'Produtos';
             wbData = [
                 ['Código', 'Produto', 'Categoria', 'Localização', 'Estoque Mínimo', 'Saldo Atual', 'Status'],
-                ...state.produtos.map(p => [
+                ..._list.map(p => [
                     p.codigo || '',
                     p.nome || '',
                     p.categoria || '—',
@@ -5472,6 +5498,7 @@ function gerarRelatorioExcel(tipo) {
                 ])
             ];
             break;
+        }
             
         case 'fornecedores':
             sheetName = 'Fornecedores';
