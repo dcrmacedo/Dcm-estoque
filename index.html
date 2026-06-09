@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -1907,7 +1906,7 @@ async function salvarSaida() {
     }
     
     const saidaDataVal = document.getElementById('saidaData').value;
-    const saidaCriadoEm = saidaDataVal ? saidaDataVal + 'T12:00:00.000Z' : new Date().toISOString();
+    const saidaCriadoEm = saidaDataVal ? saidaDataVal + 'T12:00:00' : new Date().toISOString();
 
     const saida = {
         produto_id: prodId,
@@ -2278,7 +2277,7 @@ async function criarOrdem() {
 
     // Data de solicitação sempre igual à data marcada no calendário
     if (ordem.data_necessaria) {
-        ordem.criado_em = ordem.data_necessaria + 'T12:00:00.000Z';
+        ordem.criado_em = ordem.data_necessaria + 'T12:00:00';
     }
 
     try {
@@ -2334,7 +2333,7 @@ async function criarOrdemModal() {
 
     // Data de solicitação sempre igual à data marcada no calendário
     if (ordem.data_necessaria) {
-        ordem.criado_em = ordem.data_necessaria + 'T12:00:00.000Z';
+        ordem.criado_em = ordem.data_necessaria + 'T12:00:00';
     }
 
     try {
@@ -2442,8 +2441,8 @@ async function updateOrdemStatus(status) {
                         quantidade: item.quantidade,
                         motivo: 'Ordem de Serviço ' + (ordemAtual.numero || id),
                         responsavel: state.currentUser.nome,
-                        data: ordemAtual.data_necessaria ? ordemAtual.data_necessaria + 'T12:00:00.000Z' : new Date().toISOString(),
-                        criado_em: ordemAtual.data_necessaria ? ordemAtual.data_necessaria + 'T12:00:00.000Z' : new Date().toISOString(),
+                        data: ordemAtual.data_necessaria ? ordemAtual.data_necessaria + 'T12:00:00' : new Date().toISOString(),
+                        criado_em: ordemAtual.data_necessaria ? ordemAtual.data_necessaria + 'T12:00:00' : new Date().toISOString(),
                         observacoes: 'Saída automática ao concluir OS'
                     };
                     const { error: saidaError } = await sb.from('saidas').insert([saida]);
@@ -2522,8 +2521,8 @@ async function quickUpdateOrdem(id, status) {
                         quantidade: item.quantidade,
                         motivo: 'Ordem de Serviço ' + (ordemAtual.numero || id),
                         responsavel: state.currentUser.nome,
-                        data: ordemAtual.data_necessaria ? ordemAtual.data_necessaria + 'T12:00:00.000Z' : new Date().toISOString(),
-                        criado_em: ordemAtual.data_necessaria ? ordemAtual.data_necessaria + 'T12:00:00.000Z' : new Date().toISOString(),
+                        data: ordemAtual.data_necessaria ? ordemAtual.data_necessaria + 'T12:00:00' : new Date().toISOString(),
+                        criado_em: ordemAtual.data_necessaria ? ordemAtual.data_necessaria + 'T12:00:00' : new Date().toISOString(),
                         observacoes: 'Saída automática ao concluir OS'
                     };
                     const { error: saidaError } = await sb.from('saidas').insert([saida]);
@@ -2697,8 +2696,11 @@ function formatDate(iso) {
         // Se for só data (YYYY-MM-DD), adiciona T12:00:00 para evitar
         // que o fuso horário UTC-3 volte um dia ao converter
         var str = String(iso);
-        if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
-            str = str + 'T12:00:00';
+        // Extrai só YYYY-MM-DD para evitar shift de fuso horário
+        var dateOnly = str.substring(0, 10);
+        if (/^\d{4}-\d{2}-\d{2}$/.test(dateOnly)) {
+            var parts = dateOnly.split('-');
+            return parts[2] + '/' + parts[1] + '/' + parts[0];
         }
         return new Date(str).toLocaleDateString('pt-BR');
     } catch (e) {
@@ -4467,7 +4469,7 @@ function renderSaidas(filter = '') {
             '<td>' + formatDate(s.data) + '</td>' +
             '<td>' + (p ? p.nome : '—') + '</td>' +
             '<td><span class="tag tag-amber">-' + (s.quantidade || 0) + '</span></td>' +
-            '<td>' + (s.motivo || '—') + '</td>' +
+            '<td>' + (() => { const eq = s.equipe_id ? state.equipes.find(e => e.id === s.equipe_id) : null; return eq ? eq.nome : (s.motivo || '—'); })() + '</td>' +
             '<td>' + (s.responsavel || '—') + '</td>' +
             '</tr>';
     }).join('');
