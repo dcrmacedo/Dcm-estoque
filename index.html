@@ -37,7 +37,6 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
 .login-card input{width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:var(--radius);padding:10px 14px;color:#F1F5F9;font-family:inherit;font-size:0.95rem;transition:border-color 0.2s}
 .login-card input::placeholder{color:#475569}
 .login-card input:focus{outline:none;border-color:var(--accent)}
-.login-demo-hint{background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:8px;padding:10px 14px;margin-bottom:20px;font-size:0.8rem;color:#93C5FD}
 .login-error{color:#FCA5A5;font-size:0.85rem;margin-top:10px;min-height:20px}
 .app{display:flex;min-height:100vh}
 .sidebar{width:var(--sidebar-w);background:var(--sidebar-bg);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100}
@@ -232,17 +231,6 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
 .form-group textarea{resize:vertical;min-height:80px}
 .form-actions{margin-top:8px}
 .ordem-form-wrap{max-width:760px}
-.relatorios-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
-.relatorio-card{display:flex;align-items:center;gap:16px;padding:20px;cursor:pointer;transition:box-shadow 0.2s,transform 0.2s}
-.relatorio-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
-.relatorio-icon{width:52px;height:52px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.relatorio-icon.blue{background:var(--blue-soft);color:var(--blue)}
-.relatorio-icon.green{background:var(--green-soft);color:var(--green)}
-.relatorio-icon.amber{background:var(--amber-soft);color:var(--amber)}
-.relatorio-icon.purple{background:var(--purple-soft);color:var(--purple)}
-.relatorio-title{font-weight:600;font-size:0.9rem;color:var(--text)}
-.relatorio-desc{font-size:0.8rem;color:var(--text-2);margin-top:2px}
-.relatorio-arrow{margin-left:auto;color:var(--text-3);flex-shrink:0}
 .img-tabs{display:flex;gap:8px;margin-bottom:10px}
 .img-tab{background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:7px 14px;font-size:0.8rem;font-family:inherit;cursor:pointer;color:var(--text-2);transition:all 0.15s}
 .img-tab.active{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);font-weight:500}
@@ -380,17 +368,11 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
   /* Login */
   .login-card{width:calc(100vw - 32px);padding:28px 22px}
 
-  /* Relatórios grid */
-  .relatorios-grid{grid-template-columns:1fr}
-
   /* Alerta crítico */
   #alertaCritico{flex-wrap:wrap;gap:8px;padding:10px 14px}
 
   /* Ordem detalhe */
   .ordem-detail-grid{grid-template-columns:1fr!important}
-
-  /* Equipe detalhe stats */
-  .equipe-detalhe-stats{grid-template-columns:1fr 1fr!important}
 
   /* Botões principais */
   .btn-primary,.btn-outline,.btn-ghost{font-size:0.82rem;padding:8px 14px}
@@ -400,9 +382,6 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
 
   /* Topbar sem data */
   .topbar-right{gap:8px}
-  
-  /* Nav labels visíveis no bottom nav */
-  .nav-item .nav-label-mobile{display:block;font-size:0.58rem;text-align:center;margin-top:2px;color:inherit}
 }
 @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 </style>
@@ -527,6 +506,24 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
       </div>
 
       <!-- Card: Materiais com Entrega Demorada -->
+      <!-- Card: Previsao de Ruptura -->
+      <div class="card" style="margin-top:20px" id="cardRuptura">
+        <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+          <h3><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;color:var(--red)"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Previsão de Ruptura de Estoque</h3>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span style="font-size:0.78rem;color:var(--text-2)">WhatsApp para alertas:</span>
+            <input type="text" id="rupturaWhatsapp" placeholder="5591999999999" style="width:160px;padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:0.78rem;background:var(--surface);color:var(--text);font-family:inherit" oninput="localStorage.setItem('dcm_whatsapp',this.value)" />
+            <button class="btn-outline" style="font-size:0.78rem;padding:5px 12px" onclick="enviarAlertaWhatsApp()"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style="display:inline-block;vertical-align:-2px;margin-right:3px"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M11.99 2C6.469 2 2 6.469 2 11.99c0 1.97.553 3.81 1.507 5.38L2 22l4.768-1.482A9.945 9.945 0 0011.99 22C17.511 22 22 17.531 22 11.99 22 6.469 17.511 2 11.99 2z"/></svg>Enviar Alerta</button>
+          </div>
+        </div>
+        <div class="card-body no-pad">
+          <table class="table">
+            <thead><tr><th>Produto</th><th style="text-align:center">Saldo Atual</th><th style="text-align:center">Média/dia (30d)</th><th style="text-align:center">Previsão de Ruptura</th><th style="text-align:center">Urgência</th></tr></thead>
+            <tbody id="tbodyRuptura"><tr><td colspan="5" class="empty">Calculando...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
       <div class="card" style="margin-top:20px" id="cardEntregaDemorada">
         <div class="card-header" style="display:flex;align-items:center;justify-content:space-between">
           <h3><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;color:var(--amber)"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Materiais com Entrega Demorada</h3>
@@ -599,6 +596,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
           <button class="btn-outline" onclick="gerarRelatorioPDF('entradas')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> PDF</button>
           <button class="btn-outline green" onclick="gerarRelatorioExcel('entradas')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Excel</button>
           <button class="btn-outline" onclick="abrirScannerEntrada()" title="Leitura por câmera"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Scanner</button>
+          <button class="btn-outline" onclick="abrirImportacaoLote()" style="display:inline-flex;align-items:center;gap:6px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Importar Lote</button>
           <button class="btn-primary" onclick="openModal('modalEntrada')">+ Registrar Entrada</button>
         </div>
       </div>
@@ -660,6 +658,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
                 <th class="col-hide-mobile">Prioridade</th>
                 <th>Status</th>
                 <th>Data</th>
+                <th class="col-hide-mobile">Descrição</th>
                 <th>Ações</th>
               </tr>
             </thead>
@@ -863,6 +862,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
           <div class="card" style="padding:16px 20px"><div style="font-size:0.75rem;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:var(--amber);margin-bottom:4px">Prazo &gt; 30 dias</div><div class="stat-value" id="planjGt30" style="font-size:1.5rem;color:var(--amber)">0</div></div>
           <div class="card" style="padding:16px 20px"><div style="font-size:0.75rem;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:var(--red);margin-bottom:4px">Críticos com Prazo &gt; 45d</div><div class="stat-value" id="planjCriticosGt45" style="font-size:1.5rem;color:var(--red)">0</div></div>
           <div class="card" style="padding:16px 20px"><div style="font-size:0.75rem;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:var(--green);margin-bottom:4px">Pronta Entrega (0 dias)</div><div class="stat-value" id="planjProntaEntrega" style="font-size:1.5rem;color:var(--green)">0</div></div>
+          <div class="card" style="padding:16px 20px"><div style="font-size:0.75rem;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:var(--accent);margin-bottom:4px">Itens c/ Sugestão de Compra</div><div class="stat-value" id="planjComSugestao" style="font-size:1.5rem;color:var(--accent)">0</div></div>
         </div>
         <div class="card" id="pgCardRelPlanejamento">
           <div class="card-header" style="display:flex;justify-content:space-between;align-items:center">
@@ -871,8 +871,8 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
           </div>
           <div class="card-body no-pad">
             <table class="table">
-              <thead><tr><th>Produto</th><th>Categoria</th><th>Fornecedor</th><th style="text-align:center">Saldo Atual</th><th style="text-align:center">Est. Mínimo</th><th style="text-align:center">Prazo Entrega</th><th>Status</th></tr></thead>
-              <tbody id="tbodyRelPlanejamento"><tr><td colspan="7" class="empty">Carregando...</td></tr></tbody>
+              <thead><tr><th>Produto</th><th>Categoria</th><th>Fornecedor</th><th style="text-align:center">Saldo Atual</th><th style="text-align:center">Est. Mínimo</th><th style="text-align:center">Prazo Entrega</th><th style="text-align:center">Consumo Médio/dia</th><th style="text-align:center">Sugestão de Compra</th><th>Status</th></tr></thead>
+              <tbody id="tbodyRelPlanejamento"><tr><td colspan="9" class="empty">Carregando...</td></tr></tbody>
             </table>
           </div>
         </div>
@@ -1145,6 +1145,73 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
       </div>
     </div>
     <div class="modal-footer"><button class="btn-ghost" onclick="closeModal('modalSaida')">Cancelar</button><button class="btn-primary" onclick="salvarSaida()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Registrar</button></div>
+  </div>
+</div>
+
+<!-- Modal Importacao em Lote -->
+<div id="modalImportLote" class="modal-overlay hidden">
+  <div class="modal" style="max-width:680px">
+    <div class="modal-header"><h3>📥 Importar Entradas em Lote</h3><button class="modal-close" onclick="closeModal('modalImportLote')">×</button></div>
+    <div class="modal-body">
+      <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;margin-bottom:16px;font-size:0.82rem;color:var(--text-2)">
+        <strong style="color:var(--text)">Formato esperado (CSV ou XLSX):</strong><br/>
+        Cabeçalho na linha 1 (ignorado). Colunas: <code>Código ou Nome ; Quantidade ; Valor Unitário ; Nota Fiscal ; Observações</code><br/>
+        <span style="color:var(--text-3)">Exemplo: <code>191 ; 50 ; 2.50 ; NF-001 ; Lote maio</code></span>
+      </div>
+      <div class="form-group">
+        <label>Arquivo CSV ou XLSX</label>
+        <input type="file" id="importLoteFile" accept=".csv,.xlsx,.xls,.txt" onchange="processarArquivoLote(this)" style="padding:8px;border:1px solid var(--border);border-radius:var(--radius);width:100%;font-family:inherit;font-size:0.875rem;background:var(--surface)"/>
+      </div>
+      <div id="importLoteInfo" style="font-size:0.82rem;color:var(--text-2);margin-bottom:8px;min-height:20px"></div>
+      <div id="importLotePreview" style="max-height:320px;overflow-y:auto"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeModal('modalImportLote')">Cancelar</button>
+      <button id="btnImportLoteConfirm" class="btn-primary" style="display:none" onclick="confirmarImportacaoLote()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:4px"><polyline points="20 6 9 17 4 12"/></svg>Confirmar Importação</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Editar Entrada -->
+<div id="modalEditEntrada" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-header"><h3>Editar Entrada</h3><button class="modal-close" onclick="closeModal('modalEditEntrada')">×</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="editEntradaId"/>
+      <input type="hidden" id="editEntradaProdId"/>
+      <input type="hidden" id="editEntradaQtdOriginal"/>
+      <div class="form-grid">
+        <div class="form-group full-width"><label>Produto</label><input type="text" id="editEntradaProdNome" disabled style="background:var(--surface-2);color:var(--text-2)"/></div>
+        <div class="form-group"><label>Fornecedor</label><select id="editEntradaFornecedor"><option value="">Selecione...</option></select></div>
+        <div class="form-group"><label>Quantidade *</label><input type="number" id="editEntradaQtd" min="1"/></div>
+        <div class="form-group"><label>Valor Unitário (R$)</label><input type="number" id="editEntradaValor" step="0.01" min="0"/></div>
+        <div class="form-group"><label>Nota Fiscal</label><input type="text" id="editEntradaNF"/></div>
+        <div class="form-group"><label>Data</label><input type="date" id="editEntradaData"/></div>
+        <div class="form-group full-width"><label>Observações</label><textarea id="editEntradaObs" rows="2"></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn-ghost" onclick="closeModal('modalEditEntrada')">Cancelar</button><button class="btn-primary" onclick="salvarEdicaoEntrada()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Salvar</button></div>
+  </div>
+</div>
+
+<!-- Modal Editar Saída -->
+<div id="modalEditSaida" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-header"><h3>Editar Saída</h3><button class="modal-close" onclick="closeModal('modalEditSaida')">×</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="editSaidaId"/>
+      <input type="hidden" id="editSaidaProdId"/>
+      <input type="hidden" id="editSaidaQtdOriginal"/>
+      <div class="form-grid">
+        <div class="form-group full-width"><label>Produto</label><input type="text" id="editSaidaProdNome" disabled style="background:var(--surface-2);color:var(--text-2)"/></div>
+        <div class="form-group"><label>Quantidade *</label><input type="number" id="editSaidaQtd" min="1"/></div>
+        <div class="form-group"><label>Data</label><input type="date" id="editSaidaData"/></div>
+        <div class="form-group full-width"><label>Motivo</label><input type="text" id="editSaidaMotivo"/></div>
+        <div class="form-group full-width"><label>Equipe</label><select id="editSaidaEquipe"><option value="">Sem equipe</option></select></div>
+        <div class="form-group full-width"><label>Observações</label><textarea id="editSaidaObs" rows="2"></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn-ghost" onclick="closeModal('modalEditSaida')">Cancelar</button><button class="btn-primary" onclick="salvarEdicaoSaida()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Salvar</button></div>
   </div>
 </div>
 
@@ -1518,24 +1585,6 @@ async function doLogout() {
     document.getElementById('loginScreen').classList.remove('hidden');
     const btn = document.getElementById('loginBtn');
     if (btn) { btn.disabled = false; btn.innerHTML = 'Entrar'; }
-}
-
-// Verificar sessão ao carregar
-async function checkSession() {
-    const { data: { session } } = await sb.auth.getSession();
-    if (session) {
-        const { data: userData } = await sb
-            .from('usuarios')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-            
-        if (userData) {
-            state.currentUser = userData;
-            await carregarDados();
-            initApp();
-        }
-    }
 }
 
 // ============================================
@@ -2130,11 +2179,6 @@ function removeLinhaOrdem(idx, ctx) {
     renderLinhasOrdem(ctx);
 }
 
-function atualizaItemOrdem(sel, idx, ctx) {
-    const item = _ordemItens[ctx].find(i => i.idx === idx);
-    if (item) item.produto_id = sel.value;
-}
-
 function atualizaQtdOrdem(inp, idx, ctx) {
     const item = _ordemItens[ctx].find(i => i.idx === idx);
     if (item) item.quantidade = parseInt(inp.value) || 1;
@@ -2248,7 +2292,6 @@ function editarKitConfirmado(ctx, ki) {
     renderLinhasOrdem(ctx);
 }
 
-function onTipoKitChange(ctx) {} // mantido por compatibilidade
 
 
 async function gerarNumeroOS() {
@@ -2752,8 +2795,37 @@ function formatCurrency(val) {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val || 0);
 }
 
-function uid() {
-    return Date.now().toString(36) + Math.random().toString(36).substr(2);
+// ── Planejamento de Compras: consumo médio e sugestão de pedido ──
+
+// Consumo médio diário do produto com base nas saídas dos últimos `dias` dias
+function calcularConsumoMedioDiario(produtoId, dias = 30) {
+    var limite = new Date();
+    limite.setDate(limite.getDate() - dias);
+    var limiteStr = limite.toISOString().substring(0, 10);
+    var total = state.saidas
+        .filter(function(s) { return s.produto_id === produtoId && (s.data || s.criado_em || '').substring(0,10) >= limiteStr; })
+        .reduce(function(acc, s) { return acc + (s.quantidade || 0); }, 0);
+    return total / dias;
+}
+
+// Sugestão de quantidade a comprar, considerando o consumo médio diário e o
+// prazo de entrega do fornecedor (cobertura necessária até o próximo pedido chegar)
+function calcularSugestaoCompra(p) {
+    var saldo = p.saldo_atual || 0;
+    var minimo = p.estoque_minimo || 0;
+    var prazo = p.prazo_entrega || 0;
+    var consumoMedioDia = calcularConsumoMedioDiario(p.id);
+
+    var sugestao;
+    if (consumoMedioDia > 0) {
+        // Cobertura necessária = consumo durante o prazo de entrega + estoque de segurança (mínimo)
+        var pontoIdeal = (consumoMedioDia * prazo) + minimo;
+        sugestao = Math.max(0, Math.ceil(pontoIdeal - saldo));
+    } else {
+        // Sem histórico de consumo: sugere repor apenas até o mínimo cadastrado
+        sugestao = saldo < minimo ? (minimo - saldo) : 0;
+    }
+    return { consumoMedioDia: consumoMedioDia, sugestao: sugestao };
 }
 
 function showToast(msg, type = 'success') {
@@ -3205,12 +3277,6 @@ function _statBoxDetalhe(label, val, color, bg) {
         '<div style="font-size:1.6rem;font-weight:700;color:'+color+';font-family:\'DM Mono\',monospace">'+val+'</div>' +
         '<div style="font-size:0.75rem;color:var(--text-2);margin-top:3px">'+label+'</div>' +
         '</div>';
-}
-
-function _tagStatus(s) {
-    const map = { pendente:'tag-amber', em_andamento:'tag-blue', concluida:'tag-green', cancelada:'tag-red' };
-    const lab = { pendente:'Pendente', em_andamento:'Em andamento', concluida:'Concluída', cancelada:'Cancelada' };
-    return '<span class="tag '+(map[s]||'tag-gray')+'">'+(lab[s]||s)+'</span>';
 }
 
 function renderEquipes() {
@@ -3897,7 +3963,10 @@ function renderDashboard() {
             const nomes = baixo.slice(0, 3).map(function(p) { return p.nome; }).join(', ');
             alertaEl.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>' +
                 '<span style="font-size:0.875rem;color:#991B1B;font-weight:500">' + baixo.length + ' produto(s) com estoque crítico: ' + nomes + (baixo.length > 3 ? '...' : '') + '</span>' +
-                '<button onclick="showPage(&quot;produtos&quot;)" style="margin-left:auto;background:var(--red);color:white;border:none;border-radius:6px;padding:4px 12px;font-size:0.78rem;cursor:pointer;font-family:inherit">Ver produtos</button>';
+                '<div style="margin-left:auto;display:flex;gap:8px">' +
+                '<button onclick="enviarAlertaWhatsApp()" style="background:#25D366;color:white;border:none;border-radius:6px;padding:4px 12px;font-size:0.78rem;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:4px"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M11.99 2C6.469 2 2 6.469 2 11.99c0 1.97.553 3.81 1.507 5.38L2 22l4.768-1.482A9.945 9.945 0 0011.99 22C17.511 22 22 17.531 22 11.99 22 6.469 17.511 2 11.99 2z"/></svg> WhatsApp</button>' +
+                '<button onclick="showPage(&quot;produtos&quot;)" style="background:var(--red);color:white;border:none;border-radius:6px;padding:4px 12px;font-size:0.78rem;cursor:pointer;font-family:inherit">Ver produtos</button>' +
+                '</div>';
         } else {
             alertaEl.style.display = 'none';
         }
@@ -3934,6 +4003,139 @@ function renderDashboard() {
 
     // OS por equipe
     renderOSEquipes();
+
+    // Previsão de ruptura
+    renderRuptura();
+}
+
+// ============================================================
+// PREVISAO DE RUPTURA
+// ============================================================
+function renderRuptura() {
+    const tb = document.getElementById('tbodyRuptura');
+    if (!tb) return;
+
+    // Restaurar numero WhatsApp salvo
+    const inp = document.getElementById('rupturaWhatsapp');
+    if (inp && !inp.value) inp.value = localStorage.getItem('dcm_whatsapp') || '';
+
+    const hoje = new Date();
+    const limite = new Date(hoje); limite.setDate(limite.getDate() - 30);
+    const limiteStr = limite.getFullYear()+'-'+String(limite.getMonth()+1).padStart(2,'0')+'-'+String(limite.getDate()).padStart(2,'0');
+
+    // Agrupa saidas dos ultimos 30 dias por produto
+    const saidasRecentes = state.saidas.filter(s => {
+        const d = (s.data || s.criado_em || '').substring(0,10);
+        return d >= limiteStr;
+    });
+
+    const consumo = {};
+    saidasRecentes.forEach(s => {
+        if (!consumo[s.produto_id]) consumo[s.produto_id] = 0;
+        consumo[s.produto_id] += (s.quantidade || 0);
+    });
+
+    // Calcula previsao para cada produto com consumo > 0
+    const previsoes = [];
+    Object.keys(consumo).forEach(pid => {
+        const prod = state.produtos.find(p => p.id === pid);
+        if (!prod) return;
+        const mediaDia = consumo[pid] / 30;
+        const saldo = prod.saldo_atual || 0;
+        if (mediaDia <= 0) return;
+        const diasRestantes = Math.floor(saldo / mediaDia);
+        previsoes.push({ prod, mediaDia, saldo, diasRestantes });
+    });
+
+    // Ordena por mais urgente
+    previsoes.sort((a, b) => a.diasRestantes - b.diasRestantes);
+
+    if (!previsoes.length) {
+        tb.innerHTML = '<tr><td colspan="5" class="empty">Sem dados de saída nos últimos 30 dias para calcular previsão</td></tr>';
+        return;
+    }
+
+    tb.innerHTML = previsoes.slice(0, 12).map(({ prod, mediaDia, saldo, diasRestantes }) => {
+        let urgClass, urgLabel;
+        if (diasRestantes <= 7)       { urgClass = 'tag-red';   urgLabel = ' Crítico'; }
+        else if (diasRestantes <= 15) { urgClass = 'tag-amber'; urgLabel = ' Atenção'; }
+        else if (diasRestantes <= 30) { urgClass = 'tag-blue';  urgLabel = ' Médio'; }
+        else                          { urgClass = 'tag-green'; urgLabel = ' Normal'; }
+
+        const dataRuptura = new Date(hoje);
+        dataRuptura.setDate(dataRuptura.getDate() + diasRestantes);
+        const dataStr = dataRuptura.toLocaleDateString('pt-BR');
+
+        return '<tr>' +
+            '<td><strong>' + (prod.nome||'') + '</strong></td>' +
+            '<td style="text-align:center">' + saldo + '</td>' +
+            '<td style="text-align:center">' + mediaDia.toFixed(2) + '/dia</td>' +
+            '<td style="text-align:center">' + (diasRestantes === 0 ? '<span style="color:var(--red);font-weight:600">Hoje!</span>' : dataStr + ' <span style="color:var(--text-2);font-size:0.78rem">(' + diasRestantes + ' dias)</span>') + '</td>' +
+            '<td style="text-align:center"><span class="tag ' + urgClass + '">' + urgLabel + '</span></td>' +
+            '</tr>';
+    }).join('');
+}
+
+function enviarAlertaWhatsApp() {
+    const numero = (localStorage.getItem('dcm_whatsapp') || '').replace(/\D/g,'');
+    if (!numero) {
+        showToast('Informe o número WhatsApp no card de Previsão de Ruptura', 'error');
+        // Scroll ate o card e foca o campo
+        const inp = document.getElementById('rupturaWhatsapp');
+        if (inp) { inp.focus(); inp.style.borderColor='var(--red)'; setTimeout(()=>inp.style.borderColor='',2000); }
+        return;
+    }
+
+    const hoje = new Date();
+    const limite = new Date(hoje); limite.setDate(limite.getDate() - 30);
+    const limiteStr = limite.getFullYear()+'-'+String(limite.getMonth()+1).padStart(2,'0')+'-'+String(limite.getDate()).padStart(2,'0');
+    const consumo = {};
+    state.saidas.filter(s => (s.data||s.criado_em||'').substring(0,10) >= limiteStr).forEach(s => {
+        if (!consumo[s.produto_id]) consumo[s.produto_id] = 0;
+        consumo[s.produto_id] += (s.quantidade||0);
+    });
+
+    // Criticos: saldo <= minimo
+    const criticos = state.produtos.filter(p => p.estoque_minimo > 0 && (p.saldo_atual||0) <= p.estoque_minimo);
+
+    // Ruptura em ate 7 dias
+    const ruptura = [];
+    Object.keys(consumo).forEach(pid => {
+        const prod = state.produtos.find(p => p.id === pid);
+        if (!prod) return;
+        const media = consumo[pid] / 30;
+        if (media <= 0) return;
+        const dias = Math.floor((prod.saldo_atual||0) / media);
+        if (dias <= 7) ruptura.push({ nome: prod.nome, dias });
+    });
+    ruptura.sort((a,b) => a.dias - b.dias);
+
+    let msg = '* DCM ESTOQUE — ALERTA DE ESTOQUE*\n';
+    msg += new Date().toLocaleString('pt-BR') + '\n\n';
+
+    if (criticos.length) {
+        msg += '* Produtos em Estoque Crítico (' + criticos.length + '):*\n';
+        criticos.slice(0,10).forEach(p => {
+            msg += '• ' + p.nome + ' — Saldo: ' + (p.saldo_atual||0) + ' (mín: ' + p.estoque_minimo + ')\n';
+        });
+        if (criticos.length > 10) msg += '... e mais ' + (criticos.length-10) + ' produtos\n';
+        msg += '\n';
+    }
+
+    if (ruptura.length) {
+        msg += '* Ruptura Prevista em até 7 dias (' + ruptura.length + '):*\n';
+        ruptura.forEach(r => {
+            msg += '• ' + r.nome + ' — ' + (r.dias === 0 ? 'HOJE' : r.dias + ' dia(s)') + '\n';
+        });
+        msg += '\n';
+    }
+
+    if (!criticos.length && !ruptura.length) {
+        msg += ' Nenhum produto crítico ou em risco de ruptura no momento.';
+    }
+
+    const url = 'https://wa.me/' + numero + '?text=' + encodeURIComponent(msg);
+    window.open(url, '_blank');
 }
 
 // ============================================================
@@ -4382,7 +4584,7 @@ function renderEntradas(filter = '') {
     const tb = document.getElementById('tbodyEntradas');
     
     if (!list.length) {
-        tb.innerHTML = '<tr><td colspan="8" class="empty">Nenhuma entrada registrada</td></tr>';
+        tb.innerHTML = '<tr><td colspan="9" class="empty">Nenhuma entrada registrada</td></tr>';
         const old = document.getElementById('pgCardEntradas')?.querySelector('.pagination-bar');
         if (old) old.remove();
         return;
@@ -4402,6 +4604,7 @@ function renderEntradas(filter = '') {
             '<td>' + formatCurrency(e.valor_unitario) + '</td>' +
             '<td>' + formatCurrency((e.valor_unitario || 0) * (e.quantidade || 0)) + '</td>' +
             '<td>' + (e.responsavel || '—') + '</td>' +
+            '<td><button class="tbl-btn" onclick="editarEntrada(\'' + e.id + '\')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button></td>' +
             '</tr>';
     }).join('');
 }
@@ -4494,7 +4697,7 @@ function renderSaidas(filter = '') {
     const tb = document.getElementById('tbodySaidas');
     
     if (!list.length) {
-        tb.innerHTML = '<tr><td colspan="6" class="empty">Nenhuma saída registrada</td></tr>';
+        tb.innerHTML = '<tr><td colspan="7" class="empty">Nenhuma saída registrada</td></tr>';
         const old = document.getElementById('pgCardSaidas')?.querySelector('.pagination-bar');
         if (old) old.remove();
         return;
@@ -4511,14 +4714,250 @@ function renderSaidas(filter = '') {
             '<td><span class="tag tag-amber">-' + (s.quantidade || 0) + '</span></td>' +
             '<td>' + (() => { const eq = s.equipe_id ? state.equipes.find(e => e.id === s.equipe_id) : null; return eq ? eq.nome : (s.motivo || '—'); })() + '</td>' +
             '<td>' + (s.responsavel || '—') + '</td>' +
+            '<td><button class="tbl-btn" onclick="editarSaida(\'' + s.id + '\')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button></td>' +
             '</tr>';
     }).join('');
 }
 
 function filterSaidas() {
+
     pgReset('saidas');
+
     renderSaidas(document.getElementById('searchSaidas').value);
+
 }
+
+
+// ============================================================
+// EDITAR ENTRADA
+// ============================================================
+function editarEntrada(id) {
+    const e = state.entradas.find(x => x.id === id);
+    if (!e) return;
+    const p = e.produto || state.produtos.find(x => x.id === e.produto_id);
+    document.getElementById('editEntradaId').value = id;
+    document.getElementById('editEntradaProdId').value = e.produto_id;
+    document.getElementById('editEntradaQtdOriginal').value = e.quantidade || 0;
+    document.getElementById('editEntradaProdNome').value = p ? p.nome : '—';
+    document.getElementById('editEntradaQtd').value = e.quantidade || 0;
+    document.getElementById('editEntradaValor').value = e.valor_unitario || '';
+    document.getElementById('editEntradaNF').value = e.nota_fiscal || '';
+    document.getElementById('editEntradaData').value = (e.data || e.criado_em || '').substring(0,10);
+    document.getElementById('editEntradaObs').value = e.observacoes || '';
+    populateFornecedorSelect('editEntradaFornecedor');
+    setTimeout(() => { document.getElementById('editEntradaFornecedor').value = e.fornecedor_id || ''; }, 50);
+    openModal('modalEditEntrada');
+}
+
+async function salvarEdicaoEntrada() {
+    const id = document.getElementById('editEntradaId').value;
+    const prodId = document.getElementById('editEntradaProdId').value;
+    const qtdNova = parseInt(document.getElementById('editEntradaQtd').value);
+    const qtdOriginal = parseInt(document.getElementById('editEntradaQtdOriginal').value);
+    if (!qtdNova || qtdNova < 1) { showToast('Quantidade inválida.', 'error'); return; }
+    const diff = qtdNova - qtdOriginal;
+    try {
+        const { error } = await sb.from('entradas').update({
+            quantidade: qtdNova,
+            fornecedor_id: document.getElementById('editEntradaFornecedor').value || null,
+            valor_unitario: parseFloat(document.getElementById('editEntradaValor').value) || 0,
+            nota_fiscal: document.getElementById('editEntradaNF').value.trim(),
+            data: document.getElementById('editEntradaData').value || null,
+            observacoes: document.getElementById('editEntradaObs').value.trim()
+        }).eq('id', id);
+        if (error) throw error;
+        if (diff !== 0) {
+            const prod = state.produtos.find(p => p.id === prodId);
+            if (prod) {
+                prod.saldo_atual = Math.max(0, (prod.saldo_atual || 0) + diff);
+                await sb.from('produtos').update({ saldo_atual: prod.saldo_atual }).eq('id', prodId);
+            }
+        }
+        const idx = state.entradas.findIndex(x => x.id === id);
+        if (idx !== -1) {
+            state.entradas[idx].quantidade = qtdNova;
+            state.entradas[idx].fornecedor_id = document.getElementById('editEntradaFornecedor').value || null;
+            state.entradas[idx].valor_unitario = parseFloat(document.getElementById('editEntradaValor').value) || 0;
+            state.entradas[idx].nota_fiscal = document.getElementById('editEntradaNF').value.trim();
+            state.entradas[idx].data = document.getElementById('editEntradaData').value || null;
+            state.entradas[idx].observacoes = document.getElementById('editEntradaObs').value.trim();
+        }
+        closeModal('modalEditEntrada');
+        renderEntradas();
+        showToast('Entrada atualizada com sucesso!');
+    } catch(err) {
+        console.error(err);
+        showToast('Erro ao atualizar entrada.', 'error');
+    }
+}
+
+// ============================================================
+// EDITAR SAÍDA
+// ============================================================
+function editarSaida(id) {
+    const s = state.saidas.find(x => x.id === id);
+    if (!s) return;
+    const p = s.produto || state.produtos.find(x => x.id === s.produto_id);
+    document.getElementById('editSaidaId').value = id;
+    document.getElementById('editSaidaProdId').value = s.produto_id;
+    document.getElementById('editSaidaQtdOriginal').value = s.quantidade || 0;
+    document.getElementById('editSaidaProdNome').value = p ? p.nome : '—';
+    document.getElementById('editSaidaQtd').value = s.quantidade || 0;
+    document.getElementById('editSaidaData').value = (s.data || s.criado_em || '').substring(0,10);
+    document.getElementById('editSaidaMotivo').value = s.motivo || '';
+    document.getElementById('editSaidaObs').value = s.observacoes || '';
+    const selEq = document.getElementById('editSaidaEquipe');
+    selEq.innerHTML = '<option value="">Sem equipe</option>';
+    (state.equipes || []).forEach(eq => { const o = document.createElement('option'); o.value = eq.id; o.textContent = eq.nome; selEq.appendChild(o); });
+    selEq.value = s.equipe_id || '';
+    openModal('modalEditSaida');
+}
+
+async function salvarEdicaoSaida() {
+    const id = document.getElementById('editSaidaId').value;
+    const prodId = document.getElementById('editSaidaProdId').value;
+    const qtdNova = parseInt(document.getElementById('editSaidaQtd').value);
+    const qtdOriginal = parseInt(document.getElementById('editSaidaQtdOriginal').value);
+    if (!qtdNova || qtdNova < 1) { showToast('Quantidade inválida.', 'error'); return; }
+    const diff = qtdOriginal - qtdNova;
+    try {
+        const { error } = await sb.from('saidas').update({
+            quantidade: qtdNova,
+            motivo: document.getElementById('editSaidaMotivo').value.trim(),
+            equipe_id: document.getElementById('editSaidaEquipe').value || null,
+            data: document.getElementById('editSaidaData').value || null,
+            observacoes: document.getElementById('editSaidaObs').value.trim()
+        }).eq('id', id);
+        if (error) throw error;
+        if (diff !== 0) {
+            const prod = state.produtos.find(p => p.id === prodId);
+            if (prod) {
+                prod.saldo_atual = Math.max(0, (prod.saldo_atual || 0) + diff);
+                await sb.from('produtos').update({ saldo_atual: prod.saldo_atual }).eq('id', prodId);
+            }
+        }
+        const idx = state.saidas.findIndex(x => x.id === id);
+        if (idx !== -1) {
+            state.saidas[idx].quantidade = qtdNova;
+            state.saidas[idx].motivo = document.getElementById('editSaidaMotivo').value.trim();
+            state.saidas[idx].equipe_id = document.getElementById('editSaidaEquipe').value || null;
+            state.saidas[idx].data = document.getElementById('editSaidaData').value || null;
+            state.saidas[idx].observacoes = document.getElementById('editSaidaObs').value.trim();
+        }
+        closeModal('modalEditSaida');
+        renderSaidas();
+        showToast('Saída atualizada com sucesso!');
+    } catch(err) {
+        console.error(err);
+        showToast('Erro ao atualizar saída.', 'error');
+    }
+}
+
+// ============================================================
+// IMPORTAÇÃO EM LOTE (CSV/EXCEL)
+// ============================================================
+function abrirImportacaoLote() {
+    openModal('modalImportLote');
+    document.getElementById('importLoteFile').value = '';
+    document.getElementById('importLotePreview').innerHTML = '';
+    document.getElementById('importLoteInfo').textContent = '';
+    document.getElementById('btnImportLoteConfirm').style.display = 'none';
+    window._importLoteData = null;
+}
+
+function processarArquivoLote(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const ext = file.name.split('.').pop().toLowerCase();
+    const info = document.getElementById('importLoteInfo');
+    const preview = document.getElementById('importLotePreview');
+    info.textContent = 'Lendo arquivo...';
+    preview.innerHTML = '';
+    if (ext === 'csv' || ext === 'txt') {
+        const reader = new FileReader();
+        reader.onload = e => {
+            const linhas = e.target.result.split('\n').map(l => l.replace(/\r/,'')).filter(l => l.trim());
+            processarLinhasCSV(linhas);
+        };
+        reader.readAsText(file, 'UTF-8');
+    } else if (ext === 'xlsx' || ext === 'xls') {
+        const reader = new FileReader();
+        reader.onload = e => {
+            try {
+                const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+                const ws = wb.Sheets[wb.SheetNames[0]];
+                const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+                processarLinhasCSV(rows.map(r => r.join(';')));
+            } catch(err) { document.getElementById('importLoteInfo').textContent = 'Erro ao ler arquivo Excel.'; }
+        };
+        reader.readAsArrayBuffer(file);
+    } else {
+        info.textContent = 'Formato não suportado. Use CSV ou XLSX.';
+    }
+}
+
+function processarLinhasCSV(linhas) {
+    const info = document.getElementById('importLoteInfo');
+    const preview = document.getElementById('importLotePreview');
+    const dados = linhas.filter((l,i) => i > 0 && l.trim());
+    const resultados = [], erros = [];
+    dados.forEach((linha, i) => {
+        const cols = linha.split(/[;,\t]/).map(c => c.trim().replace(/^"|"$/g,''));
+        const codigoOuNome = cols[0] || '';
+        const qtd = parseInt(cols[1]);
+        const valor = parseFloat((cols[2]||'').replace(',','.')) || 0;
+        const nf = cols[3] || '', obs = cols[4] || '';
+        if (!codigoOuNome || isNaN(qtd) || qtd < 1) {
+            erros.push('Linha ' + (i+2) + ': "' + codigoOuNome + '" inválida ou quantidade vazia');
+            return;
+        }
+        const prod = state.produtos.find(p =>
+            String(p.codigo).toLowerCase() === codigoOuNome.toLowerCase() ||
+            (p.nome||'').toLowerCase() === codigoOuNome.toLowerCase()
+        );
+        if (!prod) { erros.push('Linha ' + (i+2) + ': produto "' + codigoOuNome + '" não encontrado'); return; }
+        resultados.push({ prod, qtd, valor, nf, obs });
+    });
+    window._importLoteData = resultados;
+    info.textContent = resultados.length + ' entrada(s) válida(s)' + (erros.length ? ' · ' + erros.length + ' com erro' : '');
+    let html = '<table class="table" style="font-size:0.82rem"><thead><tr><th>Produto</th><th>Qtd</th><th>Valor Unit.</th><th>NF</th><th>Status</th></tr></thead><tbody>';
+    resultados.forEach(r => { html += '<tr><td>' + r.prod.nome + '</td><td>' + r.qtd + '</td><td>' + (r.valor ? 'R$ ' + r.valor.toFixed(2) : '—') + '</td><td>' + (r.nf||'—') + '</td><td><span class="tag tag-green">✓ OK</span></td></tr>'; });
+    erros.forEach(e => { html += '<tr><td colspan="4" style="color:var(--red);font-size:0.78rem">' + e + '</td><td><span class="tag tag-red">✕ Erro</span></td></tr>'; });
+    html += '</tbody></table>';
+    preview.innerHTML = html;
+    document.getElementById('btnImportLoteConfirm').style.display = resultados.length ? 'inline-flex' : 'none';
+}
+
+async function confirmarImportacaoLote() {
+    const dados = window._importLoteData;
+    if (!dados || !dados.length) return;
+    const btn = document.getElementById('btnImportLoteConfirm');
+    btn.disabled = true; btn.textContent = 'Importando...';
+    const hoje = new Date();
+    const dataHoje = hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0')+'-'+String(hoje.getDate()).padStart(2,'0');
+    let ok = 0, erros = 0;
+    for (const item of dados) {
+        try {
+            const entrada = { produto_id: item.prod.id, quantidade: item.qtd, valor_unitario: item.valor, nota_fiscal: item.nf, observacoes: item.obs, data: dataHoje, responsavel: state.currentUser.nome, usuario_id: state.currentUser.id };
+            const { data, error } = await sb.from('entradas').insert([entrada]).select('*, produto:produtos(*), fornecedor:fornecedores(*)').single();
+            if (error) throw error;
+            state.entradas.unshift(data);
+            const pi = state.produtos.findIndex(p => p.id === item.prod.id);
+            if (pi !== -1) {
+                state.produtos[pi].saldo_atual = (state.produtos[pi].saldo_atual||0) + item.qtd;
+                await sb.from('produtos').update({ saldo_atual: state.produtos[pi].saldo_atual }).eq('id', item.prod.id);
+            }
+            ok++;
+        } catch(e) { erros++; }
+    }
+    btn.disabled = false;
+    closeModal('modalImportLote');
+    renderEntradas();
+    showToast(ok + ' entrada(s) importada(s)' + (erros ? ' · ' + erros + ' com erro' : '') + '!', erros ? 'warning' : 'success');
+    updateBadges();
+}
+
+
 
 const PR = {
     baixa: { label: 'Baixa', cls: 'tag-gray' },
@@ -4838,7 +5277,7 @@ function renderOrdens(filter = '', sf = '') {
     const tb = document.getElementById('tbodyOrdens');
     
     if (!list.length) {
-        tb.innerHTML = '<tr><td colspan="7" class="empty">Nenhuma ordem encontrada</td></tr>';
+        tb.innerHTML = '<tr><td colspan="8" class="empty">Nenhuma ordem encontrada</td></tr>';
         const old = document.getElementById('pgCardOrdens')?.querySelector('.pagination-bar');
         if (old) old.remove();
         return;
@@ -4859,7 +5298,9 @@ function renderOrdens(filter = '', sf = '') {
         if (o.status !== 'concluida' && o.status !== 'cancelada') ac += '<button class="tbl-btn" onclick="quickUpdateOrdem(\'' + o.id + '\',\'concluida\')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><polyline points="20 6 9 17 4 12"/></svg></button>';
         ac += '<button class="tbl-btn danger" onclick="deletarOrdem(\'' + o.id + '\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>';
         
-        return '<tr><td><code style="font-size:0.78rem;font-family:monospace;">' + (o.numero || '') + '</code></td><td>' + (o.solicitante_nome || '') + '</td><td>' + equipeNome + '</td><td class="col-hide-mobile"><span class="tag ' + pr.cls + '">' + pr.label + '</span></td><td><span class="tag ' + st.cls + '">' + st.label + '</span></td><td>' + formatDate(o.criado_em) + '</td><td><div class="tbl-actions">' + ac + '</div></td></tr>';
+        const descClean = (o.descricao || '').replace(/^\[.*?\]\s*/, '');
+        const descTrunc = descClean.length > 50 ? descClean.substring(0,50) + '...' : descClean;
+        return '<tr><td><code style="font-size:0.78rem;font-family:monospace;">' + (o.numero || '') + '</code></td><td>' + (o.solicitante_nome || '') + '</td><td>' + equipeNome + '</td><td class="col-hide-mobile"><span class="tag ' + pr.cls + '">' + pr.label + '</span></td><td><span class="tag ' + st.cls + '">' + st.label + '</span></td><td>' + formatDate(o.criado_em) + '</td><td class="col-hide-mobile" style="max-width:200px;color:var(--text-2);font-size:0.82rem" title="' + descClean.replace(/"/g,"'") + '">' + (descTrunc || '—') + '</td><td><div class="tbl-actions">' + ac + '</div></td></tr>';
     }).join('');
 }
 
@@ -5169,11 +5610,14 @@ function renderRelPlanejamento() {
     }).length;
     if (elPronta) elPronta.textContent = list.filter(function(p) { return (p.prazo_entrega || 0) === 0; }).length;
 
+    var elComSugestao = document.getElementById('planjComSugestao');
+    if (elComSugestao) elComSugestao.textContent = list.filter(function(p) { return calcularSugestaoCompra(p).sugestao > 0; }).length;
+
     var count = document.getElementById('relPlanejamentoCount');
     if (count) count.textContent = list.length + ' produto(s)';
 
     var tb = document.getElementById('tbodyRelPlanejamento');
-    if (!list.length) { tb.innerHTML = '<tr><td colspan="7" class="empty">Nenhum produto encontrado com os filtros selecionados</td></tr>'; var old = document.getElementById('pgCardRelPlanejamento')?.querySelector('.pagination-bar'); if (old) old.remove(); return; }
+    if (!list.length) { tb.innerHTML = '<tr><td colspan="9" class="empty">Nenhum produto encontrado com os filtros selecionados</td></tr>'; var old = document.getElementById('pgCardRelPlanejamento')?.querySelector('.pagination-bar'); if (old) old.remove(); return; }
     var page = pgApply('relPlanejamento', list, 'pgCardRelPlanejamento');
     tb.innerHTML = page.map(function(p) {
         var saldo = p.saldo_atual || 0;
@@ -5183,6 +5627,11 @@ function renderRelPlanejamento() {
         var tagClass = isZerado ? 'tag-purple' : (isCritico ? 'tag-red' : 'tag-green');
         var tagLabel = isZerado ? 'Zerado' : (isCritico ? 'Crítico' : 'Normal');
         var forn = state.fornecedores.find(function(f) { return f.id === p.fornecedor_id; });
+        var sug = calcularSugestaoCompra(p);
+        var consumoLabel = sug.consumoMedioDia > 0 ? sug.consumoMedioDia.toFixed(1) : '—';
+        var sugestaoCell = sug.sugestao > 0
+            ? '<span class="tag tag-amber" title="Consumo médio: ' + consumoLabel + '/dia · Prazo de entrega: ' + (p.prazo_entrega || 0) + 'd">' + sug.sugestao + ' un.</span>'
+            : '<span style="color:var(--text-3)">—</span>';
         return '<tr>' +
             '<td><strong>' + (p.nome || '') + '</strong></td>' +
             '<td>' + (p.categoria || '—') + '</td>' +
@@ -5190,6 +5639,8 @@ function renderRelPlanejamento() {
             '<td style="text-align:center;font-weight:600">' + saldo + '</td>' +
             '<td style="text-align:center">' + (minimo || 0) + '</td>' +
             '<td style="text-align:center">' + getPrazoBadge(p.prazo_entrega) + '</td>' +
+            '<td style="text-align:center">' + consumoLabel + '</td>' +
+            '<td style="text-align:center">' + sugestaoCell + '</td>' +
             '<td><span class="tag ' + tagClass + '">' + tagLabel + '</span></td>' +
             '</tr>';
     }).join('');
@@ -5285,7 +5736,7 @@ function imprimirRelatorio(tipo) {
             criticoFiltro === 'criticos' ? 'Apenas críticos' : ''
         ].filter(Boolean).join(' | ') || 'Todos os produtos';
 
-        headers = '<tr><th>Produto</th><th>Categoria</th><th>Fornecedor</th><th style="text-align:center">Saldo Atual</th><th style="text-align:center">Est. Mínimo</th><th style="text-align:center">Prazo Entrega</th><th>Status</th></tr>';
+        headers = '<tr><th>Produto</th><th>Categoria</th><th>Fornecedor</th><th style="text-align:center">Saldo Atual</th><th style="text-align:center">Est. Mínimo</th><th style="text-align:center">Prazo Entrega</th><th style="text-align:center">Consumo Médio/dia</th><th style="text-align:center">Sugestão de Compra</th><th>Status</th></tr>';
 
         var listPlan = state.produtos.filter(function(p) {
             var prazo  = p.prazo_entrega || 0;
@@ -5313,6 +5764,10 @@ function imprimirRelatorio(tipo) {
             var forn = state.fornecedores.find(function(f) { return f.id === p.fornecedor_id; });
             var prazoLabel = prazo === 0 ? 'Pronta entrega' : prazo + ' dias';
             var prazoColor = prazo === 0 ? '#059669' : (prazo <= 30 ? '#D97706' : '#DC2626');
+            var sug = calcularSugestaoCompra(p);
+            var consumoLabel = sug.consumoMedioDia > 0 ? sug.consumoMedioDia.toFixed(1) : '—';
+            var sugestaoLabel = sug.sugestao > 0 ? (sug.sugestao + ' un.') : '—';
+            var sugestaoColor = sug.sugestao > 0 ? '#D97706' : '#64748B';
             return '<tr>' +
                 '<td><strong>' + (p.nome || '') + '</strong></td>' +
                 '<td>' + (p.categoria || '—') + '</td>' +
@@ -5320,6 +5775,8 @@ function imprimirRelatorio(tipo) {
                 '<td style="text-align:center;font-weight:700">' + saldo + '</td>' +
                 '<td style="text-align:center">' + (minimo || 0) + '</td>' +
                 '<td style="text-align:center;font-weight:600;color:' + prazoColor + '">' + prazoLabel + '</td>' +
+                '<td style="text-align:center">' + consumoLabel + '</td>' +
+                '<td style="text-align:center;font-weight:700;color:' + sugestaoColor + '">' + sugestaoLabel + '</td>' +
                 '<td style="color:' + statusColor + ';font-weight:600">' + statusLabel + '</td>' +
                 '</tr>';
         }).join('');
@@ -5635,6 +6092,50 @@ function gerarRelatorioExcel(tipo) {
                 ])
             ];
             break;
+
+        case 'planejamento': {
+            var prazoFiltro = document.getElementById('relPrazoFiltro').value;
+            var fornFiltro  = document.getElementById('relPrazoFornecedor').value;
+            var criticoFiltro = document.getElementById('relPrazoCritico').value;
+            var listPlan = state.produtos.filter(function(p) {
+                var prazo  = p.prazo_entrega || 0;
+                var saldo  = p.saldo_atual   || 0;
+                var minimo = p.estoque_minimo || 0;
+                var isCrit = minimo > 0 && saldo <= minimo;
+                if (prazoFiltro === 'gt30'  && prazo < 30) return false;
+                if (prazoFiltro === 'gt45'  && prazo < 45) return false;
+                if (prazoFiltro === 'lt15'  && prazo >= 15) return false;
+                if (prazoFiltro === '15-30' && (prazo < 15 || prazo > 30)) return false;
+                if (prazoFiltro === '30-45' && (prazo < 30 || prazo > 45)) return false;
+                if (fornFiltro  && p.fornecedor_id !== fornFiltro) return false;
+                if (criticoFiltro === 'criticos' && !isCrit) return false;
+                return true;
+            });
+            sheetName = 'Planejamento';
+            wbData = [
+                ['Produto', 'Categoria', 'Fornecedor', 'Saldo Atual', 'Est. Mínimo', 'Prazo Entrega (dias)', 'Consumo Médio/dia', 'Sugestão de Compra', 'Status'],
+                ...listPlan.map(function(p) {
+                    var saldo  = p.saldo_atual    || 0;
+                    var minimo = p.estoque_minimo || 0;
+                    var isCrit = minimo > 0 && saldo <= minimo;
+                    var isZero = saldo === 0;
+                    var forn = state.fornecedores.find(function(f) { return f.id === p.fornecedor_id; });
+                    var sug = calcularSugestaoCompra(p);
+                    return [
+                        p.nome || '',
+                        p.categoria || '—',
+                        forn ? forn.nome : '—',
+                        saldo,
+                        minimo,
+                        p.prazo_entrega || 0,
+                        sug.consumoMedioDia > 0 ? Number(sug.consumoMedioDia.toFixed(1)) : 0,
+                        sug.sugestao,
+                        isZero ? 'Zerado' : (isCrit ? 'Crítico' : 'Normal')
+                    ];
+                })
+            ];
+            break;
+        }
     }
     
     const wb = XLSX.utils.book_new();
