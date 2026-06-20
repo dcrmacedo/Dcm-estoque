@@ -1296,6 +1296,29 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
   </div>
 </div>
 
+<!-- ═══════════════════════ MODAL MATERIAL PENDENTE (estoque zerado) ═══════════════════════ -->
+<div id="modalMaterialPendente" class="modal-overlay hidden">
+  <div class="modal" style="max-width:620px">
+    <div class="modal-header">
+      <h3><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;color:var(--red)"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Material Pendente — <span id="matPendenteOS"></span></h3>
+      <button class="modal-close" onclick="closeModal('modalMaterialPendente')">×</button>
+    </div>
+    <div class="modal-body">
+      <div style="background:var(--red-soft);border:1px solid #FECACA;border-radius:var(--radius);padding:12px 14px;margin-bottom:14px;font-size:0.82rem;color:#991B1B;line-height:1.5">
+        A ordem foi criada, mas os materiais abaixo estão com <strong>estoque ZERADO</strong>. Eles precisam ser providenciados antes da conclusão desta OS.
+      </div>
+      <table class="table">
+        <thead><tr><th>Produto</th><th>Código</th><th style="text-align:center">Qtd. Necessária</th></tr></thead>
+        <tbody id="matPendenteLista"></tbody>
+      </table>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeModal('modalMaterialPendente')">Fechar</button>
+      <button class="btn-primary" style="background:var(--red)" onclick="printMaterialPendente()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Imprimir Material Pendente</button>
+    </div>
+  </div>
+</div>
+
 <div id="modalEditOrdem" class="modal-overlay hidden">
   <div class="modal" style="max-width:780px">
     <div class="modal-header"><h3 id="modalEditOrdemTitle">Editar Ordem de Serviço</h3><button class="modal-close" onclick="closeModal('modalEditOrdem')">×</button></div>
@@ -1765,7 +1788,11 @@ async function salvarProduto() {
 
         if (state.editingProdutoId) {
             const idx = state.produtos.findIndex(p => p.id === state.editingProdutoId);
-            if (idx !== -1) state.produtos[idx] = data;
+            // Atualiza as propriedades do objeto existente (em vez de substituir a
+            // referência) para que qualquer item de OS/kit já carregado em memória
+            // reflita o novo saldo imediatamente, igual ao que já acontece em
+            // entrada/saída/devolução/requisição/inventário/conclusão de OS.
+            if (idx !== -1) Object.assign(state.produtos[idx], data);
             showToast('Produto atualizado com sucesso!');
         } else {
             state.produtos.unshift(data);
@@ -1911,35 +1938,33 @@ async function salvarEntrada() {
             
         if (error) throw error;
         
-        // Atualizar saldo do produto
+        // Atualizar saldo do produto — update direto na tabela (mesmo padrão usado
+        // na baixa de estoque da Ordem de Serviço, que é confiável sob RLS).
+        // Não usamos mais RPC: funções RPC sem SECURITY DEFINER podem ser bloqueadas
+        // silenciosamente pela RLS (0 linhas afetadas, sem erro retornado), fazendo o
+        // saldo real no banco nunca ser atualizado mesmo a tela parecendo certa.
+        const produto = state.produtos.find(p => p.id === prodId);
+        const novoSaldoEntrada = (produto ? (produto.saldo_atual || 0) : 0) + qtd;
         const { error: updateError } = await sb
-            .rpc('incrementar_estoque', { 
-                produto_id: prodId, 
-                quantidade: qtd 
-            });
-            
-        if (updateError) {
-            // Se falhar, fazer update manual
-            const produto = state.produtos.find(p => p.id === prodId);
-            if (produto) {
-                produto.saldo_atual = (produto.saldo_atual || 0) + qtd;
-                await sb
-                    .from('produtos')
-                    .update({ saldo_atual: produto.saldo_atual })
-                    .eq('id', prodId);
-            }
-        }
-        
+            .from('produtos')
+            .update({ saldo_atual: novoSaldoEntrada })
+            .eq('id', prodId);
+
+        if (updateError) throw updateError;
+
         state.entradas.unshift(data);
         
         // Atualizar saldo local do produto
         const produtoIndex = state.produtos.findIndex(p => p.id === prodId);
         if (produtoIndex !== -1) {
-            state.produtos[produtoIndex].saldo_atual = (state.produtos[produtoIndex].saldo_atual || 0) + qtd;
+            state.produtos[produtoIndex].saldo_atual = novoSaldoEntrada;
         }
         
         closeModal('modalEntrada');
         renderEntradas();
+        // Atualizar também Produtos e Kits, caso estejam visíveis, para refletir o novo saldo na hora
+        renderProdutos();
+        renderKits();
         showToast('Entrada registrada com sucesso!');
         updateBadges();
         
@@ -1990,34 +2015,32 @@ async function salvarSaida() {
             
         if (error) throw error;
         
-        // Atualizar saldo do produto
+        // Atualizar saldo do produto — update direto na tabela (mesmo padrão usado
+        // na baixa de estoque da Ordem de Serviço, que é confiável sob RLS).
+        // Não usamos mais RPC: funções RPC sem SECURITY DEFINER podem ser bloqueadas
+        // silenciosamente pela RLS (0 linhas afetadas, sem erro retornado), fazendo o
+        // saldo real no banco nunca ser atualizado mesmo a tela parecendo certa.
+        const novoSaldoSaida = Math.max(0, (produto ? (produto.saldo_atual || 0) : 0) - qtd);
         const { error: updateError } = await sb
-            .rpc('decrementar_estoque', { 
-                produto_id: prodId, 
-                quantidade: qtd 
-            });
-            
-        if (updateError) {
-            // Se falhar, fazer update manual
-            if (produto) {
-                produto.saldo_atual = Math.max(0, (produto.saldo_atual || 0) - qtd);
-                await sb
-                    .from('produtos')
-                    .update({ saldo_atual: produto.saldo_atual })
-                    .eq('id', prodId);
-            }
-        }
-        
+            .from('produtos')
+            .update({ saldo_atual: novoSaldoSaida })
+            .eq('id', prodId);
+
+        if (updateError) throw updateError;
+
         state.saidas.unshift(data);
         
         // Atualizar saldo local do produto
         const produtoIndex = state.produtos.findIndex(p => p.id === prodId);
         if (produtoIndex !== -1) {
-            state.produtos[produtoIndex].saldo_atual = Math.max(0, (state.produtos[produtoIndex].saldo_atual || 0) - qtd);
+            state.produtos[produtoIndex].saldo_atual = novoSaldoSaida;
         }
         
         closeModal('modalSaida');
         renderSaidas();
+        // Atualizar também Produtos e Kits, caso estejam visíveis, para refletir o novo saldo na hora
+        renderProdutos();
+        renderKits();
         showToast('Saída registrada com sucesso!');
         updateBadges();
         // Verificar se algum produto ficou abaixo do mínimo
@@ -2045,6 +2068,8 @@ const KIT_LABELS = {
 const _ordemItens = { modal: [], page: [], edit: [] };
 // Kits já confirmados (array de { tipo, label, itens[] })
 const _kitsConfirmados = { modal: [], page: [], edit: [] };
+
+let _materialPendenteAtual = null;
 
 function buildSelectProdutos(selectedId, qtd, idx, ctx) {
     const prod = selectedId ? state.produtos.find(p => p.id === selectedId) : null;
@@ -2212,14 +2237,16 @@ function confirmarKit(ctx) {
     const itens = _ordemItens[ctx].filter(i => i.produto_id);
     if (itens.length === 0) { showToast('Adicione ao menos um produto ao kit.', 'error'); return; }
 
-    // Verificar estoque de cada item
+    // Verificar estoque de cada item (apenas aviso — não bloqueia a criação da OS,
+    // pois a validação definitiva ocorre ao concluir a ordem)
+    let avisoEstoque = '';
     for (const item of itens) {
         const prod = state.produtos.find(p => p.id === item.produto_id);
         if (prod && (prod.saldo_atual || 0) < item.quantidade) {
-            showToast('Estoque insuficiente para "' + prod.nome + '"! Disponível: ' + (prod.saldo_atual || 0), 'error');
-            return;
+            avisoEstoque = 'Atenção: estoque insuficiente para "' + prod.nome + '" (disponível: ' + (prod.saldo_atual || 0) + '). O kit será adicionado mesmo assim.';
         }
     }
+    if (avisoEstoque) showToast(avisoEstoque, 'info');
 
     // Enriquecer itens com dados do produto
     const itensCompletos = itens.map(i => ({
@@ -2324,6 +2351,154 @@ async function gerarNumeroOS() {
     }
 }
 
+// Verifica se a OS recém-criada tem materiais com estoque zerado e, se sim,
+// exibe um modal com o botão "Imprimir Material Pendente"
+function verificarEMostrarMaterialPendente(ordem, todosItens) {
+    const itensZerados = todosItens.filter(i => {
+        const prod = state.produtos.find(p => p.id === i.produto_id) || i.produto;
+        return prod && (prod.saldo_atual || 0) <= 0;
+    });
+    if (!itensZerados.length) return;
+
+    _materialPendenteAtual = { ordem, itens: itensZerados };
+
+    document.getElementById('matPendenteOS').textContent = ordem.numero || '';
+    document.getElementById('matPendenteLista').innerHTML = itensZerados.map(i => {
+        const p = state.produtos.find(x => x.id === i.produto_id) || i.produto;
+        return '<tr><td>' + (p ? p.nome : '—') + '</td>' +
+            '<td>' + (p ? (p.codigo || '—') : '—') + '</td>' +
+            '<td style="text-align:center;font-weight:700;color:var(--red)">' + i.quantidade + '</td></tr>';
+    }).join('');
+
+    openModal('modalMaterialPendente');
+}
+
+function printMaterialPendente() {
+    if (!_materialPendenteAtual) return;
+    const { ordem, itens } = _materialPendenteAtual;
+
+    // Re-checa o saldo ATUAL de cada item antes de imprimir — caso algum
+    // material já tenha sido reposto (por entrada, edição de produto,
+    // inventário, etc.) desde que o modal foi aberto, ele sai da lista.
+    const itensAindaZerados = itens.filter(i => {
+        const p = state.produtos.find(x => x.id === i.produto_id) || i.produto;
+        return p && (p.saldo_atual || 0) <= 0;
+    });
+    if (!itensAindaZerados.length) {
+        showToast('Todos os materiais já foram repostos. Nada pendente para imprimir.', 'info');
+        closeModal('modalMaterialPendente');
+        return;
+    }
+
+    const rows = itensAindaZerados.map(i => {
+        const p = state.produtos.find(x => x.id === i.produto_id) || i.produto;
+        return '<tr>' +
+            '<td>' + (p ? p.nome : '—') + '</td>' +
+            '<td>' + (p ? (p.codigo || '—') : '—') + '</td>' +
+            '<td>' + (p ? (p.categoria || '—') : '—') + '</td>' +
+            '<td>' + (p ? (p.localizacao || '—') : '—') + '</td>' +
+            '<td style="text-align:center;font-weight:700;color:#DC2626">' + i.quantidade + '</td>' +
+            '</tr>';
+    }).join('');
+
+    const win = window.open('', '_blank', 'width=900,height=700');
+    win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"/>
+<title>Material Pendente — ${ordem.numero || ''}</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;color:#1E293B;background:#fff;padding:36px}
+.header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #DC2626;padding-bottom:18px;margin-bottom:24px}
+.logo-text{font-size:1.2rem;font-weight:700;color:#1E293B}
+.logo-sub{font-size:0.75rem;color:#64748B;margin-top:2px}
+.os-num{text-align:right}
+.os-num h2{font-size:1.6rem;font-weight:700;color:#DC2626}
+.os-num p{font-size:0.78rem;color:#64748B;margin-top:3px}
+.alert-box{background:#FEF2F2;border:1px solid #FECACA;border-left:4px solid #DC2626;border-radius:8px;padding:14px 16px;margin-bottom:22px;font-size:0.875rem;color:#991B1B;line-height:1.6}
+table{width:100%;border-collapse:collapse;border:1px solid #E2E8F0;border-radius:8px;overflow:hidden}
+th{background:#FEF2F2;padding:9px 12px;font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:#991B1B;text-align:left;border-bottom:1px solid #FECACA}
+td{padding:9px 12px;font-size:0.86rem;border-bottom:1px solid #F1F5F9;color:#1E293B}
+tr:last-child td{border-bottom:none}
+.signatures{display:grid;grid-template-columns:1fr 1fr;gap:50px;margin-top:36px}
+.sig{border-top:1px solid #CBD5E1;padding-top:8px;text-align:center;font-size:0.78rem;color:#64748B}
+.footer{margin-top:28px;text-align:center;font-size:0.7rem;color:#94A3B8;border-top:1px solid #E2E8F0;padding-top:14px}
+@media print{body{padding:18px}@page{margin:1cm}}
+</style></head><body>
+
+<div class="header">
+  <div>
+    <svg width="28" height="28" viewBox="0 0 32 32" fill="none" style="vertical-align:middle;margin-right:8px"><rect x="2" y="2" width="12" height="12" rx="3" fill="#DC2626"/><rect x="18" y="2" width="12" height="12" rx="3" fill="#DC2626" opacity="0.5"/><rect x="2" y="18" width="12" height="12" rx="3" fill="#DC2626" opacity="0.5"/><rect x="18" y="18" width="12" height="12" rx="3" fill="#DC2626"/></svg>
+    <span class="logo-text">DCM - ESTOQUE</span>
+    <div class="logo-sub">Lista de Material Pendente</div>
+  </div>
+  <div class="os-num">
+    <h2>${ordem.numero || 'S/N'}</h2>
+    <p>Emitida em ${new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'})}</p>
+  </div>
+</div>
+
+<div class="alert-box">
+  Os materiais listados abaixo foram solicitados na Ordem de Serviço <strong>${ordem.numero || ''}</strong> e estão com <strong>estoque ZERADO</strong>. É necessário providenciar a reposição para que esta OS possa ser concluída.
+</div>
+
+<table>
+  <thead><tr><th>Produto</th><th>Código</th><th>Categoria</th><th>Localização</th><th style="text-align:center">Qtd. Necessária</th></tr></thead>
+  <tbody>${rows}</tbody>
+</table>
+
+<div class="signatures">
+  <div class="sig">Solicitado por<br><br><br>${ordem.solicitante_nome || ''}</div>
+  <div class="sig">Recebido por (Compras/Almoxarifado)<br><br><br>&nbsp;</div>
+</div>
+
+<div class="footer">DCM · Documento gerado em ${new Date().toLocaleString('pt-BR')} · ${ordem.numero || ''}</div>
+</body></html>`);
+    win.document.close();
+    win.focus();
+    setTimeout(() => win.print(), 500);
+}
+
+// Retorna { ordem, itens } com os itens da ordem que ESTÃO com estoque
+// zerado no momento atual (busca sempre o saldo ao vivo em state.produtos).
+// Usado tanto pelo modal pós-criação quanto pelo botão na tabela de Ordens,
+// para que o material pendente possa ser reimpresso a qualquer momento —
+// mesmo que o usuário não tenha imprimido na primeira vez que apareceu.
+function getItensZeradosOrdem(ordemId) {
+    const o = state.ordens.find(x => x.id === ordemId);
+    if (!o) return null;
+    const itens = extrairItensOrdem(o);
+    const zerados = itens.filter(i => {
+        const p = state.produtos.find(x => x.id === i.produto_id);
+        return p && (p.saldo_atual || 0) <= 0;
+    });
+    return { ordem: o, itens: zerados };
+}
+
+// Usado para decidir se o botão "Imprimir Material Pendente" aparece na
+// tabela de Ordens para uma determinada linha.
+function ordemTemMaterialZerado(o) {
+    if (!o || o.status === 'concluida' || o.status === 'cancelada') return false;
+    const itens = extrairItensOrdem(o);
+    return itens.some(i => {
+        const p = state.produtos.find(x => x.id === i.produto_id);
+        return p && (p.saldo_atual || 0) <= 0;
+    });
+}
+
+// Botão da tabela: imprime direto o material pendente de uma OS já existente,
+// sem precisar que o modal tenha aparecido no momento da criação.
+function imprimirMaterialPendenteOrdem(ordemId) {
+    const res = getItensZeradosOrdem(ordemId);
+    if (!res) { showToast('Ordem não encontrada.', 'error'); return; }
+    if (!res.itens.length) {
+        showToast('Não há materiais com estoque zerado nesta ordem no momento.', 'info');
+        if (document.getElementById('page-ordens').classList.contains('active')) renderOrdens(document.getElementById('searchOrdens') ? document.getElementById('searchOrdens').value : '', state.filtroOrdens);
+        if (document.getElementById('page-minhasOrdens').classList.contains('active')) renderMinhasOrdens();
+        return;
+    }
+    _materialPendenteAtual = res;
+    printMaterialPendente();
+}
+
 
 async function criarOrdem() {
     const desc = document.getElementById('ordemDescricao').value.trim();
@@ -2378,6 +2553,8 @@ async function criarOrdem() {
         showToast('Ordem enviada com sucesso!', 'success');
         updateBadges();
         if (document.getElementById('page-minhasOrdens').classList.contains('active')) renderMinhasOrdens();
+
+        verificarEMostrarMaterialPendente(data, todosItens);
 
     } catch (error) {
         console.error('Erro ao criar ordem:', error);
@@ -2435,6 +2612,8 @@ async function criarOrdemModal() {
         if (document.getElementById('page-ordens').classList.contains('active')) renderOrdens();
         if (document.getElementById('page-minhasOrdens').classList.contains('active')) renderMinhasOrdens();
 
+        verificarEMostrarMaterialPendente(data, todosItens);
+
     } catch (error) {
         console.error('Erro ao criar ordem:', error);
         showToast('Erro ao criar ordem: ' + (error.message || ''), 'error');
@@ -2462,6 +2641,45 @@ function extrairItensOrdem(ordemAtual) {
 
     // Formato antigo: array plano [{ produto_id, quantidade }]
     return raw.map(i => ({ produto_id: i.produto_id, quantidade: i.quantidade }));
+}
+
+// Verifica se uma ordem (já existente) tem algum material com estoque
+// ATUALMENTE zerado — usado para exibir o botão de impressão na tabela
+function temMaterialZerado(ordem) {
+    if (!ordem || ordem.status === 'concluida' || ordem.status === 'cancelada') return false;
+    const itens = extrairItensOrdem(ordem);
+    return itens.some(i => {
+        const p = state.produtos.find(x => x.id === i.produto_id);
+        return p && (p.saldo_atual || 0) <= 0;
+    });
+}
+
+// Reabre o modal de Material Pendente para uma ordem já existente (ex: quando
+// o usuário fechou o modal na hora da criação e quer imprimir depois)
+function abrirMaterialPendenteOrdem(id) {
+    const ordem = state.ordens.find(o => o.id === id);
+    if (!ordem) return;
+
+    const itensZerados = extrairItensOrdem(ordem).filter(i => {
+        const p = state.produtos.find(x => x.id === i.produto_id);
+        return p && (p.saldo_atual || 0) <= 0;
+    });
+    if (!itensZerados.length) {
+        showToast('Não há materiais pendentes (estoque zerado) nesta ordem no momento.', 'info');
+        return;
+    }
+
+    _materialPendenteAtual = { ordem, itens: itensZerados };
+
+    document.getElementById('matPendenteOS').textContent = ordem.numero || '';
+    document.getElementById('matPendenteLista').innerHTML = itensZerados.map(i => {
+        const p = state.produtos.find(x => x.id === i.produto_id);
+        return '<tr><td>' + (p ? p.nome : '—') + '</td>' +
+            '<td>' + (p ? (p.codigo || '—') : '—') + '</td>' +
+            '<td style="text-align:center;font-weight:700;color:var(--red)">' + i.quantidade + '</td></tr>';
+    }).join('');
+
+    openModal('modalMaterialPendente');
 }
 
 // ── Proteção contra duplo clique em operações críticas ───────
@@ -5054,7 +5272,7 @@ function printOrdem(id) {
     try { kits = o.itens_json ? JSON.parse(o.itens_json) : []; } catch(e) {}
     // Legacy: single product
     if (!kits.length || !kits[0].itens) {
-        const p = o.produto || state.produtos.find(x => x.id === o.produto_id);
+        const p = state.produtos.find(x => x.id === o.produto_id) || o.produto;
         kits = [{ label: 'Produto', itens: [{ produto_id: o.produto_id, quantidade: o.quantidade, produto: p }] }];
     }
 
@@ -5064,7 +5282,9 @@ function printOrdem(id) {
     // Build kit tables HTML
     const kitsHtml = kits.map(kit => {
         const rows = kit.itens.map(item => {
-            const p = item.produto || state.produtos.find(x => x.id === item.produto_id);
+            // Prioriza o saldo ATUAL do produto (state.produtos); só usa o snapshot
+            // salvo na ordem (item.produto) se o produto não existir mais (excluído)
+            const p = state.produtos.find(x => x.id === item.produto_id) || item.produto;
             return '<tr>' +
                 '<td>' + (p ? p.nome : '—') + '</td>' +
                 '<td>' + (p ? (p.codigo || '—') : '—') + '</td>' +
@@ -5362,6 +5582,7 @@ function renderOrdens(filter = '', sf = '') {
         let ac = '<button class="tbl-btn" onclick="verOrdem(\'' + o.id + '\')">Ver</button>';
         ac += '<button class="tbl-btn" onclick="editarOrdem(\'' + o.id + '\')">Editar</button>';
         ac += '<button class="tbl-btn" onclick="printOrdem(\'' + o.id + '\')" title="Imprimir OS"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></button>';
+        if (temMaterialZerado(o)) ac += '<button class="tbl-btn" style="color:var(--red);border-color:#FECACA;background:var(--red-soft)" onclick="abrirMaterialPendenteOrdem(\'' + o.id + '\')" title="Imprimir Material Pendente"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/><line x1="9" y1="17" x2="9.01" y2="17"/></svg></button>';
         if (o.status === 'pendente') ac += '<button class="tbl-btn success" onclick="quickUpdateOrdem(\'' + o.id + '\',\'em_andamento\')">▶</button>';
         if (o.status !== 'concluida' && o.status !== 'cancelada') ac += '<button class="tbl-btn" onclick="quickUpdateOrdem(\'' + o.id + '\',\'concluida\')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><polyline points="20 6 9 17 4 12"/></svg></button>';
         ac += '<button class="tbl-btn danger" onclick="deletarOrdem(\'' + o.id + '\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>';
@@ -5427,8 +5648,11 @@ function renderMinhasOrdens() {
         const p = o.produto || state.produtos.find(x => x.id === o.produto_id);
         const pr = PR[o.prioridade] || PR.media;
         const st = ST[o.status] || ST.pendente;
-        
-        return '<tr><td><code style="font-size:0.78rem;font-family:monospace;">' + (o.numero || '') + '</code></td><td>' + (p ? p.nome : '—') + '</td><td>' + (o.quantidade || 0) + '</td><td class="col-hide-mobile"><span class="tag ' + pr.cls + '">' + pr.label + '</span></td><td><span class="tag ' + st.cls + '">' + st.label + '</span></td><td>' + formatDate(o.criado_em) + '</td><td><div class="tbl-actions"><button class="tbl-btn" onclick="printOrdem(\'' + o.id + '\')" title="Imprimir OS"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Imprimir</button></div></td></tr>';
+
+        let ac = '<button class="tbl-btn" onclick="printOrdem(\'' + o.id + '\')" title="Imprimir OS"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Imprimir</button>';
+        if (temMaterialZerado(o)) ac += '<button class="tbl-btn" style="color:var(--red);border-color:#FECACA;background:var(--red-soft)" onclick="abrirMaterialPendenteOrdem(\'' + o.id + '\')" title="Imprimir Material Pendente"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/><line x1="9" y1="17" x2="9.01" y2="17"/></svg> Pendente</button>';
+
+        return '<tr><td><code style="font-size:0.78rem;font-family:monospace;">' + (o.numero || '') + '</code></td><td>' + (p ? p.nome : '—') + '</td><td>' + (o.quantidade || 0) + '</td><td class="col-hide-mobile"><span class="tag ' + pr.cls + '">' + pr.label + '</span></td><td><span class="tag ' + st.cls + '">' + st.label + '</span></td><td>' + formatDate(o.criado_em) + '</td><td><div class="tbl-actions">' + ac + '</div></td></tr>';
     }).join('');
 }
 
