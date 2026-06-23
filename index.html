@@ -1035,6 +1035,45 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
                 <button type="button" class="btn-primary" style="background:#10B981;padding:7px 18px;font-size:0.82rem" onclick="confirmarKit('page')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><polyline points="20 6 9 17 4 12"/></svg> Confirmar Kit</button>
               </div>
               <div id="pageOrdemItens" style="display:flex;flex-direction:column;gap:6px"></div>
+
+              <!-- Painel de variante (Linha/Carga etc.) -->
+              <div id="osVariantePanel_page" style="display:none;background:var(--amber-soft);border:1px solid var(--amber);border-radius:var(--radius);padding:12px 14px;margin-top:8px">
+                <div style="font-size:0.8rem;font-weight:600;color:var(--amber);margin-bottom:8px">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:4px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  Selecione a variante para: <span class="os-variante-nome" style="color:var(--text)"></span>
+                </div>
+                <div class="os-variante-botoes" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+              </div>
+
+              <!-- Dados Técnicos da Vistoria -->
+              <details id="pageOsDadosTecnicos" style="margin-top:12px">
+                <summary style="cursor:pointer;font-size:0.8rem;font-weight:600;color:var(--text-2);padding:8px 0;list-style:none;display:flex;align-items:center;gap:6px">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                  Dados Técnicos da Instalação <span style="font-weight:400;color:var(--text-3)">(opcional)</span>
+                </summary>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;padding:12px;background:var(--surface-2);border-radius:var(--radius);border:1px solid var(--border)">
+                  <div class="form-group"><label>Residência</label>
+                    <select id="pageOsResidencia" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
+                      <option value="">Selecione...</option><option value="monofasico">Monofásico</option><option value="bifasico">Bifásico</option><option value="trifasico">Trifásico</option>
+                    </select></div>
+                  <div class="form-group"><label>Tipo de Telha</label>
+                    <select id="pageOsTipoTelha" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
+                      <option value="">Selecione...</option><option value="portuguesa_concreto">Portuguesa de Concreto</option><option value="portuguesa_ceramica">Portuguesa de Cerâmica</option><option value="romana">Romana</option><option value="francesa">Francesa</option><option value="colonial">Colonial</option><option value="metalica">Metálica</option><option value="fibrocimento">Fibrocimento</option><option value="shingle">Shingle</option><option value="laje">Laje / Terraço</option><option value="outro">Outro</option>
+                    </select></div>
+                  <div class="form-group"><label>Tipo de Estrutura</label>
+                    <select id="pageOsTipoEstrutura" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
+                      <option value="">Selecione...</option><option value="madeira">Madeira</option><option value="metalica">Metálica</option><option value="concreto">Concreto</option><option value="mista">Mista</option>
+                    </select></div>
+                  <div class="form-group"><label>Condição do Telhado</label>
+                    <select id="pageOsCondicaoTelhado" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
+                      <option value="">Selecione...</option><option value="bom">✅ Boas condições</option><option value="regular">⚠️ Regular — requer atenção</option><option value="ruim">❌ Ruim — necessita reparo</option>
+                    </select></div>
+                  <div class="form-group" style="grid-column:1/-1"><label>Observações Técnicas</label>
+                    <textarea id="pageOsObsTecnica" rows="2" placeholder="Anotações da vistoria..." style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem;resize:vertical"></textarea>
+                  </div>
+                </div>
+              </details>
+
               <p style="font-size:0.72rem;color:var(--text-3);margin-top:8px">Selecione o tipo, adicione os produtos e clique em "<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><polyline points="20 6 9 17 4 12"/></svg> Confirmar Kit". Repita para cada kit (Inversor, Padrão de Entrada, etc.).</p>
             </div>
 
@@ -1285,6 +1324,45 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
           <button type="button" class="btn-primary" style="padding:7px 16px;font-size:0.82rem" onclick="confirmarKit('modal')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><polyline points="20 6 9 17 4 12"/></svg> Confirmar Kit</button>
         </div>
         <div id="modalOrdemItens" style="display:flex;flex-direction:column;gap:6px"></div>
+
+        <!-- Painel de variante (Linha/Carga etc.) -->
+        <div id="osVariantePanel_modal" style="display:none;background:var(--amber-soft);border:1px solid var(--amber);border-radius:var(--radius);padding:12px 14px;margin-top:8px">
+          <div style="font-size:0.8rem;font-weight:600;color:var(--amber);margin-bottom:8px">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:4px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Selecione a variante para: <span class="os-variante-nome" style="color:var(--text)"></span>
+          </div>
+          <div class="os-variante-botoes" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+        </div>
+
+        <!-- Dados Técnicos da Vistoria -->
+        <details id="modalOsDadosTecnicos" style="margin-top:12px">
+          <summary style="cursor:pointer;font-size:0.8rem;font-weight:600;color:var(--text-2);padding:8px 0;list-style:none;display:flex;align-items:center;gap:6px">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            Dados Técnicos da Instalação <span style="font-weight:400;color:var(--text-3)">(opcional)</span>
+          </summary>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;padding:12px;background:var(--surface-2);border-radius:var(--radius);border:1px solid var(--border)">
+            <div class="form-group"><label>Residência</label>
+              <select id="modalOsResidencia" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
+                <option value="">Selecione...</option><option value="monofasico">Monofásico</option><option value="bifasico">Bifásico</option><option value="trifasico">Trifásico</option>
+              </select></div>
+            <div class="form-group"><label>Tipo de Telha</label>
+              <select id="modalOsTipoTelha" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
+                <option value="">Selecione...</option><option value="portuguesa_concreto">Portuguesa de Concreto</option><option value="portuguesa_ceramica">Portuguesa de Cerâmica</option><option value="romana">Romana</option><option value="francesa">Francesa</option><option value="colonial">Colonial</option><option value="metalica">Metálica</option><option value="fibrocimento">Fibrocimento</option><option value="shingle">Shingle</option><option value="laje">Laje / Terraço</option><option value="outro">Outro</option>
+              </select></div>
+            <div class="form-group"><label>Tipo de Estrutura</label>
+              <select id="modalOsTipoEstrutura" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
+                <option value="">Selecione...</option><option value="madeira">Madeira</option><option value="metalica">Metálica</option><option value="concreto">Concreto</option><option value="mista">Mista</option>
+              </select></div>
+            <div class="form-group"><label>Condição do Telhado</label>
+              <select id="modalOsCondicaoTelhado" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
+                <option value="">Selecione...</option><option value="bom">✅ Boas condições</option><option value="regular">⚠️ Regular — requer atenção</option><option value="ruim">❌ Ruim — necessita reparo</option>
+              </select></div>
+            <div class="form-group" style="grid-column:1/-1"><label>Observações Técnicas</label>
+              <textarea id="modalOsObsTecnica" rows="2" placeholder="Anotações da vistoria..." style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem;resize:vertical"></textarea>
+            </div>
+          </div>
+        </details>
+
         <p style="font-size:0.72rem;color:var(--text-3);margin-top:8px">Selecione o tipo, adicione os produtos e clique em "Confirmar Kit". Você pode confirmar múltiplos kits.</p>
       </div>
 
@@ -1353,6 +1431,45 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
           <button type="button" class="btn-primary" style="background:#10B981;padding:7px 18px;font-size:0.82rem" onclick="confirmarKit('edit')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><polyline points="20 6 9 17 4 12"/></svg> Confirmar Kit</button>
         </div>
         <div id="editOrdemItens" style="display:flex;flex-direction:column;gap:6px"></div>
+
+        <!-- Painel de variante (Linha/Carga etc.) -->
+        <div id="osVariantePanel_edit" style="display:none;background:var(--amber-soft);border:1px solid var(--amber);border-radius:var(--radius);padding:12px 14px;margin-top:8px">
+          <div style="font-size:0.8rem;font-weight:600;color:var(--amber);margin-bottom:8px">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:4px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Selecione a variante para: <span class="os-variante-nome" style="color:var(--text)"></span>
+          </div>
+          <div class="os-variante-botoes" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+        </div>
+
+        <!-- Dados Técnicos da Vistoria -->
+        <details id="editOsDadosTecnicos" style="margin-top:12px">
+          <summary style="cursor:pointer;font-size:0.8rem;font-weight:600;color:var(--text-2);padding:8px 0;list-style:none;display:flex;align-items:center;gap:6px">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            Dados Técnicos da Instalação <span style="font-weight:400;color:var(--text-3)">(opcional)</span>
+          </summary>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;padding:12px;background:var(--surface-2);border-radius:var(--radius);border:1px solid var(--border)">
+            <div class="form-group"><label>Residência</label>
+              <select id="editOsResidencia" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
+                <option value="">Selecione...</option><option value="monofasico">Monofásico</option><option value="bifasico">Bifásico</option><option value="trifasico">Trifásico</option>
+              </select></div>
+            <div class="form-group"><label>Tipo de Telha</label>
+              <select id="editOsTipoTelha" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
+                <option value="">Selecione...</option><option value="portuguesa_concreto">Portuguesa de Concreto</option><option value="portuguesa_ceramica">Portuguesa de Cerâmica</option><option value="romana">Romana</option><option value="francesa">Francesa</option><option value="colonial">Colonial</option><option value="metalica">Metálica</option><option value="fibrocimento">Fibrocimento</option><option value="shingle">Shingle</option><option value="laje">Laje / Terraço</option><option value="outro">Outro</option>
+              </select></div>
+            <div class="form-group"><label>Tipo de Estrutura</label>
+              <select id="editOsTipoEstrutura" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
+                <option value="">Selecione...</option><option value="madeira">Madeira</option><option value="metalica">Metálica</option><option value="concreto">Concreto</option><option value="mista">Mista</option>
+              </select></div>
+            <div class="form-group"><label>Condição do Telhado</label>
+              <select id="editOsCondicaoTelhado" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
+                <option value="">Selecione...</option><option value="bom">✅ Boas condições</option><option value="regular">⚠️ Regular — requer atenção</option><option value="ruim">❌ Ruim — necessita reparo</option>
+              </select></div>
+            <div class="form-group" style="grid-column:1/-1"><label>Observações Técnicas</label>
+              <textarea id="editOsObsTecnica" rows="2" placeholder="Anotações da vistoria..." style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem;resize:vertical"></textarea>
+            </div>
+          </div>
+        </details>
+
         <p style="font-size:0.72rem;color:var(--text-3);margin-top:8px">Adicione novos kits ou remova os existentes. Clique em "Salvar Alterações" quando terminar.</p>
       </div>
     </div>
@@ -1938,33 +2055,35 @@ async function salvarEntrada() {
             
         if (error) throw error;
         
-        // Atualizar saldo do produto — update direto na tabela (mesmo padrão usado
-        // na baixa de estoque da Ordem de Serviço, que é confiável sob RLS).
-        // Não usamos mais RPC: funções RPC sem SECURITY DEFINER podem ser bloqueadas
-        // silenciosamente pela RLS (0 linhas afetadas, sem erro retornado), fazendo o
-        // saldo real no banco nunca ser atualizado mesmo a tela parecendo certa.
-        const produto = state.produtos.find(p => p.id === prodId);
-        const novoSaldoEntrada = (produto ? (produto.saldo_atual || 0) : 0) + qtd;
+        // Atualizar saldo do produto
         const { error: updateError } = await sb
-            .from('produtos')
-            .update({ saldo_atual: novoSaldoEntrada })
-            .eq('id', prodId);
-
-        if (updateError) throw updateError;
-
+            .rpc('incrementar_estoque', { 
+                produto_id: prodId, 
+                quantidade: qtd 
+            });
+            
+        if (updateError) {
+            // Se falhar, fazer update manual
+            const produto = state.produtos.find(p => p.id === prodId);
+            if (produto) {
+                produto.saldo_atual = (produto.saldo_atual || 0) + qtd;
+                await sb
+                    .from('produtos')
+                    .update({ saldo_atual: produto.saldo_atual })
+                    .eq('id', prodId);
+            }
+        }
+        
         state.entradas.unshift(data);
         
         // Atualizar saldo local do produto
         const produtoIndex = state.produtos.findIndex(p => p.id === prodId);
         if (produtoIndex !== -1) {
-            state.produtos[produtoIndex].saldo_atual = novoSaldoEntrada;
+            state.produtos[produtoIndex].saldo_atual = (state.produtos[produtoIndex].saldo_atual || 0) + qtd;
         }
         
         closeModal('modalEntrada');
         renderEntradas();
-        // Atualizar também Produtos e Kits, caso estejam visíveis, para refletir o novo saldo na hora
-        renderProdutos();
-        renderKits();
         showToast('Entrada registrada com sucesso!');
         updateBadges();
         
@@ -2015,32 +2134,34 @@ async function salvarSaida() {
             
         if (error) throw error;
         
-        // Atualizar saldo do produto — update direto na tabela (mesmo padrão usado
-        // na baixa de estoque da Ordem de Serviço, que é confiável sob RLS).
-        // Não usamos mais RPC: funções RPC sem SECURITY DEFINER podem ser bloqueadas
-        // silenciosamente pela RLS (0 linhas afetadas, sem erro retornado), fazendo o
-        // saldo real no banco nunca ser atualizado mesmo a tela parecendo certa.
-        const novoSaldoSaida = Math.max(0, (produto ? (produto.saldo_atual || 0) : 0) - qtd);
+        // Atualizar saldo do produto
         const { error: updateError } = await sb
-            .from('produtos')
-            .update({ saldo_atual: novoSaldoSaida })
-            .eq('id', prodId);
-
-        if (updateError) throw updateError;
-
+            .rpc('decrementar_estoque', { 
+                produto_id: prodId, 
+                quantidade: qtd 
+            });
+            
+        if (updateError) {
+            // Se falhar, fazer update manual
+            if (produto) {
+                produto.saldo_atual = Math.max(0, (produto.saldo_atual || 0) - qtd);
+                await sb
+                    .from('produtos')
+                    .update({ saldo_atual: produto.saldo_atual })
+                    .eq('id', prodId);
+            }
+        }
+        
         state.saidas.unshift(data);
         
         // Atualizar saldo local do produto
         const produtoIndex = state.produtos.findIndex(p => p.id === prodId);
         if (produtoIndex !== -1) {
-            state.produtos[produtoIndex].saldo_atual = novoSaldoSaida;
+            state.produtos[produtoIndex].saldo_atual = Math.max(0, (state.produtos[produtoIndex].saldo_atual || 0) - qtd);
         }
         
         closeModal('modalSaida');
         renderSaidas();
-        // Atualizar também Produtos e Kits, caso estejam visíveis, para refletir o novo saldo na hora
-        renderProdutos();
-        renderKits();
         showToast('Saída registrada com sucesso!');
         updateBadges();
         // Verificar se algum produto ficou abaixo do mínimo
@@ -2071,9 +2192,11 @@ const _kitsConfirmados = { modal: [], page: [], edit: [] };
 
 let _materialPendenteAtual = null;
 
-function buildSelectProdutos(selectedId, qtd, idx, ctx) {
+function buildSelectProdutos(selectedId, qtd, idx, ctx, nomeComVariante) {
     const prod = selectedId ? state.produtos.find(p => p.id === selectedId) : null;
-    const nomeInicial = prod ? prod.nome + ' (Saldo: ' + (prod.saldo_atual || 0) + ')' : '';
+    // Se vier nomeComVariante (ex: "Cabo 6mm (Linha)"), exibe ele; senão usa o nome padrão
+    const nomeBase = nomeComVariante || (prod ? prod.nome : '');
+    const nomeInicial = nomeBase ? nomeBase + ' (Saldo: ' + (prod ? (prod.saldo_atual || 0) : 0) + ')' : '';
     const acId = 'ac_' + ctx + '_' + idx;
     const ddId = 'dd_' + ctx + '_' + idx;
     return '<div style="display:flex;gap:8px;align-items:center;margin-bottom:4px" id="itemOrdem_' + ctx + '_' + idx + '">' +
@@ -2141,7 +2264,10 @@ function acSelecionarSimples(el) {
     var inp = document.getElementById(inpId);
     var hid = document.getElementById(hiddenId);
     if (inp) inp.value = nome;
-    if (hid) hid.value = prodId;
+    if (hid) {
+        hid.value = prodId;
+        hid.dispatchEvent(new Event('change'));  // dispara verificação de variante
+    }
     acFechar(inp ? inp.getAttribute('data-dd') : '');
 }
 
@@ -2196,6 +2322,51 @@ function acSelecionar(prodId, inpId) {
     var ctx = inp.dataset.ctx;
     var item = _ordemItens[ctx].find(function(i) { return i.idx === idx; });
     if (item) item.produto_id = prodId;
+    // Verificar variante (ex: Linha/Carga para cabos)
+    _osVerificarVariante(prodId, inpId, idx, ctx);
+}
+
+// Verifica variante para itens de OS (igual ao kit)
+function _osVerificarVariante(prodId, inpId, idx, ctx) {
+    var prod = state.produtos.find(function(p) { return p.id === prodId; });
+    if (!prod) return;
+    var entrada = KIT_VARIANTES.find(function(v) { return v.regex.test(prod.nome); });
+    if (!entrada) return;
+
+    // Monta painel de variante dinâmico próximo ao input
+    var panelId = 'osVariantePanel_' + ctx;
+    var panel = document.getElementById(panelId);
+    if (!panel) return;
+
+    var titulo = panel.querySelector('.os-variante-nome');
+    var bots = panel.querySelector('.os-variante-botoes');
+    if (titulo) titulo.textContent = prod.nome;
+    if (bots) {
+        bots.innerHTML = entrada.variantes.map(function(v) {
+            return '<button type="button" class="btn-outline" style="padding:5px 16px;font-size:0.82rem" ' +
+                'onclick="_osSelecionarVariante(\'' + inpId + '\',\'' + v + '\',' + idx + ',\'' + ctx + '\')">' + v + '</button>';
+        }).join('');
+    }
+    panel.style.display = 'block';
+    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// Aplica variante escolhida ao input da OS e salva no nome do item
+function _osSelecionarVariante(inpId, variante, idx, ctx) {
+    var inp = document.getElementById(inpId);
+    if (inp) {
+        var val = inp.value
+            .replace(/\s*\(Saldo:\s*[\d-]+\)/gi, '')
+            .replace(/\s*\([^)]+\)\s*$/, '')
+            .trim();
+        inp.value = val + ' (' + variante + ')';
+        // Salvar nome com variante no estado
+        var item = _ordemItens[ctx] ? _ordemItens[ctx].find(function(i) { return i.idx === idx; }) : null;
+        if (item) item.nome = val + ' (' + variante + ')';
+    }
+    var panelId = 'osVariantePanel_' + ctx;
+    var panel = document.getElementById(panelId);
+    if (panel) panel.style.display = 'none';
 }
 
 function acFechar(ddId) {
@@ -2226,7 +2397,7 @@ function renderLinhasOrdem(ctx) {
         container.innerHTML = '<p style="font-size:0.8rem;color:var(--text-3);padding:6px 0">Clique em "+ Produto" para adicionar materiais a este kit.</p>';
         return;
     }
-    container.innerHTML = _ordemItens[ctx].map(i => buildSelectProdutos(i.produto_id, i.quantidade, i.idx, ctx)).join('');
+    container.innerHTML = _ordemItens[ctx].map(i => buildSelectProdutos(i.produto_id, i.quantidade, i.idx, ctx, i.nome || '')).join('');
 }
 
 function confirmarKit(ctx) {
@@ -2248,14 +2419,40 @@ function confirmarKit(ctx) {
     }
     if (avisoEstoque) showToast(avisoEstoque, 'info');
 
-    // Enriquecer itens com dados do produto
-    const itensCompletos = itens.map(i => ({
-        ...i,
-        produto: state.produtos.find(p => p.id === i.produto_id)
-    }));
+    // Enriquecer itens com dados do produto e capturar nome com variante do campo de texto
+    const itensCompletos = itens.map(i => {
+        const prod = state.produtos.find(p => p.id === i.produto_id);
+        // Lê o nome do input (pode conter variante ex: "Cabo 6mm (Linha)") sem o "(Saldo: X)"
+        const acId = 'ac_' + ctx + '_' + i.idx;
+        const inpEl = document.getElementById(acId);
+        const nomeDisplay = inpEl
+            ? inpEl.value.replace(/\s*\(Saldo:\s*[\d-]+\)/gi, '').trim()
+            : (i.nome || (prod ? prod.nome : ''));
+        return { ...i, nome: nomeDisplay, produto: prod };
+    });
 
-    _kitsConfirmados[ctx].push({ tipo, label: KIT_LABELS[tipo] || tipo, itens: itensCompletos });
+    // Coletar dados técnicos de vistoria preenchidos na seção de OS
+    const dtPrefix = ctx === 'modal' ? 'modalOs' : ctx === 'edit' ? 'editOs' : 'pageOs';
+    const dadosTecnicos = {
+        residencia:       document.getElementById(dtPrefix + 'Residencia')?.value || '',
+        tipo_telha:       document.getElementById(dtPrefix + 'TipoTelha')?.value || '',
+        tipo_estrutura:   document.getElementById(dtPrefix + 'TipoEstrutura')?.value || '',
+        condicao_telhado: document.getElementById(dtPrefix + 'CondicaoTelhado')?.value || '',
+        obs_tecnica:      document.getElementById(dtPrefix + 'ObsTecnica')?.value?.trim() || '',
+    };
+    const temDT = Object.values(dadosTecnicos).some(v => v);
+
+    _kitsConfirmados[ctx].push({
+        tipo,
+        label: KIT_LABELS[tipo] || tipo,
+        itens: itensCompletos,
+        dados_tecnicos: temDT ? dadosTecnicos : null
+    });
     _ordemItens[ctx] = [];
+
+    // Esconder painel de variante
+    const vp = document.getElementById('osVariantePanel_' + ctx);
+    if (vp) vp.style.display = 'none';
 
     // Reset tipo selector
     document.getElementById(tipoId).value = '';
@@ -2278,12 +2475,17 @@ function renderKitsConfirmados(ctx) {
     container.innerHTML = _kitsConfirmados[ctx].map((kit, ki) => {
         const rows = kit.itens.map(item => {
             const p = item.produto;
+            const nomeDisplay = item.nome || (p ? p.nome : '—');
+            const saldo = p ? (p.saldo_atual || 0) : 0;
+            const insuf = p && saldo < item.quantidade;
             return '<tr>' +
-                '<td style="padding:6px 10px;font-size:0.84rem;border-bottom:1px solid var(--border-soft)">' + (p ? p.nome : '—') + '</td>' +
+                '<td style="padding:6px 10px;font-size:0.84rem;border-bottom:1px solid var(--border-soft)">' + nomeDisplay + '</td>' +
                 '<td style="padding:6px 10px;font-size:0.84rem;border-bottom:1px solid var(--border-soft);color:var(--text-2)">' + (p ? (p.codigo || '—') : '—') + '</td>' +
                 '<td style="padding:6px 10px;font-size:0.84rem;border-bottom:1px solid var(--border-soft);color:var(--text-2)">' + (p ? (p.localizacao || '—') : '—') + '</td>' +
                 '<td style="padding:6px 10px;font-size:0.84rem;border-bottom:1px solid var(--border-soft);font-weight:600;color:var(--accent);text-align:center">' + item.quantidade + '</td>' +
-                '<td style="padding:6px 10px;font-size:0.84rem;border-bottom:1px solid var(--border-soft);color:var(--green);text-align:center">' + (p ? (p.saldo_atual || 0) : '—') + '</td>' +
+                '<td style="padding:6px 10px;font-size:0.84rem;border-bottom:1px solid var(--border-soft);text-align:center;font-weight:600;color:' + (insuf ? 'var(--red)' : 'var(--green)') + '">' +
+                    saldo + (insuf ? ' <span style="font-size:0.7rem;font-weight:400">(Insuf.)</span>' : '') +
+                '</td>' +
                 '</tr>';
         }).join('');
 
@@ -2512,6 +2714,15 @@ async function criarOrdem() {
     const primeiroProd = todosItens[0];
     const kitLabel = kits.map(k => k.label).join(' + ');
 
+    const dtPage = {
+        residencia:       document.getElementById('pageOsResidencia')?.value || '',
+        tipo_telha:       document.getElementById('pageOsTipoTelha')?.value || '',
+        tipo_estrutura:   document.getElementById('pageOsTipoEstrutura')?.value || '',
+        condicao_telhado: document.getElementById('pageOsCondicaoTelhado')?.value || '',
+        obs_tecnica:      document.getElementById('pageOsObsTecnica')?.value?.trim() || '',
+    };
+    const temDTPage = Object.values(dtPage).some(v => v);
+
     const ordem = {
         numero: await gerarNumeroOS(),
         solicitante_id: state.currentUser.id,
@@ -2526,7 +2737,8 @@ async function criarOrdem() {
         status: 'pendente',
         usuario_id: state.currentUser.id,
         itens_json: JSON.stringify(kits),
-        equipe_id: document.getElementById('ordemEquipe').value || null
+        equipe_id: document.getElementById('ordemEquipe').value || null,
+        dados_tecnicos: temDTPage ? JSON.stringify(dtPage) : null
     };
 
     // Se a data necessaria for passada, Data da Solicitacao = Data Necessaria
@@ -2549,6 +2761,12 @@ async function criarOrdem() {
         document.getElementById('ordemDescricao').value = '';
         document.getElementById('ordemData').value = '';
         document.getElementById('ordemPrioridade').value = 'media';
+        ['pageOsResidencia','pageOsTipoTelha','pageOsTipoEstrutura','pageOsCondicaoTelhado'].forEach(id => {
+            const el = document.getElementById(id); if (el) el.value = '';
+        });
+        const obsEl = document.getElementById('pageOsObsTecnica'); if (obsEl) obsEl.value = '';
+        const detEl = document.getElementById('pageOsDadosTecnicos'); if (detEl) detEl.open = false;
+        const vp = document.getElementById('osVariantePanel_page'); if (vp) vp.style.display = 'none';
 
         showToast('Ordem enviada com sucesso!', 'success');
         updateBadges();
@@ -2573,6 +2791,15 @@ async function criarOrdemModal() {
     const primeiroProd = todosItens[0];
     const kitLabel = kits.map(k => k.label).join(' + ');
 
+    const dtModal = {
+        residencia:       document.getElementById('modalOsResidencia')?.value || '',
+        tipo_telha:       document.getElementById('modalOsTipoTelha')?.value || '',
+        tipo_estrutura:   document.getElementById('modalOsTipoEstrutura')?.value || '',
+        condicao_telhado: document.getElementById('modalOsCondicaoTelhado')?.value || '',
+        obs_tecnica:      document.getElementById('modalOsObsTecnica')?.value?.trim() || '',
+    };
+    const temDTModal = Object.values(dtModal).some(v => v);
+
     const ordem = {
         numero: await gerarNumeroOS(),
         solicitante_id: state.currentUser.id,
@@ -2587,7 +2814,8 @@ async function criarOrdemModal() {
         status: 'pendente',
         usuario_id: state.currentUser.id,
         itens_json: JSON.stringify(kits),
-        equipe_id: document.getElementById('modalOrdemEquipe').value || null
+        equipe_id: document.getElementById('modalOrdemEquipe').value || null,
+        dados_tecnicos: temDTModal ? JSON.stringify(dtModal) : null
     };
 
     // Se a data necessaria for passada, Data da Solicitacao = Data Necessaria
@@ -2723,22 +2951,10 @@ async function updateOrdemStatus(status) {
                 if (!state.produtos.length) await carregarDados();
                 const itens = extrairItensOrdem(ordemAtual);
 
-                // 1. Verificar TODOS os itens antes de fazer qualquer baixa
+                // Dar baixa automática no estoque ao concluir (sem bloquear por saldo zerado)
                 for (const item of itens) {
                     const prod = state.produtos.find(p => p.id === item.produto_id);
-                    if (!prod) {
-                        showToast('Produto não encontrado. Recarregue a página.', 'error');
-                        _unlockOp(btnAtivo); return;
-                    }
-                    if ((prod.saldo_atual || 0) < item.quantidade) {
-                        showToast('Estoque insuficiente para "' + prod.nome + '"! Disponível: ' + (prod.saldo_atual || 0) + ' — Necessário: ' + item.quantidade, 'error');
-                        _unlockOp(btnAtivo); return;
-                    }
-                }
-
-                // 2. Só chega aqui se TODOS os itens têm estoque suficiente
-                for (const item of itens) {
-                    const prod = state.produtos.find(p => p.id === item.produto_id);
+                    if (!prod) continue;
                     const saida = {
                         produto_id: item.produto_id,
                         quantidade: item.quantidade,
@@ -2810,22 +3026,10 @@ async function quickUpdateOrdem(id, status, btnEl) {
             } else {
                 const itens = extrairItensOrdem(ordemAtual);
 
-                // 1. Verificar TODOS antes de qualquer baixa
+                // Dar baixa automática no estoque ao concluir (sem bloquear por saldo zerado)
                 for (const item of itens) {
                     const prod = state.produtos.find(p => p.id === item.produto_id);
-                    if (!prod) {
-                        showToast('Produto não encontrado. Recarregue a página.', 'error');
-                        _unlockOp(null); return;
-                    }
-                    if ((prod.saldo_atual || 0) < item.quantidade) {
-                        showToast('Estoque insuficiente para "' + prod.nome + '"! Disponível: ' + (prod.saldo_atual || 0) + ' — Necessário: ' + item.quantidade, 'error');
-                        _unlockOp(null); return;
-                    }
-                }
-
-                // 2. Todos têm estoque — dar baixa
-                for (const item of itens) {
-                    const prod = state.produtos.find(p => p.id === item.produto_id);
+                    if (!prod) continue;
                     const saida = {
                         produto_id: item.produto_id,
                         quantidade: item.quantidade,
@@ -3255,6 +3459,13 @@ function openModal(id) {
         populateProdutoSelect('modalOrdemProduto');
         const _d1=new Date(); document.getElementById('modalOrdemData').value = _d1.getFullYear()+'-'+String(_d1.getMonth()+1).padStart(2,'0')+'-'+String(_d1.getDate()).padStart(2,'0');
         populateEquipeSelect('modalOrdemEquipe');
+        // Reset vistoria
+        ['modalOsResidencia','modalOsTipoTelha','modalOsTipoEstrutura','modalOsCondicaoTelhado'].forEach(function(id2) {
+            var el = document.getElementById(id2); if (el) el.value = '';
+        });
+        var obsModal = document.getElementById('modalOsObsTecnica'); if (obsModal) obsModal.value = '';
+        var detModal = document.getElementById('modalOsDadosTecnicos'); if (detModal) detModal.open = false;
+        var vpModal = document.getElementById('osVariantePanel_modal'); if (vpModal) vpModal.style.display = 'none';
     }
     if (id === 'modalEquipe') {
         state.editingEquipeId = null;
@@ -5285,8 +5496,10 @@ function printOrdem(id) {
             // Prioriza o saldo ATUAL do produto (state.produtos); só usa o snapshot
             // salvo na ordem (item.produto) se o produto não existir mais (excluído)
             const p = state.produtos.find(x => x.id === item.produto_id) || item.produto;
+            // Usa item.nome (pode conter variante ex: "Cabo 16mm (Linha)") ou cai em p.nome
+            const nomeDisplay = item.nome || (p ? p.nome : '—');
             return '<tr>' +
-                '<td>' + (p ? p.nome : '—') + '</td>' +
+                '<td>' + nomeDisplay + '</td>' +
                 '<td>' + (p ? (p.codigo || '—') : '—') + '</td>' +
                 '<td>' + (p ? (p.categoria || '—') : '—') + '</td>' +
                 '<td>' + (p ? (p.localizacao || '—') : '—') + '</td>' +
@@ -5302,6 +5515,32 @@ function printOrdem(id) {
             '</tr></thead><tbody>' + rows + '</tbody></table>' +
             '</div>';
     }).join('');
+
+    // ── Dados Técnicos da Instalação ──────────────────────────────────────
+    // Tenta encontrar dados técnicos: direto na OS ou embutidos no itens_json
+    const dtRaw = o.dados_tecnicos || (() => {
+        try { return JSON.parse(o.itens_json || '[]')[0]?.dados_tecnicos || null; } catch(e) { return null; }
+    })();
+    const dt = dtRaw ? (typeof dtRaw === 'string' ? JSON.parse(dtRaw) : dtRaw) : {};
+    const dtMap = {
+        residencia:       { label: 'Residência',           values: { monofasico:'Monofásico', bifasico:'Bifásico', trifasico:'Trifásico' } },
+        tipo_telha:       { label: 'Tipo de Telha',        values: { portuguesa_concreto:'Portuguesa de Concreto', portuguesa_ceramica:'Portuguesa de Cerâmica', romana:'Romana', francesa:'Francesa', colonial:'Colonial', metalica:'Metálica', fibrocimento:'Fibrocimento', shingle:'Shingle', laje:'Laje / Terraço', outro:'Outro' } },
+        tipo_estrutura:   { label: 'Tipo de Estrutura',    values: { madeira:'Madeira', metalica:'Metálica', concreto:'Concreto', mista:'Mista' } },
+        condicao_telhado: { label: 'Condição do Telhado',  values: { bom:'✅ Boas condições de instalação', regular:'⚠️ Regular — requer atenção', ruim:'❌ Ruim — necessita reparo' } },
+        obs_tecnica:      { label: 'Obs. Técnicas',        values: {} },
+    };
+    const dtEntries = Object.entries(dt).filter(([, v]) => v);
+    const dadosTecnicosHtml = dtEntries.length
+        ? `<div class="dt-section">
+            <div class="dt-title">Dados Técnicos da Instalação</div>
+            <div class="dt-grid">
+              ${dtEntries.map(([k, v]) => {
+                  const cfg = dtMap[k] || { label: k, values: {} };
+                  return `<div class="dt-card"><div class="dt-label">${cfg.label}</div><div class="dt-value">${cfg.values[v] || v}</div></div>`;
+              }).join('')}
+            </div>
+          </div>`
+        : '';
 
     const win = window.open('', '_blank', 'width=900,height=700');
     win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"/>
@@ -5331,6 +5570,12 @@ tr:last-child td{border-bottom:none}
 .signatures{display:grid;grid-template-columns:1fr 1fr;gap:50px;margin-top:36px}
 .sig{border-top:1px solid #CBD5E1;padding-top:8px;text-align:center;font-size:0.78rem;color:#64748B}
 .footer{margin-top:28px;text-align:center;font-size:0.7rem;color:#94A3B8;border-top:1px solid #E2E8F0;padding-top:14px}
+.dt-section{margin-top:22px;border-top:2px solid #E2E8F0;padding-top:16px}
+.dt-title{font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#64748B;margin-bottom:12px}
+.dt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px}
+.dt-card{background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:10px 12px}
+.dt-label{font-size:0.65rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:#94A3B8;margin-bottom:3px}
+.dt-value{font-size:0.85rem;color:#1E293B;font-weight:500}
 @media print{body{padding:18px}@page{margin:1cm}}
 </style></head><body>
 
@@ -5359,6 +5604,8 @@ tr:last-child td{border-bottom:none}
 ${o.descricao ? '<div class="desc-box"><label>Descrição / Justificativa</label><p style="font-size:0.875rem;line-height:1.6">' + o.descricao + '</p></div>' : ''}
 
 ${kitsHtml}
+
+${dadosTecnicosHtml}
 
 <div class="signatures">
   <div class="sig">Assinatura do Solicitante<br><br><br>${o.solicitante_nome || ''}</div>
@@ -5417,6 +5664,29 @@ async function editarOrdem(id) {
     renderKitsConfirmados('edit');
     renderLinhasOrdem('edit');
     document.getElementById('editOrdemTipo').value = '';
+
+    // Carregar dados técnicos do primeiro kit que tiver, ou da OS diretamente
+    const dtRawEdit = o.dados_tecnicos || (() => {
+        try {
+            const kitsEdit = _kitsConfirmados['edit'];
+            for (const k of kitsEdit) {
+                if (k.dados_tecnicos) return k.dados_tecnicos;
+            }
+            return null;
+        } catch(e) { return null; }
+    })();
+    if (dtRawEdit) {
+        const dtEdit = typeof dtRawEdit === 'string' ? JSON.parse(dtRawEdit) : dtRawEdit;
+        const setVal = (id, v) => { const el = document.getElementById(id); if (el && v) el.value = v; };
+        setVal('editOsResidencia',      dtEdit.residencia);
+        setVal('editOsTipoTelha',       dtEdit.tipo_telha);
+        setVal('editOsTipoEstrutura',   dtEdit.tipo_estrutura);
+        setVal('editOsCondicaoTelhado', dtEdit.condicao_telhado);
+        setVal('editOsObsTecnica',      dtEdit.obs_tecnica);
+        const det = document.getElementById('editOsDadosTecnicos');
+        if (det) det.open = true;
+    }
+
     document.getElementById('modalEditOrdem').classList.remove('hidden');
 }
 
@@ -5472,6 +5742,15 @@ async function salvarEdicaoOrdem() {
         }
     }
 
+    var dtEdit = {
+        residencia:       document.getElementById('editOsResidencia')?.value || '',
+        tipo_telha:       document.getElementById('editOsTipoTelha')?.value || '',
+        tipo_estrutura:   document.getElementById('editOsTipoEstrutura')?.value || '',
+        condicao_telhado: document.getElementById('editOsCondicaoTelhado')?.value || '',
+        obs_tecnica:      document.getElementById('editOsObsTecnica')?.value?.trim() || '',
+    };
+    var temDTEdit = Object.values(dtEdit).some(function(v) { return v; });
+
     var updates = {
         produto_id: primeiroProd.produto_id,
         quantidade: primeiroProd.quantidade,
@@ -5480,7 +5759,8 @@ async function salvarEdicaoOrdem() {
             ? document.getElementById('editOrdemData').value
             : null,
         descricao: '[' + kitLabel + '] ' + desc,
-        itens_json: JSON.stringify(kits)
+        itens_json: JSON.stringify(kits),
+        dados_tecnicos: temDTEdit ? JSON.stringify(dtEdit) : null
     };
 
     try {
@@ -5609,25 +5889,89 @@ function filterOrdensByStatus(status, btn) {
 function verOrdem(id) {
     const o = state.ordens.find(x => x.id === id);
     if (!o) return;
-    
+
     state.editingOrdemId = id;
-    const p = o.produto || state.produtos.find(x => x.id === o.produto_id);
     const pr = PR[o.prioridade] || PR.media;
     const st = ST[o.status] || ST.pendente;
-    
-    document.getElementById('ordemDetalheContent').innerHTML = 
+
+    // Parse kits da ordem
+    let kits = [];
+    try { kits = o.itens_json ? JSON.parse(o.itens_json) : []; } catch(e) {}
+    if (!kits.length || !kits[0].itens) {
+        const p0 = state.produtos.find(x => x.id === o.produto_id) || o.produto;
+        kits = [{ label: 'Produto', itens: [{ produto_id: o.produto_id, quantidade: o.quantidade, produto: p0 }] }];
+    }
+
+    // Renderiza lista de materiais com variante e badge de estoque
+    const kitsHtml = kits.map(kit => {
+        const rows = kit.itens.map(item => {
+            const p = state.produtos.find(x => x.id === item.produto_id) || item.produto;
+            const saldo = p ? (p.saldo_atual || 0) : 0;
+            const ok = saldo >= item.quantidade;
+            // Usa item.nome (preserva variante como "(Linha)") ou cai em prod.nome
+            const nome = item.nome || (p ? p.nome : '—');
+            const badge = ok
+                ? '<span class="tag tag-green" style="font-size:0.68rem">OK (' + saldo + ')</span>'
+                : '<span class="tag tag-red" style="font-size:0.68rem">Insuf. (' + saldo + ')</span>';
+            return '<div class="kit-item-row">' +
+                '<span class="kit-item-nome">' + nome + '</span>' +
+                '<span class="kit-item-qtd">' + item.quantidade + ' un</span>' +
+                badge + '</div>';
+        }).join('');
+        return '<div style="margin-bottom:14px">' +
+            '<div style="font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-3);margin-bottom:6px">' + (kit.label || 'Materiais') + '</div>' +
+            rows + '</div>';
+    }).join('');
+
+    // Dados técnicos do kit vinculado (se existir e tiver dados)
+    const kitRef = o.itens_json ? (() => {
+        try {
+            const raw = JSON.parse(o.itens_json);
+            return raw[0]?.dados_tecnicos || null;
+        } catch(e) { return null; }
+    })() : null;
+
+    // Dados técnicos podem estar na OS diretamente ou no kit de origem
+    const dtRaw = o.dados_tecnicos || kitRef;
+    const dt = dtRaw
+        ? (typeof dtRaw === 'string' ? JSON.parse(dtRaw) : dtRaw)
+        : {};
+    const dtLabels = {
+        residencia:       { label: 'Residência',           map: { monofasico:'Monofásico', bifasico:'Bifásico', trifasico:'Trifásico' } },
+        tipo_telha:       { label: 'Tipo de Telha',        map: { portuguesa_concreto:'Portuguesa de Concreto', portuguesa_ceramica:'Portuguesa de Cerâmica', romana:'Romana', francesa:'Francesa', colonial:'Colonial', metalica:'Metálica', fibrocimento:'Fibrocimento', shingle:'Shingle', laje:'Laje / Terraço', outro:'Outro' } },
+        tipo_estrutura:   { label: 'Tipo de Estrutura',    map: { madeira:'Madeira', metalica:'Metálica', concreto:'Concreto', mista:'Mista' } },
+        condicao_telhado: { label: 'Condição do Telhado',  map: { bom:'✅ Boas condições de instalação', regular:'⚠️ Regular — requer atenção', ruim:'❌ Ruim — necessita reparo' } },
+        obs_tecnica:      { label: 'Obs. Técnicas',        map: {} },
+    };
+    const dtEntries = Object.entries(dt).filter(([, v]) => v);
+    const dtHtml = dtEntries.length
+        ? '<div style="margin-top:18px;border-top:1px solid var(--border);padding-top:16px">' +
+          '<div style="font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-3);margin-bottom:10px">Dados Técnicos da Instalação</div>' +
+          '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px">' +
+          dtEntries.map(([k, v]) => {
+              const cfg = dtLabels[k] || { label: k, map: {} };
+              const display = cfg.map[v] || v;
+              return '<div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px">' +
+                  '<div style="font-size:0.68rem;color:var(--text-3);margin-bottom:2px">' + cfg.label + '</div>' +
+                  '<div style="font-size:0.82rem;color:var(--text);font-weight:500">' + display + '</div></div>';
+          }).join('') + '</div></div>'
+        : '';
+
+    document.getElementById('ordemDetalheContent').innerHTML =
         '<div class="ordem-detail-grid">' +
             '<div class="ordem-detail-item"><label>Número</label><span><code style="font-family:monospace;">' + (o.numero || '') + '</code></span></div>' +
             '<div class="ordem-detail-item"><label>Solicitante</label><span>' + (o.solicitante_nome || '') + '</span></div>' +
-            '<div class="ordem-detail-item"><label>Produto</label><span>' + (p ? p.nome : '—') + '</span></div>' +
-            '<div class="ordem-detail-item"><label>Quantidade</label><span>' + (o.quantidade || 0) + '</span></div>' +
             '<div class="ordem-detail-item"><label>Prioridade</label><span class="tag ' + pr.cls + '">' + pr.label + '</span></div>' +
             '<div class="ordem-detail-item"><label>Status</label><span class="tag ' + st.cls + '">' + st.label + '</span></div>' +
             '<div class="ordem-detail-item"><label>Data necessária</label><span>' + formatDate(o.data_necessaria) + '</span></div>' +
             '<div class="ordem-detail-item"><label>Criada em</label><span>' + formatDate(o.criado_em) + '</span></div>' +
             '<div class="ordem-detail-item full-width"><label>Descrição</label><div class="ordem-detail-desc">' + (o.descricao || '') + '</div></div>' +
+        '</div>' +
+        '<div style="margin-top:16px;border-top:1px solid var(--border);padding-top:14px">' +
+            '<div style="font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-3);margin-bottom:10px">Materiais</div>' +
+            kitsHtml + dtHtml +
         '</div>';
-    
+
     document.getElementById('ordemDetalheContent').innerHTML += osRenderStatusLog(id);
     document.getElementById('modalOrdemDetalhe').classList.remove('hidden');
 }
@@ -6951,7 +7295,8 @@ function renderKits(filter) {
         const totalItens = itens.length;
         const itensHtml = itens.slice(0, 5).map(item => {
             const prod = state.produtos.find(p => p.id === item.produto_id);
-            const nome = prod ? prod.nome : (item.nome || '—');
+            // Prefere item.nome (pode conter variante ex: "Cabo 16mm (Linha)")
+            const nome = item.nome || (prod ? prod.nome : '—');
             return '<div class="kit-item-row"><span class="kit-item-nome" title="' + nome + '">' + nome + '</span><span class="kit-item-qtd">' + item.quantidade + ' un</span></div>';
         }).join('');
         const maisStr = itens.length > 5 ? '<div style="font-size:0.75rem;color:var(--text-3);padding:6px 0">+ ' + (itens.length - 5) + ' material(is)...</div>' : '';
@@ -6972,6 +7317,22 @@ function renderKits(filter) {
             ? '<span class="tag tag-green" style="font-size:0.7rem">Estoque OK</span>'
             : '<span class="tag tag-red" style="font-size:0.7rem" title="Sem estoque: ' + alertaEstoque + '">Estoque insuficiente</span>';
 
+        // Dados técnicos em resumo no card
+        const dt = kit.dados_tecnicos
+            ? (typeof kit.dados_tecnicos === 'string' ? JSON.parse(kit.dados_tecnicos) : kit.dados_tecnicos)
+            : {};
+        const dtMap = { monofasico:'Monofásico', bifasico:'Bifásico', trifasico:'Trifásico',
+            portuguesa_concreto:'P. Concreto', portuguesa_ceramica:'P. Cerâmica',
+            romana:'Romana', francesa:'Francesa', colonial:'Colonial', metalica:'Metálica',
+            fibrocimento:'Fibrocimento', shingle:'Shingle', laje:'Laje',
+            madeira:'Madeira', concreto:'Concreto', mista:'Mista',
+            bom:'✅ Telhado OK', regular:'⚠️ Telhado Regular', ruim:'❌ Telhado Ruim' };
+        const dtTags = [dt.residencia, dt.tipo_telha, dt.tipo_estrutura, dt.condicao_telhado]
+            .filter(v => v)
+            .map(v => '<span class="tag" style="font-size:0.65rem;padding:2px 7px;background:var(--surface-2);border:1px solid var(--border)">' + (dtMap[v] || v) + '</span>')
+            .join('');
+        const dtRow = dtTags ? '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">' + dtTags + '</div>' : '';
+
         return '<div class="kit-card">' +
             '<div class="kit-card-header">' +
                 '<div class="kit-card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg></div>' +
@@ -6979,7 +7340,7 @@ function renderKits(filter) {
                 '<div class="kit-card-sub">' + totalItens + ' material(is)' + (kit.descricao ? ' · ' + kit.descricao : '') + '</div></div>' +
                 '<div style="margin-left:auto">' + estBadge + '</div>' +
             '</div>' +
-            '<div class="kit-card-body">' + itensHtml + maisStr + '</div>' +
+            '<div class="kit-card-body">' + itensHtml + maisStr + dtRow + '</div>' +
             '<div class="kit-card-footer">' +
                 '<button class="tbl-btn" onclick="verKit(\'' + kit.id + '\')">Ver detalhes</button>' +
                 '<button class="tbl-btn" onclick="editKit(\'' + kit.id + '\')">Editar</button>' +
@@ -6988,6 +7349,54 @@ function renderKits(filter) {
         '</div>';
     }).join('');
 }
+
+// ── Mapa de variantes por palavra-chave no nome do produto ──────────────────
+// Adicione mais palavras-chave e suas variantes conforme necessário.
+const KIT_VARIANTES = [
+    { regex: /\bcabo\b/i,        variantes: ['Linha', 'Carga'] },
+    { regex: /\bdisjuntor\b/i,   variantes: ['Monofásico', 'Bifásico', 'Trifásico'] },
+    { regex: /\bfio\b/i,         variantes: ['Fase', 'Neutro', 'Terra'] },
+    { regex: /\bcondutor\b/i,    variantes: ['Fase', 'Neutro', 'Terra'] },
+    { regex: /\btomada\b/i,      variantes: ['2P', '2P+T', 'Schuko'] },
+];
+
+// Chamado quando o autocomplete seleciona um produto na linha de kit.
+// Verifica se o produto tem variantes e, se sim, mostra o painel de escolha.
+function _kitVerificarVariante(prodId, inpId) {
+    const prod = state.produtos.find(p => p.id === prodId);
+    if (!prod) return;
+    const entrada = KIT_VARIANTES.find(v => v.regex.test(prod.nome));
+    if (!entrada) return;   // sem variantes para esse produto
+
+    const panel  = document.getElementById('kitVariantePanel');
+    const titulo = document.getElementById('kitVarianteNomeProd');
+    const bots   = document.getElementById('kitVarianteBotoes');
+
+    titulo.textContent = prod.nome;
+    bots.innerHTML = entrada.variantes.map(v =>
+        `<button type="button" class="btn-outline" style="padding:5px 16px;font-size:0.82rem"
+            onclick="_kitSelecionarVariante('${inpId}','${v}')">${v}</button>`
+    ).join('');
+    panel.style.display = 'block';
+    // Rolar o modal para mostrar o painel
+    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// Aplica a variante escolhida ao campo de texto da linha
+function _kitSelecionarVariante(inpId, variante) {
+    const inp = document.getElementById(inpId);
+    if (inp) {
+        // Remove "(Saldo: X)" que o autocomplete injeta e qualquer variante anterior
+        let val = inp.value
+            .replace(/\s*\(Saldo:\s*[\d-]+\)/gi, '')
+            .replace(/\s*\([^)]+\)\s*$/, '')
+            .trim();
+        inp.value = val + ' (' + variante + ')';
+    }
+    document.getElementById('kitVariantePanel').style.display = 'none';
+}
+
+// ────────────────────────────────────────────────────────────────────────────
 
 function addKitItemLinha() {
     const container = document.getElementById('kitItensList');
@@ -7010,7 +7419,7 @@ function addKitItemLinha() {
             ' onfocus="acFiltrarSimples(this,\'' + hidId + '\')"' +
             ' data-dd="' + ddId + '"' +
             ' onblur="var dd=this.getAttribute(\'data-dd\');setTimeout(function(){acFechar(dd)},180)"/>' +
-            '<input type="hidden" id="' + hidId + '"/>' +
+            '<input type="hidden" id="' + hidId + '" onchange="_kitVerificarVariante(this.value,\'' + inputId + '\')"/>' +
             '<div class="ac-dropdown" id="' + ddId + '"></div>' +
         '</div>' +
         '<div style="display:flex;align-items:center;gap:6px;flex-shrink:0">' +
@@ -7057,9 +7466,14 @@ function coletarItensKit() {
         const qty = parseInt(qtyInput.value) || 1;
         if (!prodId) return;
         const prod = state.produtos.find(p => p.id === prodId);
+        // Usa o texto visível (que pode conter a variante ex: "Cabo 16mm (Linha)")
+        // mas remove o "(Saldo: X)" que o autocomplete pode ter injetado
+        const displayNome = txtInput
+            ? txtInput.value.replace(/\s*\(Saldo:\s*[\d-]+\)/gi, '').trim()
+            : '';
         itens.push({
             produto_id: prodId,
-            nome: prod ? prod.nome : (txtInput ? txtInput.value : ''),
+            nome: displayNome || (prod ? prod.nome : ''),
             quantidade: qty
         });
     });
@@ -7078,6 +7492,14 @@ function abrirModalKit(reset) {
         if (resumo) resumo.style.display = 'none';
         _kitLinhasCount = 0;
         document.getElementById('modalKitTitle').innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:6px"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>Novo Kit';
+        // Resetar dados técnicos
+        ['kitResidencia','kitTipoTelha','kitTipoEstrutura','kitCondicaoTelhado'].forEach(id => {
+            const el = document.getElementById(id); if (el) el.value = '';
+        });
+        const obsEl = document.getElementById('kitObsTecnica'); if (obsEl) obsEl.value = '';
+        const detEl = document.getElementById('kitDadosTecnicos'); if (detEl) detEl.open = false;
+        // Esconder painel de variante
+        const vp = document.getElementById('kitVariantePanel'); if (vp) vp.style.display = 'none';
     }
     document.getElementById('modalKit').classList.remove('hidden');
 }
@@ -7089,23 +7511,49 @@ async function salvarKit() {
     if (!itens.length) { showToast('Adicione ao menos um material ao kit.', 'error'); return; }
 
     const desc = document.getElementById('kitDescricao').value.trim();
+
+    // Coleta Dados Técnicos (opcional)
+    const dadosTecnicos = {
+        residencia:       document.getElementById('kitResidencia')?.value || '',
+        tipo_telha:       document.getElementById('kitTipoTelha')?.value || '',
+        tipo_estrutura:   document.getElementById('kitTipoEstrutura')?.value || '',
+        condicao_telhado: document.getElementById('kitCondicaoTelhado')?.value || '',
+        obs_tecnica:      document.getElementById('kitObsTecnica')?.value?.trim() || '',
+    };
+    const temDadosTecnicos = Object.values(dadosTecnicos).some(v => v);
+
     const payload = {
         nome,
         descricao: desc,
         itens: JSON.stringify(itens),
+        dados_tecnicos: temDadosTecnicos ? JSON.stringify(dadosTecnicos) : null,
         usuario_id: state.currentUser.id,
         criado_em: new Date().toISOString()
     };
 
     try {
         if (state.editingKitId) {
-            const { data, error } = await sb.from('kits').update({ nome, descricao: desc, itens: JSON.stringify(itens) }).eq('id', state.editingKitId).select().single();
+            let updatePayload = { nome, descricao: desc, itens: JSON.stringify(itens) };
+            if (temDadosTecnicos) updatePayload.dados_tecnicos = JSON.stringify(dadosTecnicos);
+            let { data, error } = await sb.from('kits').update(updatePayload).eq('id', state.editingKitId).select().single();
+            // Se falhou por coluna inexistente, tenta sem dados_tecnicos
+            if (error && error.message && error.message.includes('dados_tecnicos')) {
+                delete updatePayload.dados_tecnicos;
+                ({ data, error } = await sb.from('kits').update(updatePayload).eq('id', state.editingKitId).select().single());
+            }
             if (error) throw error;
             const idx = state.kits.findIndex(k => k.id === state.editingKitId);
             if (idx !== -1) state.kits[idx] = data;
             showToast('Kit atualizado com sucesso!', 'success');
         } else {
-            const { data, error } = await sb.from('kits').insert([payload]).select().single();
+            let insertPayload = { ...payload };
+            if (!temDadosTecnicos) delete insertPayload.dados_tecnicos;
+            let { data, error } = await sb.from('kits').insert([insertPayload]).select().single();
+            // Se falhou por coluna inexistente, tenta sem dados_tecnicos
+            if (error && error.message && error.message.includes('dados_tecnicos')) {
+                delete insertPayload.dados_tecnicos;
+                ({ data, error } = await sb.from('kits').insert([insertPayload]).select().single());
+            }
             if (error) throw error;
             state.kits.unshift(data);
             showToast('Kit criado com sucesso!', 'success');
@@ -7139,17 +7587,32 @@ function editKit(id) {
     document.getElementById('kitDescricao').value = kit.descricao || '';
     document.getElementById('modalKitTitle').innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:6px"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Editar Kit';
 
+    // Carregar Dados Técnicos
+    const dt = kit.dados_tecnicos
+        ? (typeof kit.dados_tecnicos === 'string' ? JSON.parse(kit.dados_tecnicos) : kit.dados_tecnicos)
+        : {};
+    const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
+    setVal('kitResidencia',       dt.residencia);
+    setVal('kitTipoTelha',        dt.tipo_telha);
+    setVal('kitTipoEstrutura',    dt.tipo_estrutura);
+    setVal('kitCondicaoTelhado',  dt.condicao_telhado);
+    setVal('kitObsTecnica',       dt.obs_tecnica);
+    // Abrir o <details> se houver dados técnicos salvos
+    const detEl = document.getElementById('kitDadosTecnicos');
+    if (detEl && Object.values(dt).some(v => v)) detEl.open = true;
+
     const itens = kit.itens ? (typeof kit.itens === 'string' ? JSON.parse(kit.itens) : kit.itens) : [];
     itens.forEach(item => {
         addKitItemLinha();
         const idx = _kitLinhasCount - 1;
-        // Preencher produto
         const hidEl = document.getElementById('kitProdId_' + idx);
         const txtEl = document.getElementById('kitProdInput_' + idx);
         const qtyEl = document.getElementById('kitQty_' + idx);
         if (hidEl) hidEl.value = item.produto_id || '';
+        // Prefere item.nome (preserva variante ex: "Cabo 16mm (Linha)")
+        // só cai no prod.nome se item.nome não estiver salvo
         const prod = state.produtos.find(p => p.id === item.produto_id);
-        if (txtEl) txtEl.value = prod ? prod.nome : (item.nome || '');
+        if (txtEl) txtEl.value = item.nome || (prod ? prod.nome : '');
         if (qtyEl) qtyEl.value = item.quantidade || 1;
     });
     atualizarResumoKit();
@@ -7164,7 +7627,8 @@ function verKit(id) {
     let temEstoqueGlobal = true;
     const itensHtml = itens.map(item => {
         const prod = state.produtos.find(p => p.id === item.produto_id);
-        const nome = prod ? prod.nome : (item.nome || '—');
+        // Prefere item.nome (pode ter variante) e cai em prod.nome como fallback
+        const nome = item.nome || (prod ? prod.nome : '—');
         const saldo = prod ? (prod.saldo_atual || 0) : 0;
         const temEstoque = saldo >= item.quantidade;
         if (!temEstoque) temEstoqueGlobal = false;
@@ -7182,11 +7646,34 @@ function verKit(id) {
         ? '<div style="background:var(--green-soft);border:1px solid var(--green);border-radius:var(--radius);padding:10px 14px;font-size:0.82rem;color:#065f46;margin-top:14px"><strong>✓ Estoque suficiente</strong> — Todos os materiais deste kit estão disponíveis.</div>'
         : '<div style="background:var(--red-soft);border:1px solid var(--red);border-radius:var(--radius);padding:10px 14px;font-size:0.82rem;color:#991b1b;margin-top:14px"><strong>⚠ Estoque insuficiente</strong> — Um ou mais materiais não possuem estoque suficiente.</div>';
 
+    // Dados Técnicos
+    const dtLabels = {
+        residencia:       { label: 'Residência', map: { monofasico:'Monofásico', bifasico:'Bifásico', trifasico:'Trifásico' } },
+        tipo_telha:       { label: 'Tipo de Telha', map: { portuguesa_concreto:'Portuguesa de Concreto', portuguesa_ceramica:'Portuguesa de Cerâmica', romana:'Romana', francesa:'Francesa', colonial:'Colonial', metalica:'Metálica', fibrocimento:'Fibrocimento', shingle:'Shingle', laje:'Laje / Terraço', outro:'Outro' } },
+        tipo_estrutura:   { label: 'Tipo de Estrutura', map: { madeira:'Madeira', metalica:'Metálica', concreto:'Concreto', mista:'Mista' } },
+        condicao_telhado: { label: 'Condição do Telhado', map: { bom:'✅ Boas condições', regular:'⚠️ Regular', ruim:'❌ Necessita reparo' } },
+        obs_tecnica:      { label: 'Obs. Técnicas', map: {} },
+    };
+    const dt = kit.dados_tecnicos
+        ? (typeof kit.dados_tecnicos === 'string' ? JSON.parse(kit.dados_tecnicos) : kit.dados_tecnicos)
+        : {};
+    const dtEntries = Object.entries(dt).filter(([, v]) => v);
+    const dtHtml = dtEntries.length ? '<div style="margin-top:18px;border-top:1px solid var(--border);padding-top:14px">' +
+        '<div style="font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-3);margin-bottom:10px">Dados Técnicos da Instalação</div>' +
+        '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px">' +
+        dtEntries.map(([k, v]) => {
+            const cfg = dtLabels[k] || { label: k, map: {} };
+            const display = cfg.map[v] || v;
+            return '<div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px">' +
+                '<div style="font-size:0.68rem;color:var(--text-3);margin-bottom:2px">' + cfg.label + '</div>' +
+                '<div style="font-size:0.82rem;color:var(--text);font-weight:500">' + display + '</div></div>';
+        }).join('') + '</div></div>' : '';
+
     document.getElementById('modalVerKitTitle').textContent = kit.nome || 'Kit';
     document.getElementById('modalVerKitBody').innerHTML =
         (kit.descricao ? '<p style="font-size:0.85rem;color:var(--text-2);margin-bottom:16px">' + kit.descricao + '</p>' : '') +
         '<div style="font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-3);margin-bottom:8px">' + itens.length + ' Material(is)</div>' +
-        itensHtml + statusGeral;
+        itensHtml + statusGeral + dtHtml;
 
     document.getElementById('btnEditarKitModal').onclick = function() { closeModal('modalVerKit'); editKit(id); };
     document.getElementById('modalVerKit').classList.remove('hidden');
@@ -7304,8 +7791,29 @@ function selecionarKitParaOS(kitId) {
         container.insertBefore(label, container.firstChild);
     }
 
+    // Auto-preencher dados técnicos da vistoria se o kit tiver
+    const dtKit = kit.dados_tecnicos
+        ? (typeof kit.dados_tecnicos === 'string' ? JSON.parse(kit.dados_tecnicos) : kit.dados_tecnicos)
+        : null;
+    if (dtKit) {
+        const dtPrefix = ctx === 'modal' ? 'modalOs' : ctx === 'edit' ? 'editOs' : 'pageOs';
+        const setVal = (id, v) => { const el = document.getElementById(id); if (el && v) el.value = v; };
+        setVal(dtPrefix + 'Residencia',      dtKit.residencia);
+        setVal(dtPrefix + 'TipoTelha',       dtKit.tipo_telha);
+        setVal(dtPrefix + 'TipoEstrutura',   dtKit.tipo_estrutura);
+        setVal(dtPrefix + 'CondicaoTelhado', dtKit.condicao_telhado);
+        setVal(dtPrefix + 'ObsTecnica',      dtKit.obs_tecnica);
+        // Abrir o <details> de dados técnicos
+        const det = document.getElementById(
+            ctx === 'modal' ? 'modalOsDadosTecnicos' : ctx === 'edit' ? 'editOsDadosTecnicos' : 'pageOsDadosTecnicos'
+        );
+        if (det) det.open = true;
+        showToast('Kit "' + kit.nome + '" carregado com dados técnicos de vistoria!', 'success');
+    } else {
+        showToast('Kit "' + kit.nome + '" carregado! Clique em "Confirmar Kit" para adicionar à ordem.', 'success');
+    }
+
     closeModal('modalSeletorKit');
-    showToast('Kit "' + kit.nome + '" carregado! Clique em "Confirmar Kit" para adicionar à ordem.', 'success');
 }
 
 
@@ -7382,6 +7890,67 @@ function selecionarKitParaOS(kitId) {
         </div>
       </div>
 
+      <!-- ── Dados Técnicos da Instalação ── -->
+      <details id="kitDadosTecnicos" style="margin-bottom:16px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden">
+        <summary style="padding:10px 14px;cursor:pointer;font-size:0.78rem;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-2);list-style:none;display:flex;align-items:center;gap:8px;user-select:none">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          Dados Técnicos da Instalação
+          <span style="margin-left:auto;font-size:0.7rem;font-weight:400;color:var(--text-3)">(opcional)</span>
+        </summary>
+        <div style="padding:14px 14px 16px;border-top:1px solid var(--border)">
+          <div class="form-grid" style="grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+            <div class="form-group" style="margin:0">
+              <label>Tipo de Residência</label>
+              <select id="kitResidencia" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
+                <option value="">— Selecione —</option>
+                <option value="monofasico">Monofásico</option>
+                <option value="bifasico">Bifásico</option>
+                <option value="trifasico">Trifásico</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin:0">
+              <label>Tipo de Telha</label>
+              <select id="kitTipoTelha" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
+                <option value="">— Selecione —</option>
+                <option value="portuguesa_concreto">Portuguesa de Concreto</option>
+                <option value="portuguesa_ceramica">Portuguesa de Cerâmica</option>
+                <option value="romana">Romana</option>
+                <option value="francesa">Francesa</option>
+                <option value="colonial">Colonial</option>
+                <option value="metalica">Metálica</option>
+                <option value="fibrocimento">Fibrocimento</option>
+                <option value="shingle">Shingle</option>
+                <option value="laje">Laje / Terraço</option>
+                <option value="outro">Outro</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin:0">
+              <label>Tipo de Estrutura</label>
+              <select id="kitTipoEstrutura" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
+                <option value="">— Selecione —</option>
+                <option value="madeira">Madeira</option>
+                <option value="metalica">Metálica</option>
+                <option value="concreto">Concreto</option>
+                <option value="mista">Mista</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin:0">
+              <label>Condição do Telhado</label>
+              <select id="kitCondicaoTelhado" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
+                <option value="">— Selecione —</option>
+                <option value="bom">✅ Boas condições de instalação</option>
+                <option value="regular">⚠️ Regular — requer atenção</option>
+                <option value="ruim">❌ Ruim — necessita reparo</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group" style="margin:0">
+            <label>Observações Técnicas</label>
+            <input type="text" id="kitObsTecnica" placeholder="Ex: Orientação Sul, sem sombreamento..." style="width:100%"/>
+          </div>
+        </div>
+      </details>
+
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
         <label style="font-size:0.75rem;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-2)">Materiais do Kit</label>
         <button type="button" class="btn-outline" style="padding:5px 12px;font-size:0.8rem" onclick="addKitItemLinha()">
@@ -7395,6 +7964,15 @@ function selecionarKitParaOS(kitId) {
         </p>
       </div>
       <div id="kitResumo" style="display:none;margin-top:14px;background:var(--accent-soft);border:1px solid var(--accent);border-radius:var(--radius);padding:10px 14px;font-size:0.8rem;color:var(--accent)"></div>
+
+      <!-- Sub-modal de variante (ex: Linha/Carga para cabos) -->
+      <div id="kitVariantePanel" style="display:none;margin-top:10px;background:var(--surface-2);border:1px solid var(--accent);border-radius:var(--radius);padding:12px 14px">
+        <div style="font-size:0.78rem;font-weight:600;color:var(--text-2);margin-bottom:8px;display:flex;align-items:center;gap:6px">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Selecione a variante para <strong id="kitVarianteNomeProd"></strong>:
+        </div>
+        <div id="kitVarianteBotoes" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn-ghost" onclick="closeModal('modalKit')">Cancelar</button>
@@ -7842,8 +8420,9 @@ function nfeAcFiltrar(input){
   const q  = input.value.toLowerCase();
   const dd = document.getElementById('ddNfeVinculo');
   dd.innerHTML = '';
-  if(typeof produtos === 'undefined'){ dd.style.display = 'none'; return; }
-  const res = produtos.filter(p =>
+  const lista = state.produtos || [];
+  if(!lista.length){ dd.style.display = 'none'; return; }
+  const res = lista.filter(p =>
     (p.nome   && p.nome.toLowerCase().includes(q)) ||
     (p.codigo && p.codigo.toLowerCase().includes(q))
   ).slice(0, 10);
@@ -7851,7 +8430,7 @@ function nfeAcFiltrar(input){
   res.forEach(p => {
     const div = document.createElement('div');
     div.className = 'ac-item';
-    div.innerHTML = `<span class="ac-item-nome">${p.nome}</span><span class="ac-item-info">${p.codigo || ''}</span>`;
+    div.innerHTML = `<span class="ac-item-nome">${p.nome}</span><span class="ac-item-info">${p.codigo || ''} · Saldo: ${p.saldo_atual||0}</span>`;
     div.onmousedown = () => {
       document.getElementById('nfeVinculoProdInput').value = p.nome;
       document.getElementById('nfeVinculoProdId').value    = p.id;
