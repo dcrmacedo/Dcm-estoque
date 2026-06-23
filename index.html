@@ -1035,47 +1035,71 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
                 <button type="button" class="btn-primary" style="background:#10B981;padding:7px 18px;font-size:0.82rem" onclick="confirmarKit('page')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><polyline points="20 6 9 17 4 12"/></svg> Confirmar Kit</button>
               </div>
               <div id="pageOrdemItens" style="display:flex;flex-direction:column;gap:6px"></div>
-
-              <!-- Painel de variante (Linha/Carga etc.) -->
-              <div id="osVariantePanel_page" style="display:none;background:var(--amber-soft);border:1px solid var(--amber);border-radius:var(--radius);padding:12px 14px;margin-top:8px">
-                <div style="font-size:0.8rem;font-weight:600;color:var(--amber);margin-bottom:8px">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:4px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                  Selecione a variante para: <span class="os-variante-nome" style="color:var(--text)"></span>
-                </div>
+              <!-- Painel de seleção de variante -->
+              <div id="osVariantePanelPage" style="display:none;margin-top:10px;padding:10px 14px;background:var(--accent-soft);border:1px solid var(--accent);border-radius:var(--radius)">
+                <div style="font-size:0.78rem;font-weight:600;color:var(--accent);margin-bottom:6px">Selecione a variante para <strong class="os-variante-nome-prod"></strong>:</div>
                 <div class="os-variante-botoes" style="display:flex;gap:8px;flex-wrap:wrap"></div>
               </div>
-
-              <!-- Dados Técnicos da Vistoria -->
-              <details id="pageOsDadosTecnicos" style="margin-top:12px">
-                <summary style="cursor:pointer;font-size:0.8rem;font-weight:600;color:var(--text-2);padding:8px 0;list-style:none;display:flex;align-items:center;gap:6px">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-                  Dados Técnicos da Instalação <span style="font-weight:400;color:var(--text-3)">(opcional)</span>
-                </summary>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;padding:12px;background:var(--surface-2);border-radius:var(--radius);border:1px solid var(--border)">
-                  <div class="form-group"><label>Residência</label>
-                    <select id="pageOsResidencia" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
-                      <option value="">Selecione...</option><option value="monofasico">Monofásico</option><option value="bifasico">Bifásico</option><option value="trifasico">Trifásico</option>
-                    </select></div>
-                  <div class="form-group"><label>Tipo de Telha</label>
-                    <select id="pageOsTipoTelha" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
-                      <option value="">Selecione...</option><option value="portuguesa_concreto">Portuguesa de Concreto</option><option value="portuguesa_ceramica">Portuguesa de Cerâmica</option><option value="romana">Romana</option><option value="francesa">Francesa</option><option value="colonial">Colonial</option><option value="metalica">Metálica</option><option value="fibrocimento">Fibrocimento</option><option value="shingle">Shingle</option><option value="laje">Laje / Terraço</option><option value="outro">Outro</option>
-                    </select></div>
-                  <div class="form-group"><label>Tipo de Estrutura</label>
-                    <select id="pageOsTipoEstrutura" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
-                      <option value="">Selecione...</option><option value="madeira">Madeira</option><option value="metalica">Metálica</option><option value="concreto">Concreto</option><option value="mista">Mista</option>
-                    </select></div>
-                  <div class="form-group"><label>Condição do Telhado</label>
-                    <select id="pageOsCondicaoTelhado" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
-                      <option value="">Selecione...</option><option value="bom">✅ Boas condições</option><option value="regular">⚠️ Regular — requer atenção</option><option value="ruim">❌ Ruim — necessita reparo</option>
-                    </select></div>
-                  <div class="form-group" style="grid-column:1/-1"><label>Observações Técnicas</label>
-                    <textarea id="pageOsObsTecnica" rows="2" placeholder="Anotações da vistoria..." style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem;resize:vertical"></textarea>
-                  </div>
-                </div>
-              </details>
-
               <p style="font-size:0.72rem;color:var(--text-3);margin-top:8px">Selecione o tipo, adicione os produtos e clique em "<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><polyline points="20 6 9 17 4 12"/></svg> Confirmar Kit". Repita para cada kit (Inversor, Padrão de Entrada, etc.).</p>
             </div>
+
+            <!-- Dados Técnicos da Instalação -->
+            <details id="pageOrdemDadosTecnicos" style="margin-top:6px;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:16px">
+              <summary style="padding:10px 14px;cursor:pointer;font-size:0.82rem;font-weight:600;color:var(--text-2);background:var(--surface-2);list-style:none;display:flex;align-items:center;gap:6px">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                + Dados Técnicos da Instalação <span style="font-size:0.72rem;font-weight:400;color:var(--text-3)">(opcional)</span>
+              </summary>
+              <div style="padding:14px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                <div class="form-group" style="margin:0">
+                  <label>Tipo de Residência</label>
+                  <select id="pageOrdemResidencia">
+                    <option value="">Selecione...</option>
+                    <option value="monofasico">Monofásico</option>
+                    <option value="bifasico">Bifásico</option>
+                    <option value="trifasico">Trifásico</option>
+                  </select>
+                </div>
+                <div class="form-group" style="margin:0">
+                  <label>Tipo de Telha</label>
+                  <select id="pageOrdemTipoTelha">
+                    <option value="">Selecione...</option>
+                    <option value="portuguesa_concreto">Portuguesa de Concreto</option>
+                    <option value="portuguesa_ceramica">Portuguesa de Cerâmica</option>
+                    <option value="romana">Romana</option>
+                    <option value="francesa">Francesa</option>
+                    <option value="colonial">Colonial</option>
+                    <option value="metalica">Metálica</option>
+                    <option value="fibrocimento">Fibrocimento</option>
+                    <option value="shingle">Shingle</option>
+                    <option value="laje">Laje / Terraço</option>
+                    <option value="outro">Outro</option>
+                  </select>
+                </div>
+                <div class="form-group" style="margin:0">
+                  <label>Tipo de Estrutura</label>
+                  <select id="pageOrdemTipoEstrutura">
+                    <option value="">Selecione...</option>
+                    <option value="madeira">Madeira</option>
+                    <option value="metalica">Metálica</option>
+                    <option value="concreto">Concreto</option>
+                    <option value="mista">Mista</option>
+                  </select>
+                </div>
+                <div class="form-group" style="margin:0">
+                  <label>Condição do Telhado</label>
+                  <select id="pageOrdemCondicaoTelhado">
+                    <option value="">Selecione...</option>
+                    <option value="bom">✅ Boas condições de instalação</option>
+                    <option value="regular">⚠️ Regular — requer atenção</option>
+                    <option value="ruim">❌ Ruim — necessita reparo</option>
+                  </select>
+                </div>
+                <div class="form-group" style="margin:0;grid-column:1/-1">
+                  <label>Obs. Técnicas</label>
+                  <textarea id="pageOrdemObsTecnica" rows="2" placeholder="Observações técnicas adicionais..."></textarea>
+                </div>
+              </div>
+            </details>
 
             <div class="form-actions">
               <button class="btn-primary" onclick="criarOrdem()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Enviar Ordem</button>
@@ -1324,47 +1348,71 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
           <button type="button" class="btn-primary" style="padding:7px 16px;font-size:0.82rem" onclick="confirmarKit('modal')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><polyline points="20 6 9 17 4 12"/></svg> Confirmar Kit</button>
         </div>
         <div id="modalOrdemItens" style="display:flex;flex-direction:column;gap:6px"></div>
-
-        <!-- Painel de variante (Linha/Carga etc.) -->
-        <div id="osVariantePanel_modal" style="display:none;background:var(--amber-soft);border:1px solid var(--amber);border-radius:var(--radius);padding:12px 14px;margin-top:8px">
-          <div style="font-size:0.8rem;font-weight:600;color:var(--amber);margin-bottom:8px">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:4px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            Selecione a variante para: <span class="os-variante-nome" style="color:var(--text)"></span>
-          </div>
+        <!-- Painel de seleção de variante (ex: Linha/Carga) -->
+        <div id="osVariantePanelModal" style="display:none;margin-top:10px;padding:10px 14px;background:var(--accent-soft);border:1px solid var(--accent);border-radius:var(--radius)">
+          <div style="font-size:0.78rem;font-weight:600;color:var(--accent);margin-bottom:6px">Selecione a variante para <strong class="os-variante-nome-prod"></strong>:</div>
           <div class="os-variante-botoes" style="display:flex;gap:8px;flex-wrap:wrap"></div>
         </div>
-
-        <!-- Dados Técnicos da Vistoria -->
-        <details id="modalOsDadosTecnicos" style="margin-top:12px">
-          <summary style="cursor:pointer;font-size:0.8rem;font-weight:600;color:var(--text-2);padding:8px 0;list-style:none;display:flex;align-items:center;gap:6px">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-            Dados Técnicos da Instalação <span style="font-weight:400;color:var(--text-3)">(opcional)</span>
-          </summary>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;padding:12px;background:var(--surface-2);border-radius:var(--radius);border:1px solid var(--border)">
-            <div class="form-group"><label>Residência</label>
-              <select id="modalOsResidencia" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
-                <option value="">Selecione...</option><option value="monofasico">Monofásico</option><option value="bifasico">Bifásico</option><option value="trifasico">Trifásico</option>
-              </select></div>
-            <div class="form-group"><label>Tipo de Telha</label>
-              <select id="modalOsTipoTelha" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
-                <option value="">Selecione...</option><option value="portuguesa_concreto">Portuguesa de Concreto</option><option value="portuguesa_ceramica">Portuguesa de Cerâmica</option><option value="romana">Romana</option><option value="francesa">Francesa</option><option value="colonial">Colonial</option><option value="metalica">Metálica</option><option value="fibrocimento">Fibrocimento</option><option value="shingle">Shingle</option><option value="laje">Laje / Terraço</option><option value="outro">Outro</option>
-              </select></div>
-            <div class="form-group"><label>Tipo de Estrutura</label>
-              <select id="modalOsTipoEstrutura" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
-                <option value="">Selecione...</option><option value="madeira">Madeira</option><option value="metalica">Metálica</option><option value="concreto">Concreto</option><option value="mista">Mista</option>
-              </select></div>
-            <div class="form-group"><label>Condição do Telhado</label>
-              <select id="modalOsCondicaoTelhado" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
-                <option value="">Selecione...</option><option value="bom">✅ Boas condições</option><option value="regular">⚠️ Regular — requer atenção</option><option value="ruim">❌ Ruim — necessita reparo</option>
-              </select></div>
-            <div class="form-group" style="grid-column:1/-1"><label>Observações Técnicas</label>
-              <textarea id="modalOsObsTecnica" rows="2" placeholder="Anotações da vistoria..." style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem;resize:vertical"></textarea>
-            </div>
-          </div>
-        </details>
-
         <p style="font-size:0.72rem;color:var(--text-3);margin-top:8px">Selecione o tipo, adicione os produtos e clique em "Confirmar Kit". Você pode confirmar múltiplos kits.</p>
       </div>
+
+      <!-- Dados Técnicos da Instalação -->
+      <details id="modalOrdemDadosTecnicos" style="margin-top:14px;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden">
+        <summary style="padding:10px 14px;cursor:pointer;font-size:0.82rem;font-weight:600;color:var(--text-2);background:var(--surface-2);list-style:none;display:flex;align-items:center;gap:6px">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          + Dados Técnicos da Instalação <span style="font-size:0.72rem;font-weight:400;color:var(--text-3)">(opcional)</span>
+        </summary>
+        <div style="padding:14px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="form-group" style="margin:0">
+            <label>Tipo de Residência</label>
+            <select id="modalOrdemResidencia">
+              <option value="">Selecione...</option>
+              <option value="monofasico">Monofásico</option>
+              <option value="bifasico">Bifásico</option>
+              <option value="trifasico">Trifásico</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin:0">
+            <label>Tipo de Telha</label>
+            <select id="modalOrdemTipoTelha">
+              <option value="">Selecione...</option>
+              <option value="portuguesa_concreto">Portuguesa de Concreto</option>
+              <option value="portuguesa_ceramica">Portuguesa de Cerâmica</option>
+              <option value="romana">Romana</option>
+              <option value="francesa">Francesa</option>
+              <option value="colonial">Colonial</option>
+              <option value="metalica">Metálica</option>
+              <option value="fibrocimento">Fibrocimento</option>
+              <option value="shingle">Shingle</option>
+              <option value="laje">Laje / Terraço</option>
+              <option value="outro">Outro</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin:0">
+            <label>Tipo de Estrutura</label>
+            <select id="modalOrdemTipoEstrutura">
+              <option value="">Selecione...</option>
+              <option value="madeira">Madeira</option>
+              <option value="metalica">Metálica</option>
+              <option value="concreto">Concreto</option>
+              <option value="mista">Mista</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin:0">
+            <label>Condição do Telhado</label>
+            <select id="modalOrdemCondicaoTelhado">
+              <option value="">Selecione...</option>
+              <option value="bom">✅ Boas condições de instalação</option>
+              <option value="regular">⚠️ Regular — requer atenção</option>
+              <option value="ruim">❌ Ruim — necessita reparo</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin:0;grid-column:1/-1">
+            <label>Obs. Técnicas</label>
+            <textarea id="modalOrdemObsTecnica" rows="2" placeholder="Observações técnicas adicionais..."></textarea>
+          </div>
+        </div>
+      </details>
 
     </div>
     <div class="modal-footer">
@@ -1431,47 +1479,72 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
           <button type="button" class="btn-primary" style="background:#10B981;padding:7px 18px;font-size:0.82rem" onclick="confirmarKit('edit')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><polyline points="20 6 9 17 4 12"/></svg> Confirmar Kit</button>
         </div>
         <div id="editOrdemItens" style="display:flex;flex-direction:column;gap:6px"></div>
-
-        <!-- Painel de variante (Linha/Carga etc.) -->
-        <div id="osVariantePanel_edit" style="display:none;background:var(--amber-soft);border:1px solid var(--amber);border-radius:var(--radius);padding:12px 14px;margin-top:8px">
-          <div style="font-size:0.8rem;font-weight:600;color:var(--amber);margin-bottom:8px">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:4px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            Selecione a variante para: <span class="os-variante-nome" style="color:var(--text)"></span>
-          </div>
+        <!-- Painel de seleção de variante -->
+        <div id="osVariantePanelEdit" style="display:none;margin-top:10px;padding:10px 14px;background:var(--accent-soft);border:1px solid var(--accent);border-radius:var(--radius)">
+          <div style="font-size:0.78rem;font-weight:600;color:var(--accent);margin-bottom:6px">Selecione a variante para <strong class="os-variante-nome-prod"></strong>:</div>
           <div class="os-variante-botoes" style="display:flex;gap:8px;flex-wrap:wrap"></div>
         </div>
-
-        <!-- Dados Técnicos da Vistoria -->
-        <details id="editOsDadosTecnicos" style="margin-top:12px">
-          <summary style="cursor:pointer;font-size:0.8rem;font-weight:600;color:var(--text-2);padding:8px 0;list-style:none;display:flex;align-items:center;gap:6px">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-            Dados Técnicos da Instalação <span style="font-weight:400;color:var(--text-3)">(opcional)</span>
-          </summary>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;padding:12px;background:var(--surface-2);border-radius:var(--radius);border:1px solid var(--border)">
-            <div class="form-group"><label>Residência</label>
-              <select id="editOsResidencia" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
-                <option value="">Selecione...</option><option value="monofasico">Monofásico</option><option value="bifasico">Bifásico</option><option value="trifasico">Trifásico</option>
-              </select></div>
-            <div class="form-group"><label>Tipo de Telha</label>
-              <select id="editOsTipoTelha" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
-                <option value="">Selecione...</option><option value="portuguesa_concreto">Portuguesa de Concreto</option><option value="portuguesa_ceramica">Portuguesa de Cerâmica</option><option value="romana">Romana</option><option value="francesa">Francesa</option><option value="colonial">Colonial</option><option value="metalica">Metálica</option><option value="fibrocimento">Fibrocimento</option><option value="shingle">Shingle</option><option value="laje">Laje / Terraço</option><option value="outro">Outro</option>
-              </select></div>
-            <div class="form-group"><label>Tipo de Estrutura</label>
-              <select id="editOsTipoEstrutura" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
-                <option value="">Selecione...</option><option value="madeira">Madeira</option><option value="metalica">Metálica</option><option value="concreto">Concreto</option><option value="mista">Mista</option>
-              </select></div>
-            <div class="form-group"><label>Condição do Telhado</label>
-              <select id="editOsCondicaoTelhado" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
-                <option value="">Selecione...</option><option value="bom">✅ Boas condições</option><option value="regular">⚠️ Regular — requer atenção</option><option value="ruim">❌ Ruim — necessita reparo</option>
-              </select></div>
-            <div class="form-group" style="grid-column:1/-1"><label>Observações Técnicas</label>
-              <textarea id="editOsObsTecnica" rows="2" placeholder="Anotações da vistoria..." style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem;resize:vertical"></textarea>
-            </div>
-          </div>
-        </details>
-
         <p style="font-size:0.72rem;color:var(--text-3);margin-top:8px">Adicione novos kits ou remova os existentes. Clique em "Salvar Alterações" quando terminar.</p>
       </div>
+
+      <!-- Dados Técnicos da Instalação -->
+      <details id="editOrdemDadosTecnicos" style="margin-top:14px;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden">
+        <summary style="padding:10px 14px;cursor:pointer;font-size:0.82rem;font-weight:600;color:var(--text-2);background:var(--surface-2);list-style:none;display:flex;align-items:center;gap:6px">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          + Dados Técnicos da Instalação <span style="font-size:0.72rem;font-weight:400;color:var(--text-3)">(opcional)</span>
+        </summary>
+        <div style="padding:14px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="form-group" style="margin:0">
+            <label>Tipo de Residência</label>
+            <select id="editOrdemResidencia">
+              <option value="">Selecione...</option>
+              <option value="monofasico">Monofásico</option>
+              <option value="bifasico">Bifásico</option>
+              <option value="trifasico">Trifásico</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin:0">
+            <label>Tipo de Telha</label>
+            <select id="editOrdemTipoTelha">
+              <option value="">Selecione...</option>
+              <option value="portuguesa_concreto">Portuguesa de Concreto</option>
+              <option value="portuguesa_ceramica">Portuguesa de Cerâmica</option>
+              <option value="romana">Romana</option>
+              <option value="francesa">Francesa</option>
+              <option value="colonial">Colonial</option>
+              <option value="metalica">Metálica</option>
+              <option value="fibrocimento">Fibrocimento</option>
+              <option value="shingle">Shingle</option>
+              <option value="laje">Laje / Terraço</option>
+              <option value="outro">Outro</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin:0">
+            <label>Tipo de Estrutura</label>
+            <select id="editOrdemTipoEstrutura">
+              <option value="">Selecione...</option>
+              <option value="madeira">Madeira</option>
+              <option value="metalica">Metálica</option>
+              <option value="concreto">Concreto</option>
+              <option value="mista">Mista</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin:0">
+            <label>Condição do Telhado</label>
+            <select id="editOrdemCondicaoTelhado">
+              <option value="">Selecione...</option>
+              <option value="bom">✅ Boas condições de instalação</option>
+              <option value="regular">⚠️ Regular — requer atenção</option>
+              <option value="ruim">❌ Ruim — necessita reparo</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin:0;grid-column:1/-1">
+            <label>Obs. Técnicas</label>
+            <textarea id="editOrdemObsTecnica" rows="2" placeholder="Observações técnicas adicionais..."></textarea>
+          </div>
+        </div>
+      </details>
+
     </div>
     <div class="modal-footer">
       <button class="btn-ghost" onclick="closeModal('modalEditOrdem')">Cancelar</button>
@@ -2192,11 +2265,9 @@ const _kitsConfirmados = { modal: [], page: [], edit: [] };
 
 let _materialPendenteAtual = null;
 
-function buildSelectProdutos(selectedId, qtd, idx, ctx, nomeComVariante) {
+function buildSelectProdutos(selectedId, qtd, idx, ctx) {
     const prod = selectedId ? state.produtos.find(p => p.id === selectedId) : null;
-    // Se vier nomeComVariante (ex: "Cabo 6mm (Linha)"), exibe ele; senão usa o nome padrão
-    const nomeBase = nomeComVariante || (prod ? prod.nome : '');
-    const nomeInicial = nomeBase ? nomeBase + ' (Saldo: ' + (prod ? (prod.saldo_atual || 0) : 0) + ')' : '';
+    const nomeInicial = prod ? prod.nome + ' (Saldo: ' + (prod.saldo_atual || 0) + ')' : '';
     const acId = 'ac_' + ctx + '_' + idx;
     const ddId = 'dd_' + ctx + '_' + idx;
     return '<div style="display:flex;gap:8px;align-items:center;margin-bottom:4px" id="itemOrdem_' + ctx + '_' + idx + '">' +
@@ -2322,51 +2393,8 @@ function acSelecionar(prodId, inpId) {
     var ctx = inp.dataset.ctx;
     var item = _ordemItens[ctx].find(function(i) { return i.idx === idx; });
     if (item) item.produto_id = prodId;
-    // Verificar variante (ex: Linha/Carga para cabos)
-    _osVerificarVariante(prodId, inpId, idx, ctx);
-}
-
-// Verifica variante para itens de OS (igual ao kit)
-function _osVerificarVariante(prodId, inpId, idx, ctx) {
-    var prod = state.produtos.find(function(p) { return p.id === prodId; });
-    if (!prod) return;
-    var entrada = KIT_VARIANTES.find(function(v) { return v.regex.test(prod.nome); });
-    if (!entrada) return;
-
-    // Monta painel de variante dinâmico próximo ao input
-    var panelId = 'osVariantePanel_' + ctx;
-    var panel = document.getElementById(panelId);
-    if (!panel) return;
-
-    var titulo = panel.querySelector('.os-variante-nome');
-    var bots = panel.querySelector('.os-variante-botoes');
-    if (titulo) titulo.textContent = prod.nome;
-    if (bots) {
-        bots.innerHTML = entrada.variantes.map(function(v) {
-            return '<button type="button" class="btn-outline" style="padding:5px 16px;font-size:0.82rem" ' +
-                'onclick="_osSelecionarVariante(\'' + inpId + '\',\'' + v + '\',' + idx + ',\'' + ctx + '\')">' + v + '</button>';
-        }).join('');
-    }
-    panel.style.display = 'block';
-    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-}
-
-// Aplica variante escolhida ao input da OS e salva no nome do item
-function _osSelecionarVariante(inpId, variante, idx, ctx) {
-    var inp = document.getElementById(inpId);
-    if (inp) {
-        var val = inp.value
-            .replace(/\s*\(Saldo:\s*[\d-]+\)/gi, '')
-            .replace(/\s*\([^)]+\)\s*$/, '')
-            .trim();
-        inp.value = val + ' (' + variante + ')';
-        // Salvar nome com variante no estado
-        var item = _ordemItens[ctx] ? _ordemItens[ctx].find(function(i) { return i.idx === idx; }) : null;
-        if (item) item.nome = val + ' (' + variante + ')';
-    }
-    var panelId = 'osVariantePanel_' + ctx;
-    var panel = document.getElementById(panelId);
-    if (panel) panel.style.display = 'none';
+    // Verificar variante para OS
+    _osVerificarVariante(prodId, inpId, ctx);
 }
 
 function acFechar(ddId) {
@@ -2397,7 +2425,7 @@ function renderLinhasOrdem(ctx) {
         container.innerHTML = '<p style="font-size:0.8rem;color:var(--text-3);padding:6px 0">Clique em "+ Produto" para adicionar materiais a este kit.</p>';
         return;
     }
-    container.innerHTML = _ordemItens[ctx].map(i => buildSelectProdutos(i.produto_id, i.quantidade, i.idx, ctx, i.nome || '')).join('');
+    container.innerHTML = _ordemItens[ctx].map(i => buildSelectProdutos(i.produto_id, i.quantidade, i.idx, ctx)).join('');
 }
 
 function confirmarKit(ctx) {
@@ -2419,40 +2447,26 @@ function confirmarKit(ctx) {
     }
     if (avisoEstoque) showToast(avisoEstoque, 'info');
 
-    // Enriquecer itens com dados do produto e capturar nome com variante do campo de texto
+    // Enriquecer itens com dados do produto e nome (com variante) do campo de texto
     const itensCompletos = itens.map(i => {
         const prod = state.produtos.find(p => p.id === i.produto_id);
-        // Lê o nome do input (pode conter variante ex: "Cabo 6mm (Linha)") sem o "(Saldo: X)"
-        const acId = 'ac_' + ctx + '_' + i.idx;
-        const inpEl = document.getElementById(acId);
-        const nomeDisplay = inpEl
-            ? inpEl.value.replace(/\s*\(Saldo:\s*[\d-]+\)/gi, '').trim()
-            : (i.nome || (prod ? prod.nome : ''));
-        return { ...i, nome: nomeDisplay, produto: prod };
+        // Captura o nome com variante do campo ac_input correspondente
+        const acInp = document.getElementById('ac_' + ctx + '_' + i.idx);
+        let nomeDisplay = i.nome || '';
+        if (acInp) {
+            nomeDisplay = acInp.value
+                .replace(/\s*\(Saldo:\s*[\d-]+\)/gi, '')
+                .trim();
+        }
+        return {
+            ...i,
+            nome: nomeDisplay || (prod ? prod.nome : ''),
+            produto: prod
+        };
     });
 
-    // Coletar dados técnicos de vistoria preenchidos na seção de OS
-    const dtPrefix = ctx === 'modal' ? 'modalOs' : ctx === 'edit' ? 'editOs' : 'pageOs';
-    const dadosTecnicos = {
-        residencia:       document.getElementById(dtPrefix + 'Residencia')?.value || '',
-        tipo_telha:       document.getElementById(dtPrefix + 'TipoTelha')?.value || '',
-        tipo_estrutura:   document.getElementById(dtPrefix + 'TipoEstrutura')?.value || '',
-        condicao_telhado: document.getElementById(dtPrefix + 'CondicaoTelhado')?.value || '',
-        obs_tecnica:      document.getElementById(dtPrefix + 'ObsTecnica')?.value?.trim() || '',
-    };
-    const temDT = Object.values(dadosTecnicos).some(v => v);
-
-    _kitsConfirmados[ctx].push({
-        tipo,
-        label: KIT_LABELS[tipo] || tipo,
-        itens: itensCompletos,
-        dados_tecnicos: temDT ? dadosTecnicos : null
-    });
+    _kitsConfirmados[ctx].push({ tipo, label: KIT_LABELS[tipo] || tipo, itens: itensCompletos });
     _ordemItens[ctx] = [];
-
-    // Esconder painel de variante
-    const vp = document.getElementById('osVariantePanel_' + ctx);
-    if (vp) vp.style.display = 'none';
 
     // Reset tipo selector
     document.getElementById(tipoId).value = '';
@@ -2475,17 +2489,12 @@ function renderKitsConfirmados(ctx) {
     container.innerHTML = _kitsConfirmados[ctx].map((kit, ki) => {
         const rows = kit.itens.map(item => {
             const p = item.produto;
-            const nomeDisplay = item.nome || (p ? p.nome : '—');
-            const saldo = p ? (p.saldo_atual || 0) : 0;
-            const insuf = p && saldo < item.quantidade;
             return '<tr>' +
-                '<td style="padding:6px 10px;font-size:0.84rem;border-bottom:1px solid var(--border-soft)">' + nomeDisplay + '</td>' +
+                '<td style="padding:6px 10px;font-size:0.84rem;border-bottom:1px solid var(--border-soft)">' + (p ? p.nome : '—') + '</td>' +
                 '<td style="padding:6px 10px;font-size:0.84rem;border-bottom:1px solid var(--border-soft);color:var(--text-2)">' + (p ? (p.codigo || '—') : '—') + '</td>' +
                 '<td style="padding:6px 10px;font-size:0.84rem;border-bottom:1px solid var(--border-soft);color:var(--text-2)">' + (p ? (p.localizacao || '—') : '—') + '</td>' +
                 '<td style="padding:6px 10px;font-size:0.84rem;border-bottom:1px solid var(--border-soft);font-weight:600;color:var(--accent);text-align:center">' + item.quantidade + '</td>' +
-                '<td style="padding:6px 10px;font-size:0.84rem;border-bottom:1px solid var(--border-soft);text-align:center;font-weight:600;color:' + (insuf ? 'var(--red)' : 'var(--green)') + '">' +
-                    saldo + (insuf ? ' <span style="font-size:0.7rem;font-weight:400">(Insuf.)</span>' : '') +
-                '</td>' +
+                '<td style="padding:6px 10px;font-size:0.84rem;border-bottom:1px solid var(--border-soft);color:var(--green);text-align:center">' + (p ? (p.saldo_atual || 0) : '—') + '</td>' +
                 '</tr>';
         }).join('');
 
@@ -2714,14 +2723,20 @@ async function criarOrdem() {
     const primeiroProd = todosItens[0];
     const kitLabel = kits.map(k => k.label).join(' + ');
 
-    const dtPage = {
-        residencia:       document.getElementById('pageOsResidencia')?.value || '',
-        tipo_telha:       document.getElementById('pageOsTipoTelha')?.value || '',
-        tipo_estrutura:   document.getElementById('pageOsTipoEstrutura')?.value || '',
-        condicao_telhado: document.getElementById('pageOsCondicaoTelhado')?.value || '',
-        obs_tecnica:      document.getElementById('pageOsObsTecnica')?.value?.trim() || '',
+    // Coletar dados técnicos da OS
+    const _osDtPage = {
+        residencia:       document.getElementById('pageOrdemResidencia')?.value || '',
+        tipo_telha:       document.getElementById('pageOrdemTipoTelha')?.value || '',
+        tipo_estrutura:   document.getElementById('pageOrdemTipoEstrutura')?.value || '',
+        condicao_telhado: document.getElementById('pageOrdemCondicaoTelhado')?.value || '',
+        obs_tecnica:      document.getElementById('pageOrdemObsTecnica')?.value || '',
     };
-    const temDTPage = Object.values(dtPage).some(v => v);
+    const _osDtPagePreenchido = Object.values(_osDtPage).some(v => v);
+
+    // Embutir dados_tecnicos nos kits do itens_json como fallback (não depende de coluna)
+    const _kitsComDt = _osDtPagePreenchido
+        ? kits.map((k, i) => i === 0 ? { ...k, dados_tecnicos: _osDtPage } : k)
+        : kits;
 
     const ordem = {
         numero: await gerarNumeroOS(),
@@ -2736,9 +2751,9 @@ async function criarOrdem() {
         descricao: '[' + kitLabel + '] ' + desc,
         status: 'pendente',
         usuario_id: state.currentUser.id,
-        itens_json: JSON.stringify(kits),
+        itens_json: JSON.stringify(_kitsComDt),
         equipe_id: document.getElementById('ordemEquipe').value || null,
-        dados_tecnicos: temDTPage ? JSON.stringify(dtPage) : null
+        dados_tecnicos: _osDtPagePreenchido ? JSON.stringify(_osDtPage) : null
     };
 
     // Se a data necessaria for passada, Data da Solicitacao = Data Necessaria
@@ -2750,7 +2765,13 @@ async function criarOrdem() {
     }
 
     try {
-        const { data, error } = await sb.from('ordens').insert([ordem]).select('*, produto:produtos(*)').single();
+        let _pgPayload = { ...ordem };
+        let { data, error } = await sb.from('ordens').insert([_pgPayload]).select('*, produto:produtos(*)').single();
+        if (error && error.message && error.message.includes('dados_tecnicos')) {
+            delete _pgPayload.dados_tecnicos;
+            const _r2 = await sb.from('ordens').insert([_pgPayload]).select('*, produto:produtos(*)').single();
+            data = _r2.data; error = _r2.error;
+        }
         if (error) throw error;
 
         state.ordens.unshift({ ...data, solicitante: state.currentUser });
@@ -2761,12 +2782,12 @@ async function criarOrdem() {
         document.getElementById('ordemDescricao').value = '';
         document.getElementById('ordemData').value = '';
         document.getElementById('ordemPrioridade').value = 'media';
-        ['pageOsResidencia','pageOsTipoTelha','pageOsTipoEstrutura','pageOsCondicaoTelhado'].forEach(id => {
+        // Limpar dados técnicos
+        ['pageOrdemResidencia','pageOrdemTipoTelha','pageOrdemTipoEstrutura','pageOrdemCondicaoTelhado'].forEach(id => {
             const el = document.getElementById(id); if (el) el.value = '';
         });
-        const obsEl = document.getElementById('pageOsObsTecnica'); if (obsEl) obsEl.value = '';
-        const detEl = document.getElementById('pageOsDadosTecnicos'); if (detEl) detEl.open = false;
-        const vp = document.getElementById('osVariantePanel_page'); if (vp) vp.style.display = 'none';
+        const _pObsEl = document.getElementById('pageOrdemObsTecnica'); if (_pObsEl) _pObsEl.value = '';
+        const _pPanelPage = document.getElementById('osVariantePanelPage'); if (_pPanelPage) _pPanelPage.style.display = 'none';
 
         showToast('Ordem enviada com sucesso!', 'success');
         updateBadges();
@@ -2791,14 +2812,20 @@ async function criarOrdemModal() {
     const primeiroProd = todosItens[0];
     const kitLabel = kits.map(k => k.label).join(' + ');
 
-    const dtModal = {
-        residencia:       document.getElementById('modalOsResidencia')?.value || '',
-        tipo_telha:       document.getElementById('modalOsTipoTelha')?.value || '',
-        tipo_estrutura:   document.getElementById('modalOsTipoEstrutura')?.value || '',
-        condicao_telhado: document.getElementById('modalOsCondicaoTelhado')?.value || '',
-        obs_tecnica:      document.getElementById('modalOsObsTecnica')?.value?.trim() || '',
+    // Coletar dados técnicos do modal
+    const _osDtModal = {
+        residencia:       document.getElementById('modalOrdemResidencia')?.value || '',
+        tipo_telha:       document.getElementById('modalOrdemTipoTelha')?.value || '',
+        tipo_estrutura:   document.getElementById('modalOrdemTipoEstrutura')?.value || '',
+        condicao_telhado: document.getElementById('modalOrdemCondicaoTelhado')?.value || '',
+        obs_tecnica:      document.getElementById('modalOrdemObsTecnica')?.value || '',
     };
-    const temDTModal = Object.values(dtModal).some(v => v);
+    const _osDtModalPreenchido = Object.values(_osDtModal).some(v => v);
+
+    // Embutir dados_tecnicos nos kits do itens_json como fallback (não depende de coluna)
+    const _kitsComDtModal = _osDtModalPreenchido
+        ? kits.map((k, i) => i === 0 ? { ...k, dados_tecnicos: _osDtModal } : k)
+        : kits;
 
     const ordem = {
         numero: await gerarNumeroOS(),
@@ -2813,9 +2840,9 @@ async function criarOrdemModal() {
         descricao: '[' + kitLabel + '] ' + desc,
         status: 'pendente',
         usuario_id: state.currentUser.id,
-        itens_json: JSON.stringify(kits),
+        itens_json: JSON.stringify(_kitsComDtModal),
         equipe_id: document.getElementById('modalOrdemEquipe').value || null,
-        dados_tecnicos: temDTModal ? JSON.stringify(dtModal) : null
+        dados_tecnicos: _osDtModalPreenchido ? JSON.stringify(_osDtModal) : null
     };
 
     // Se a data necessaria for passada, Data da Solicitacao = Data Necessaria
@@ -2827,7 +2854,13 @@ async function criarOrdemModal() {
     }
 
     try {
-        const { data, error } = await sb.from('ordens').insert([ordem]).select('*, produto:produtos(*)').single();
+        let _mdPayload = { ...ordem };
+        let { data, error } = await sb.from('ordens').insert([_mdPayload]).select('*, produto:produtos(*)').single();
+        if (error && error.message && error.message.includes('dados_tecnicos')) {
+            delete _mdPayload.dados_tecnicos;
+            const _r3 = await sb.from('ordens').insert([_mdPayload]).select('*, produto:produtos(*)').single();
+            data = _r3.data; error = _r3.error;
+        }
         if (error) throw error;
 
         state.ordens.unshift({ ...data, solicitante: state.currentUser });
@@ -3459,13 +3492,11 @@ function openModal(id) {
         populateProdutoSelect('modalOrdemProduto');
         const _d1=new Date(); document.getElementById('modalOrdemData').value = _d1.getFullYear()+'-'+String(_d1.getMonth()+1).padStart(2,'0')+'-'+String(_d1.getDate()).padStart(2,'0');
         populateEquipeSelect('modalOrdemEquipe');
-        // Reset vistoria
-        ['modalOsResidencia','modalOsTipoTelha','modalOsTipoEstrutura','modalOsCondicaoTelhado'].forEach(function(id2) {
-            var el = document.getElementById(id2); if (el) el.value = '';
-        });
-        var obsModal = document.getElementById('modalOsObsTecnica'); if (obsModal) obsModal.value = '';
-        var detModal = document.getElementById('modalOsDadosTecnicos'); if (detModal) detModal.open = false;
-        var vpModal = document.getElementById('osVariantePanel_modal'); if (vpModal) vpModal.style.display = 'none';
+        // Resetar painel variante e dados técnicos
+        const _mvp = document.getElementById('osVariantePanelModal'); if (_mvp) _mvp.style.display = 'none';
+        ['modalOrdemResidencia','modalOrdemTipoTelha','modalOrdemTipoEstrutura','modalOrdemCondicaoTelhado'].forEach(function(elId){ const el=document.getElementById(elId); if(el) el.value=''; });
+        const _mobsEl = document.getElementById('modalOrdemObsTecnica'); if(_mobsEl) _mobsEl.value = '';
+        const _mdetEl = document.getElementById('modalOrdemDadosTecnicos'); if(_mdetEl) _mdetEl.open = false;
     }
     if (id === 'modalEquipe') {
         state.editingEquipeId = null;
@@ -5664,29 +5695,19 @@ async function editarOrdem(id) {
     renderKitsConfirmados('edit');
     renderLinhasOrdem('edit');
     document.getElementById('editOrdemTipo').value = '';
-
-    // Carregar dados técnicos do primeiro kit que tiver, ou da OS diretamente
-    const dtRawEdit = o.dados_tecnicos || (() => {
-        try {
-            const kitsEdit = _kitsConfirmados['edit'];
-            for (const k of kitsEdit) {
-                if (k.dados_tecnicos) return k.dados_tecnicos;
-            }
-            return null;
-        } catch(e) { return null; }
-    })();
-    if (dtRawEdit) {
-        const dtEdit = typeof dtRawEdit === 'string' ? JSON.parse(dtRawEdit) : dtRawEdit;
-        const setVal = (id, v) => { const el = document.getElementById(id); if (el && v) el.value = v; };
-        setVal('editOsResidencia',      dtEdit.residencia);
-        setVal('editOsTipoTelha',       dtEdit.tipo_telha);
-        setVal('editOsTipoEstrutura',   dtEdit.tipo_estrutura);
-        setVal('editOsCondicaoTelhado', dtEdit.condicao_telhado);
-        setVal('editOsObsTecnica',      dtEdit.obs_tecnica);
-        const det = document.getElementById('editOsDadosTecnicos');
-        if (det) det.open = true;
-    }
-
+    // Carregar dados técnicos
+    const _editDtRaw = o.dados_tecnicos || null;
+    const _editDt = _editDtRaw ? (typeof _editDtRaw === 'string' ? JSON.parse(_editDtRaw) : _editDtRaw) : {};
+    const _editSetV = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+    _editSetV('editOrdemResidencia',      _editDt.residencia);
+    _editSetV('editOrdemTipoTelha',       _editDt.tipo_telha);
+    _editSetV('editOrdemTipoEstrutura',   _editDt.tipo_estrutura);
+    _editSetV('editOrdemCondicaoTelhado', _editDt.condicao_telhado);
+    _editSetV('editOrdemObsTecnica',      _editDt.obs_tecnica);
+    const _editDetEl = document.getElementById('editOrdemDadosTecnicos');
+    if (_editDetEl) _editDetEl.open = Object.values(_editDt).some(v => v);
+    const _editVarPanel = document.getElementById('osVariantePanelEdit');
+    if (_editVarPanel) _editVarPanel.style.display = 'none';
     document.getElementById('modalEditOrdem').classList.remove('hidden');
 }
 
@@ -5742,14 +5763,20 @@ async function salvarEdicaoOrdem() {
         }
     }
 
-    var dtEdit = {
-        residencia:       document.getElementById('editOsResidencia')?.value || '',
-        tipo_telha:       document.getElementById('editOsTipoTelha')?.value || '',
-        tipo_estrutura:   document.getElementById('editOsTipoEstrutura')?.value || '',
-        condicao_telhado: document.getElementById('editOsCondicaoTelhado')?.value || '',
-        obs_tecnica:      document.getElementById('editOsObsTecnica')?.value?.trim() || '',
+    // Coletar dados técnicos da edição
+    var _osDtEdit = {
+        residencia:       document.getElementById('editOrdemResidencia') ? document.getElementById('editOrdemResidencia').value : '',
+        tipo_telha:       document.getElementById('editOrdemTipoTelha') ? document.getElementById('editOrdemTipoTelha').value : '',
+        tipo_estrutura:   document.getElementById('editOrdemTipoEstrutura') ? document.getElementById('editOrdemTipoEstrutura').value : '',
+        condicao_telhado: document.getElementById('editOrdemCondicaoTelhado') ? document.getElementById('editOrdemCondicaoTelhado').value : '',
+        obs_tecnica:      document.getElementById('editOrdemObsTecnica') ? document.getElementById('editOrdemObsTecnica').value : '',
     };
-    var temDTEdit = Object.values(dtEdit).some(function(v) { return v; });
+    var _osDtEditPreenchido = Object.values(_osDtEdit).some(function(v) { return v; });
+
+    // Embutir dados_tecnicos nos kits do itens_json como fallback
+    var _kitsComDtEdit = _osDtEditPreenchido
+        ? kits.map(function(k, i) { return i === 0 ? Object.assign({}, k, { dados_tecnicos: _osDtEdit }) : k; })
+        : kits;
 
     var updates = {
         produto_id: primeiroProd.produto_id,
@@ -5759,12 +5786,18 @@ async function salvarEdicaoOrdem() {
             ? document.getElementById('editOrdemData').value
             : null,
         descricao: '[' + kitLabel + '] ' + desc,
-        itens_json: JSON.stringify(kits),
-        dados_tecnicos: temDTEdit ? JSON.stringify(dtEdit) : null
+        itens_json: JSON.stringify(_kitsComDtEdit),
+        dados_tecnicos: _osDtEditPreenchido ? JSON.stringify(_osDtEdit) : null
     };
 
     try {
         var res = await sb.from('ordens').update(updates).eq('id', id).select('*, produto:produtos(*)').single();
+        // Se a coluna dados_tecnicos não existir, tenta sem ela
+        if (res.error && res.error.message && res.error.message.includes('dados_tecnicos')) {
+            var updatesFallback = Object.assign({}, updates);
+            delete updatesFallback.dados_tecnicos;
+            res = await sb.from('ordens').update(updatesFallback).eq('id', id).select('*, produto:produtos(*)').single();
+        }
         if (res.error) throw res.error;
 
         // Descontar apenas os itens novos/aumentados
@@ -7360,6 +7393,54 @@ const KIT_VARIANTES = [
     { regex: /\btomada\b/i,      variantes: ['2P', '2P+T', 'Schuko'] },
 ];
 
+// ── Variantes para OS (modal / page / edit) ──────────────────────────────────
+// Mapeamento de painel por contexto
+const _OS_VARIANTE_PANEL = {
+    modal: 'osVariantePanelModal',
+    page:  'osVariantePanelPage',
+    edit:  'osVariantePanelEdit'
+};
+
+function _osVerificarVariante(prodId, inpId, ctx) {
+    const prod = state.produtos.find(p => p.id === prodId);
+    if (!prod) return;
+    const entrada = KIT_VARIANTES.find(v => v.regex.test(prod.nome));
+    if (!entrada) return;
+
+    const panelId = _OS_VARIANTE_PANEL[ctx];
+    if (!panelId) return;
+    const panel  = document.getElementById(panelId);
+    if (!panel) return;
+    const titulo = panel.querySelector('.os-variante-nome-prod');
+    const bots   = panel.querySelector('.os-variante-botoes');
+
+    if (titulo) titulo.textContent = prod.nome;
+    if (bots) bots.innerHTML = entrada.variantes.map(v =>
+        `<button type="button" class="btn-outline" style="padding:5px 16px;font-size:0.82rem"
+            onclick="_osSelecionarVariante('${inpId}','${v}','${panelId}')">${v}</button>`
+    ).join('');
+    panel.style.display = 'block';
+    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function _osSelecionarVariante(inpId, variante, panelId) {
+    const inp = document.getElementById(inpId);
+    if (inp) {
+        let val = inp.value
+            .replace(/\s*\(Saldo:\s*[\d-]+\)/gi, '')
+            .replace(/\s*\([^)]+\)\s*$/, '')
+            .trim();
+        inp.value = val + ' (' + variante + ')';
+        // Atualizar nome no estado
+        const idx = parseInt(inp.dataset.idx);
+        const ctx = inp.dataset.ctx;
+        const item = _ordemItens[ctx].find(i => i.idx === idx);
+        if (item) item.nome = inp.value;
+    }
+    const panel = document.getElementById(panelId);
+    if (panel) panel.style.display = 'none';
+}
+
 // Chamado quando o autocomplete seleciona um produto na linha de kit.
 // Verifica se o produto tem variantes e, se sim, mostra o painel de escolha.
 function _kitVerificarVariante(prodId, inpId) {
@@ -7791,29 +7872,25 @@ function selecionarKitParaOS(kitId) {
         container.insertBefore(label, container.firstChild);
     }
 
-    // Auto-preencher dados técnicos da vistoria se o kit tiver
-    const dtKit = kit.dados_tecnicos
+    // Auto-preencher dados tecnicos do kit na OS
+    const _kitDtOS = kit.dados_tecnicos
         ? (typeof kit.dados_tecnicos === 'string' ? JSON.parse(kit.dados_tecnicos) : kit.dados_tecnicos)
         : null;
-    if (dtKit) {
-        const dtPrefix = ctx === 'modal' ? 'modalOs' : ctx === 'edit' ? 'editOs' : 'pageOs';
-        const setVal = (id, v) => { const el = document.getElementById(id); if (el && v) el.value = v; };
-        setVal(dtPrefix + 'Residencia',      dtKit.residencia);
-        setVal(dtPrefix + 'TipoTelha',       dtKit.tipo_telha);
-        setVal(dtPrefix + 'TipoEstrutura',   dtKit.tipo_estrutura);
-        setVal(dtPrefix + 'CondicaoTelhado', dtKit.condicao_telhado);
-        setVal(dtPrefix + 'ObsTecnica',      dtKit.obs_tecnica);
-        // Abrir o <details> de dados técnicos
-        const det = document.getElementById(
-            ctx === 'modal' ? 'modalOsDadosTecnicos' : ctx === 'edit' ? 'editOsDadosTecnicos' : 'pageOsDadosTecnicos'
-        );
-        if (det) det.open = true;
-        showToast('Kit "' + kit.nome + '" carregado com dados técnicos de vistoria!', 'success');
-    } else {
-        showToast('Kit "' + kit.nome + '" carregado! Clique em "Confirmar Kit" para adicionar à ordem.', 'success');
+    if (_kitDtOS) {
+        const _pref = ctx === 'modal' ? 'modalOrdem' : ctx === 'edit' ? 'editOrdem' : 'pageOrdem';
+        const _setV = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
+        _setV(_pref + 'Residencia',      _kitDtOS.residencia);
+        _setV(_pref + 'TipoTelha',       _kitDtOS.tipo_telha);
+        _setV(_pref + 'TipoEstrutura',   _kitDtOS.tipo_estrutura);
+        _setV(_pref + 'CondicaoTelhado', _kitDtOS.condicao_telhado);
+        _setV(_pref + 'ObsTecnica',      _kitDtOS.obs_tecnica);
+        const _detId = _pref + 'DadosTecnicos';
+        const _detEl = document.getElementById(_detId);
+        if (_detEl) _detEl.open = true;
     }
 
     closeModal('modalSeletorKit');
+    showToast('Kit "' + kit.nome + '" carregado! Clique em "Confirmar Kit" para adicionar à ordem.', 'success');
 }
 
 
