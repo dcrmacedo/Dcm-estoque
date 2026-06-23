@@ -2267,7 +2267,10 @@ let _materialPendenteAtual = null;
 
 function buildSelectProdutos(selectedId, qtd, idx, ctx) {
     const prod = selectedId ? state.produtos.find(p => p.id === selectedId) : null;
-    const nomeInicial = prod ? prod.nome + ' (Saldo: ' + (prod.saldo_atual || 0) + ')' : '';
+    // Usa o nome salvo no estado (pode ter variante), ou reconstrói do produto
+    const item = _ordemItens[ctx].find(i => i.idx === idx);
+    const nomeSalvo = item && item.nome ? item.nome : '';
+    const nomeInicial = nomeSalvo || (prod ? prod.nome + ' (Saldo: ' + (prod.saldo_atual || 0) + ')' : '');
     const acId = 'ac_' + ctx + '_' + idx;
     const ddId = 'dd_' + ctx + '_' + idx;
     return '<div style="display:flex;gap:8px;align-items:center;margin-bottom:4px" id="itemOrdem_' + ctx + '_' + idx + '">' +
@@ -2392,7 +2395,10 @@ function acSelecionar(prodId, inpId) {
     var idx = parseInt(inp.dataset.idx);
     var ctx = inp.dataset.ctx;
     var item = _ordemItens[ctx].find(function(i) { return i.idx === idx; });
-    if (item) item.produto_id = prodId;
+    if (item) {
+        item.produto_id = prodId;
+        item.nome = prod.nome; // salva nome base (sem variante ainda)
+    }
     // Verificar variante para OS
     _osVerificarVariante(prodId, inpId, ctx);
 }
@@ -7430,12 +7436,13 @@ function _osSelecionarVariante(inpId, variante, panelId) {
             .replace(/\s*\(Saldo:\s*[\d-]+\)/gi, '')
             .replace(/\s*\([^)]+\)\s*$/, '')
             .trim();
-        inp.value = val + ' (' + variante + ')';
-        // Atualizar nome no estado
+        const nomeComVariante = val + ' (' + variante + ')';
+        inp.value = nomeComVariante;
+        // Atualizar nome no estado (com variante, sem "(Saldo: ...)")
         const idx = parseInt(inp.dataset.idx);
         const ctx = inp.dataset.ctx;
         const item = _ordemItens[ctx].find(i => i.idx === idx);
-        if (item) item.nome = inp.value;
+        if (item) item.nome = nomeComVariante;
     }
     const panel = document.getElementById(panelId);
     if (panel) panel.style.display = 'none';
