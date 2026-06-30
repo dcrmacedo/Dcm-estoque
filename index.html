@@ -1958,10 +1958,8 @@ async function salvarProduto() {
         // Tenta salvar; se a coluna 'ean' não existir no banco, salva sem ela
         async function _upsertProduto(dados) {
             if (state.editingProdutoId) {
-                // Não usa .single() no update — RLS pode bloquear o SELECT de retorno
-                const r = await sb.from('produtos').update(dados).eq('id', state.editingProdutoId).select();
-                if (r.error) return r;
-                return { data: r.data && r.data[0] ? r.data[0] : dados, error: null };
+                const r = await sb.from('produtos').update(dados).eq('id', state.editingProdutoId).select().single();
+                return r;
             } else {
                 const r = await sb.from('produtos').insert([dados]).select().single();
                 return r;
@@ -2261,9 +2259,11 @@ const KIT_LABELS = {
 };
 
 // Estado: itens sendo editados agora (linha a linha)
-const _ordemItens = { modal: [], page: [], edit: [] };
+const _ordemItens = { modal: [], page: [], edit: [], kitcad: [] };
 // Kits já confirmados (array de { tipo, label, itens[] })
-const _kitsConfirmados = { modal: [], page: [], edit: [] };
+const _kitsConfirmados = { modal: [], page: [], edit: [], kitcad: [] };
+// Posição original do kit confirmado sendo reeditado (para não ir parar no fim da lista)
+const _kitEditPos = { modal: null, page: null, edit: null, kitcad: null };
 
 let _materialPendenteAtual = null;
 
@@ -2427,7 +2427,7 @@ function atualizaQtdOrdem(inp, idx, ctx) {
 }
 
 function renderLinhasOrdem(ctx) {
-    const container = document.getElementById(ctx === 'modal' ? 'modalOrdemItens' : ctx === 'edit' ? 'editOrdemItens' : 'pageOrdemItens');
+    const container = document.getElementById(ctx === 'modal' ? 'modalOrdemItens' : ctx === 'edit' ? 'editOrdemItens' : ctx === 'kitcad' ? 'kitcadOrdemItens' : 'pageOrdemItens');
     if (!container) return;
     if (_ordemItens[ctx].length === 0) {
         container.innerHTML = '<p style="font-size:0.8rem;color:var(--text-3);padding:6px 0">Clique em "+ Produto" para adicionar materiais a este kit.</p>';
@@ -2437,7 +2437,7 @@ function renderLinhasOrdem(ctx) {
 }
 
 function confirmarKit(ctx) {
-    const tipoId = ctx === 'modal' ? 'modalOrdemTipo' : ctx === 'edit' ? 'editOrdemTipo' : 'ordemTipo';
+    const tipoId = ctx === 'modal' ? 'modalOrdemTipo' : ctx === 'edit' ? 'editOrdemTipo' : ctx === 'kitcad' ? 'kitcadOrdemTipo' : 'ordemTipo';
     const tipo = document.getElementById(tipoId).value;
     if (!tipo) { showToast('Selecione o tipo de kit antes de confirmar.', 'error'); return; }
 
@@ -2473,7 +2473,14 @@ function confirmarKit(ctx) {
         };
     });
 
-    _kitsConfirmados[ctx].push({ tipo, label: KIT_LABELS[tipo] || tipo, itens: itensCompletos });
+    const novoKit = { tipo, label: KIT_LABELS[tipo] || tipo, itens: itensCompletos };
+    const posOriginal = _kitEditPos[ctx];
+    if (posOriginal !== null && posOriginal !== undefined && posOriginal <= _kitsConfirmados[ctx].length) {
+        _kitsConfirmados[ctx].splice(posOriginal, 0, novoKit);
+        _kitEditPos[ctx] = null;
+    } else {
+        _kitsConfirmados[ctx].push(novoKit);
+    }
     _ordemItens[ctx] = [];
 
     // Reset tipo selector
@@ -2485,11 +2492,15 @@ function confirmarKit(ctx) {
 
 function removerKitConfirmado(ctx, kitIdx) {
     _kitsConfirmados[ctx].splice(kitIdx, 1);
+    // Se houver uma edição pendente (sub-kit retirado para edição), ajusta a posição de retorno
+    if (_kitEditPos[ctx] !== null && _kitEditPos[ctx] !== undefined && kitIdx < _kitEditPos[ctx]) {
+        _kitEditPos[ctx]--;
+    }
     renderKitsConfirmados(ctx);
 }
 
 function renderKitsConfirmados(ctx) {
-    const containerId = ctx === 'modal' ? 'modalKitsConfirmados' : ctx === 'edit' ? 'editKitsConfirmados' : 'pageKitsConfirmados';
+    const containerId = ctx === 'modal' ? 'modalKitsConfirmados' : ctx === 'edit' ? 'editKitsConfirmados' : ctx === 'kitcad' ? 'kitcadKitsConfirmados' : 'pageKitsConfirmados';
     const container = document.getElementById(containerId);
     if (!container) return;
     if (_kitsConfirmados[ctx].length === 0) { container.innerHTML = ''; return; }
@@ -2497,8 +2508,10 @@ function renderKitsConfirmados(ctx) {
     container.innerHTML = _kitsConfirmados[ctx].map((kit, ki) => {
         const rows = kit.itens.map(item => {
             const p = item.produto;
+            // Usa item.nome (preserva variante ex: "Cabo Preto 10mm (Linha)") e só cai para p.nome se não houver
+            const nomeExibir = item.nome || (p ? p.nome : '—');
             return '<tr>' +
-                '<td style="padding:6px 10px;font-size:0.84rem;border-bottom:1px solid var(--border-soft)">' + (p ? p.nome : '—') + '</td>' +
+                '<td style="padding:6px 10px;font-size:0.84rem;border-bottom:1px solid var(--border-soft)">' + nomeExibir + '</td>' +
                 '<td style="padding:6px 10px;font-size:0.84rem;border-bottom:1px solid var(--border-soft);color:var(--text-2)">' + (p ? (p.codigo || '—') : '—') + '</td>' +
                 '<td style="padding:6px 10px;font-size:0.84rem;border-bottom:1px solid var(--border-soft);color:var(--text-2)">' + (p ? (p.localizacao || '—') : '—') + '</td>' +
                 '<td style="padding:6px 10px;font-size:0.84rem;border-bottom:1px solid var(--border-soft);font-weight:600;color:var(--accent);text-align:center">' + item.quantidade + '</td>' +
@@ -2530,12 +2543,13 @@ function editarKitConfirmado(ctx, ki) {
     const kit = _kitsConfirmados[ctx][ki];
     if (!kit) return;
 
-    // Remove o kit da lista confirmada
+    // Remove o kit da lista confirmada, mas guarda a posição para reinserir no mesmo lugar
     _kitsConfirmados[ctx].splice(ki, 1);
+    _kitEditPos[ctx] = ki;
     renderKitsConfirmados(ctx);
 
     // Preenche o tipo de kit no select
-    const tipoId = ctx === 'modal' ? 'modalOrdemTipo' : ctx === 'edit' ? 'editOrdemTipo' : 'ordemTipo';
+    const tipoId = ctx === 'modal' ? 'modalOrdemTipo' : ctx === 'edit' ? 'editOrdemTipo' : ctx === 'kitcad' ? 'kitcadOrdemTipo' : 'ordemTipo';
     const tipoSel = document.getElementById(tipoId);
     if (tipoSel) { tipoSel.value = kit.tipo; }
 
@@ -2543,7 +2557,8 @@ function editarKitConfirmado(ctx, ki) {
     _ordemItens[ctx] = kit.itens.map(item => ({
         idx: Date.now() + Math.random(),
         produto_id: item.produto_id || (item.produto ? item.produto.id : ''),
-        quantidade: item.quantidade
+        quantidade: item.quantidade,
+        nome: item.nome || ''
     }));
     renderLinhasOrdem(ctx);
 }
@@ -2784,6 +2799,7 @@ async function criarOrdem() {
 
         state.ordens.unshift({ ...data, solicitante: state.currentUser });
         _kitsConfirmados['page'] = [];
+        _kitEditPos['page'] = null;
         _ordemItens['page'] = [];
         renderLinhasOrdem('page');
         renderKitsConfirmados('page');
@@ -2873,6 +2889,7 @@ async function criarOrdemModal() {
 
         state.ordens.unshift({ ...data, solicitante: state.currentUser });
         _kitsConfirmados['modal'] = [];
+        _kitEditPos['modal'] = null;
         _ordemItens['modal'] = [];
         closeModal('modalOrdem');
 
@@ -5683,6 +5700,7 @@ async function editarOrdem(id) {
     document.getElementById('editOrdemData').value = o.data_necessaria ? o.data_necessaria.split('T')[0] : '';
     document.getElementById('editOrdemDescricao').value = (o.descricao || '').replace(/^\[.*?\]\s*/, '');
     _kitsConfirmados['edit'] = [];
+    _kitEditPos['edit'] = null;
     _ordemItens['edit'] = [];
     try {
         const raw = o.itens_json ? JSON.parse(o.itens_json) : [];
@@ -5835,7 +5853,7 @@ async function salvarEdicaoOrdem() {
 
         var idx = state.ordens.findIndex(function(o) { return o.id === id; });
         if (idx !== -1) state.ordens[idx] = Object.assign({}, state.ordens[idx], res.data);
-        _kitsConfirmados['edit'] = []; _ordemItens['edit'] = [];
+        _kitsConfirmados['edit'] = []; _kitEditPos['edit'] = null; _ordemItens['edit'] = [];
         closeModal('modalEditOrdem');
         renderOrdens(document.getElementById('searchOrdens') ? document.getElementById('searchOrdens').value : '', state.filtroOrdens);
 
@@ -7315,6 +7333,39 @@ function filterKits() {
     renderKits(q);
 }
 
+// ── Helpers: Kit Padrão (lista única) vs Kit Inversor (sub-kits agrupados) ──
+// Um kit "Inversor" salva kit.itens como array de grupos: [{tipo,label,itens:[...]}]
+// Um kit "Padrão" salva kit.itens como array plano: [{produto_id,nome,quantidade}]
+function _kitGetRawItens(kit) {
+    if (!kit) return [];
+    if (Array.isArray(kit)) return kit; // já é o array bruto
+    return kit.itens ? (typeof kit.itens === 'string' ? JSON.parse(kit.itens) : kit.itens) : [];
+}
+function _kitEhAgrupado(rawItens) {
+    return !!(rawItens && rawItens.length && rawItens[0] && Array.isArray(rawItens[0].itens));
+}
+function _kitFlatten(rawItens) {
+    if (_kitEhAgrupado(rawItens)) {
+        return rawItens.flatMap(function(g) {
+            return (g.itens || []).map(function(i) { return Object.assign({}, i, { kit_tipo: g.tipo, kit_label: g.label }); });
+        });
+    }
+    return rawItens || [];
+}
+
+function alternarTipoKitCadastro() {
+    const tipo = document.getElementById('kitTipoCadastro').value;
+    const secaoNormal = document.getElementById('kitSecaoNormal');
+    const secaoInversor = document.getElementById('kitSecaoInversor');
+    if (tipo === 'inversor') {
+        secaoNormal.style.display = 'none';
+        secaoInversor.style.display = '';
+    } else {
+        secaoNormal.style.display = '';
+        secaoInversor.style.display = 'none';
+    }
+}
+
 function renderKits(filter) {
     filter = filter || (document.getElementById('searchKits')?.value || '').toLowerCase();
     let list = state.kits || [];
@@ -7332,13 +7383,16 @@ function renderKits(filter) {
     if (empty) empty.classList.add('hidden');
 
     grid.innerHTML = list.map(kit => {
-        const itens = kit.itens ? (typeof kit.itens === 'string' ? JSON.parse(kit.itens) : kit.itens) : [];
+        const itensRaw = _kitGetRawItens(kit);
+        const agrupado = _kitEhAgrupado(itensRaw);
+        const itens = _kitFlatten(itensRaw);
         const totalItens = itens.length;
         const itensHtml = itens.slice(0, 5).map(item => {
             const prod = state.produtos.find(p => p.id === item.produto_id);
             // Prefere item.nome (pode conter variante ex: "Cabo 16mm (Linha)")
             const nome = item.nome || (prod ? prod.nome : '—');
-            return '<div class="kit-item-row"><span class="kit-item-nome" title="' + nome + '">' + nome + '</span><span class="kit-item-qtd">' + item.quantidade + ' un</span></div>';
+            const grupoTag = agrupado && item.kit_label ? ' <span style="font-size:0.65rem;color:var(--text-3)">(' + item.kit_label.trim() + ')</span>' : '';
+            return '<div class="kit-item-row"><span class="kit-item-nome" title="' + nome + '">' + nome + grupoTag + '</span><span class="kit-item-qtd">' + item.quantidade + ' un</span></div>';
         }).join('');
         const maisStr = itens.length > 5 ? '<div style="font-size:0.75rem;color:var(--text-3);padding:6px 0">+ ' + (itens.length - 5) + ' material(is)...</div>' : '';
 
@@ -7377,7 +7431,7 @@ function renderKits(filter) {
         return '<div class="kit-card">' +
             '<div class="kit-card-header">' +
                 '<div class="kit-card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg></div>' +
-                '<div><div class="kit-card-title">' + (kit.nome || 'Kit sem nome') + '</div>' +
+                '<div><div class="kit-card-title">' + (kit.nome || 'Kit sem nome') + (agrupado ? ' <span style="font-size:0.62rem;font-weight:700;color:#6366F1;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.3);border-radius:5px;padding:1px 6px;vertical-align:1px">KIT INVERSOR</span>' : '') + '</div>' +
                 '<div class="kit-card-sub">' + totalItens + ' material(is)' + (kit.descricao ? ' · ' + kit.descricao : '') + '</div></div>' +
                 '<div style="margin-left:auto">' + estBadge + '</div>' +
             '</div>' +
@@ -7406,7 +7460,8 @@ const KIT_VARIANTES = [
 const _OS_VARIANTE_PANEL = {
     modal: 'osVariantePanelModal',
     page:  'osVariantePanelPage',
-    edit:  'osVariantePanelEdit'
+    edit:  'osVariantePanelEdit',
+    kitcad: 'osVariantePanelKitcad'
 };
 
 function _osVerificarVariante(prodId, inpId, ctx) {
@@ -7590,6 +7645,17 @@ function abrirModalKit(reset) {
         const detEl = document.getElementById('kitDadosTecnicos'); if (detEl) detEl.open = false;
         // Esconder painel de variante
         const vp = document.getElementById('kitVariantePanel'); if (vp) vp.style.display = 'none';
+        // Resetar tipo de kit (Padrão / Inversor) e estado dos sub-kits
+        const tipoCadEl = document.getElementById('kitTipoCadastro');
+        if (tipoCadEl) tipoCadEl.value = 'normal';
+        alternarTipoKitCadastro();
+        _ordemItens['kitcad'] = [];
+        _kitsConfirmados['kitcad'] = [];
+        _kitEditPos['kitcad'] = null;
+        renderLinhasOrdem('kitcad');
+        renderKitsConfirmados('kitcad');
+        const tipoSubEl = document.getElementById('kitcadOrdemTipo'); if (tipoSubEl) tipoSubEl.value = '';
+        const vpKitcad = document.getElementById('osVariantePanelKitcad'); if (vpKitcad) vpKitcad.style.display = 'none';
     }
     document.getElementById('modalKit').classList.remove('hidden');
 }
@@ -7597,8 +7663,21 @@ function abrirModalKit(reset) {
 async function salvarKit() {
     const nome = document.getElementById('kitNome').value.trim();
     if (!nome) { showToast('Informe o nome do kit.', 'error'); return; }
-    const itens = coletarItensKit();
-    if (!itens.length) { showToast('Adicione ao menos um material ao kit.', 'error'); return; }
+
+    const tipoCadastro = document.getElementById('kitTipoCadastro')?.value || 'normal';
+    let itens;
+    if (tipoCadastro === 'inversor') {
+        const subKits = _kitsConfirmados['kitcad'];
+        if (!subKits.length) { showToast('Adicione ao menos um sub-kit (Inversor / Padrão de Entrada) confirmado.', 'error'); return; }
+        itens = subKits.map(k => ({
+            tipo: k.tipo,
+            label: k.label,
+            itens: k.itens.map(i => ({ produto_id: i.produto_id, nome: i.nome, quantidade: i.quantidade }))
+        }));
+    } else {
+        itens = coletarItensKit();
+        if (!itens.length) { showToast('Adicione ao menos um material ao kit.', 'error'); return; }
+    }
 
     const desc = document.getElementById('kitDescricao').value.trim();
 
@@ -7691,33 +7770,62 @@ function editKit(id) {
     const detEl = document.getElementById('kitDadosTecnicos');
     if (detEl && Object.values(dt).some(v => v)) detEl.open = true;
 
-    const itens = kit.itens ? (typeof kit.itens === 'string' ? JSON.parse(kit.itens) : kit.itens) : [];
-    itens.forEach(item => {
-        addKitItemLinha();
-        const idx = _kitLinhasCount - 1;
-        const hidEl = document.getElementById('kitProdId_' + idx);
-        const txtEl = document.getElementById('kitProdInput_' + idx);
-        const qtyEl = document.getElementById('kitQty_' + idx);
-        if (hidEl) hidEl.value = item.produto_id || '';
-        // Prefere item.nome (preserva variante ex: "Cabo 16mm (Linha)")
-        // só cai no prod.nome se item.nome não estiver salvo
-        const prod = state.produtos.find(p => p.id === item.produto_id);
-        if (txtEl) txtEl.value = item.nome || (prod ? prod.nome : '');
-        if (qtyEl) qtyEl.value = item.quantidade || 1;
-    });
-    atualizarResumoKit();
+    const itensRaw = _kitGetRawItens(kit);
+    const agrupado = _kitEhAgrupado(itensRaw);
+
+    // Define o tipo de kit no seletor e alterna a seção visível
+    const tipoCadEl = document.getElementById('kitTipoCadastro');
+    if (tipoCadEl) tipoCadEl.value = agrupado ? 'inversor' : 'normal';
+    alternarTipoKitCadastro();
+
+    if (agrupado) {
+        // Kit Inversor: popula os sub-kits já confirmados
+        _ordemItens['kitcad'] = [];
+        _kitEditPos['kitcad'] = null;
+        _kitsConfirmados['kitcad'] = itensRaw.map(grupo => ({
+            tipo: grupo.tipo,
+            label: grupo.label || KIT_LABELS[grupo.tipo] || grupo.tipo,
+            itens: (grupo.itens || []).map(i => ({
+                produto_id: i.produto_id,
+                nome: i.nome,
+                quantidade: i.quantidade,
+                produto: state.produtos.find(p => p.id === i.produto_id)
+            }))
+        }));
+        renderLinhasOrdem('kitcad');
+        renderKitsConfirmados('kitcad');
+        const tipoSubEl = document.getElementById('kitcadOrdemTipo'); if (tipoSubEl) tipoSubEl.value = '';
+    } else {
+        // Kit Padrão: popula a lista única de materiais
+        itensRaw.forEach(item => {
+            addKitItemLinha();
+            const idx = _kitLinhasCount - 1;
+            const hidEl = document.getElementById('kitProdId_' + idx);
+            const txtEl = document.getElementById('kitProdInput_' + idx);
+            const qtyEl = document.getElementById('kitQty_' + idx);
+            if (hidEl) hidEl.value = item.produto_id || '';
+            // Prefere item.nome (preserva variante ex: "Cabo 16mm (Linha)")
+            // só cai no prod.nome se item.nome não estiver salvo
+            const prod = state.produtos.find(p => p.id === item.produto_id);
+            if (txtEl) txtEl.value = item.nome || (prod ? prod.nome : '');
+            if (qtyEl) qtyEl.value = item.quantidade || 1;
+        });
+        atualizarResumoKit();
+    }
     document.getElementById('modalKit').classList.remove('hidden');
 }
 
 function verKit(id) {
     const kit = state.kits.find(k => k.id === id);
     if (!kit) return;
-    const itens = kit.itens ? (typeof kit.itens === 'string' ? JSON.parse(kit.itens) : kit.itens) : [];
+    const itensRaw = _kitGetRawItens(kit);
+    const agrupado = _kitEhAgrupado(itensRaw);
 
     let temEstoqueGlobal = true;
-    const itensHtml = itens.map(item => {
+    const totalItens = _kitFlatten(itensRaw).length;
+
+    const buildItemRow = (item) => {
         const prod = state.produtos.find(p => p.id === item.produto_id);
-        // Prefere item.nome (pode ter variante) e cai em prod.nome como fallback
         const nome = item.nome || (prod ? prod.nome : '—');
         const saldo = prod ? (prod.saldo_atual || 0) : 0;
         const temEstoque = saldo >= item.quantidade;
@@ -7730,7 +7838,17 @@ function verKit(id) {
             '<span class="kit-item-qtd">' + item.quantidade + ' un</span>' +
             badge +
         '</div>';
-    }).join('');
+    };
+
+    const itensHtml = agrupado
+        ? itensRaw.map(grupo => {
+            const rows = (grupo.itens || []).map(buildItemRow).join('');
+            return '<div style="margin-bottom:14px">' +
+                '<div style="font-size:0.78rem;font-weight:700;color:#6366F1;margin-bottom:4px">' + (grupo.label || KIT_LABELS[grupo.tipo] || grupo.tipo) + '</div>' +
+                rows +
+            '</div>';
+        }).join('')
+        : itensRaw.map(buildItemRow).join('');
 
     const statusGeral = temEstoqueGlobal
         ? '<div style="background:var(--green-soft);border:1px solid var(--green);border-radius:var(--radius);padding:10px 14px;font-size:0.82rem;color:#065f46;margin-top:14px"><strong>✓ Estoque suficiente</strong> — Todos os materiais deste kit estão disponíveis.</div>'
@@ -7759,10 +7877,11 @@ function verKit(id) {
                 '<div style="font-size:0.82rem;color:var(--text);font-weight:500">' + display + '</div></div>';
         }).join('') + '</div></div>' : '';
 
-    document.getElementById('modalVerKitTitle').textContent = kit.nome || 'Kit';
+    const tipoTag = agrupado ? ' <span style="font-size:0.62rem;font-weight:700;color:#6366F1;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.3);border-radius:5px;padding:1px 6px;vertical-align:1px">KIT INVERSOR</span>' : '';
+    document.getElementById('modalVerKitTitle').innerHTML = (kit.nome || 'Kit') + tipoTag;
     document.getElementById('modalVerKitBody').innerHTML =
         (kit.descricao ? '<p style="font-size:0.85rem;color:var(--text-2);margin-bottom:16px">' + kit.descricao + '</p>' : '') +
-        '<div style="font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-3);margin-bottom:8px">' + itens.length + ' Material(is)</div>' +
+        '<div style="font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-3);margin-bottom:8px">' + totalItens + ' Material(is)' + (agrupado ? ' em ' + itensRaw.length + ' sub-kit(s)' : '') + '</div>' +
         itensHtml + statusGeral + dtHtml;
 
     document.getElementById('btnEditarKitModal').onclick = function() { closeModal('modalVerKit'); editKit(id); };
@@ -7815,7 +7934,9 @@ function renderListaSeletorKit(lista) {
         return;
     }
     el.innerHTML = lista.map(kit => {
-        const itens = kit.itens ? (typeof kit.itens === 'string' ? JSON.parse(kit.itens) : kit.itens) : [];
+        const itensRaw = _kitGetRawItens(kit);
+        const agrupado = _kitEhAgrupado(itensRaw);
+        const itens = _kitFlatten(itensRaw);
 
         // Checar estoque
         let temEstoque = true;
@@ -7832,12 +7953,14 @@ function renderListaSeletorKit(lista) {
             return (p ? p.nome : i.nome || '?') + ' ×' + i.quantidade;
         }).join(', ') + (itens.length > 3 ? '...' : '');
 
+        const tipoTag = agrupado ? ' <span style="font-size:0.6rem;font-weight:700;color:#6366F1;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.3);border-radius:5px;padding:1px 5px;vertical-align:1px">INVERSOR</span>' : '';
+
         return '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;cursor:pointer;transition:all 0.15s" ' +
             'onclick="selecionarKitParaOS(\'' + kit.id + '\')" ' +
             'onmouseover="this.style.borderColor=\'var(--accent)\';this.style.background=\'var(--accent-soft)\'" ' +
             'onmouseout="this.style.borderColor=\'var(--border)\';this.style.background=\'var(--surface)\'">' +
             '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">' +
-                '<span style="font-weight:600;font-size:0.88rem;color:var(--text)">' + (kit.nome || 'Kit') + '</span>' +
+                '<span style="font-weight:600;font-size:0.88rem;color:var(--text)">' + (kit.nome || 'Kit') + tipoTag + '</span>' +
                 badge +
             '</div>' +
             '<div style="font-size:0.75rem;color:var(--text-2)">' + itens.length + ' material(is): ' + itensPreview + '</div>' +
@@ -7849,39 +7972,66 @@ function selecionarKitParaOS(kitId) {
     const kit = state.kits.find(k => k.id === kitId);
     if (!kit) return;
 
-    const itens = kit.itens ? (typeof kit.itens === 'string' ? JSON.parse(kit.itens) : kit.itens) : [];
-    if (!itens.length) {
+    const itensRaw = _kitGetRawItens(kit);
+    if (!itensRaw.length) {
         showToast('Este kit não possui materiais cadastrados.', 'error');
         return;
     }
 
     const ctx = _seletorKitCtx;
+    const agrupado = _kitEhAgrupado(itensRaw);
 
-    // Definir tipo como "personalizado" no select
-    const tipoSel = document.getElementById(ctx === 'modal' ? 'modalOrdemTipo' : 'ordemTipo');
-    if (tipoSel) tipoSel.value = 'personalizado';
+    if (agrupado) {
+        // Kit Inversor: cada sub-kit (Inversor, Padrão de Entrada...) já entra confirmado,
+        // pronto para a ordem — sem precisar reconfirmar manualmente.
+        itensRaw.forEach(grupo => {
+            const itensCompletos = (grupo.itens || []).map(i => ({
+                produto_id: i.produto_id,
+                nome: i.nome,
+                quantidade: i.quantidade,
+                produto: state.produtos.find(p => p.id === i.produto_id)
+            }));
+            if (itensCompletos.length) {
+                _kitsConfirmados[ctx].push({
+                    tipo: grupo.tipo,
+                    label: (grupo.label || KIT_LABELS[grupo.tipo] || grupo.tipo) +
+                        ' <span style="font-weight:400;opacity:.75">— ' + (kit.nome || 'Kit') + '</span>',
+                    itens: itensCompletos
+                });
+            }
+        });
+        renderKitsConfirmados(ctx);
+        const totalMat = itensRaw.reduce((acc, g) => acc + (g.itens ? g.itens.length : 0), 0);
+        showToast('Kit "' + kit.nome + '" carregado com ' + itensRaw.length + ' sub-kit(s) (' + totalMat + ' material(is)) já confirmado(s)!', 'success');
+    } else {
+        // Kit Padrão: comportamento existente — carrega como "Personalizado" para revisão antes de confirmar
+        const tipoSel = document.getElementById(ctx === 'modal' ? 'modalOrdemTipo' : ctx === 'edit' ? 'editOrdemTipo' : 'ordemTipo');
+        if (tipoSel) tipoSel.value = 'personalizado';
 
-    // Popular _ordemItens diretamente com os produtos do kit
-    _ordemItens[ctx] = itens.map(item => ({
-        idx: Date.now() + Math.random(),
-        produto_id: item.produto_id || '',
-        quantidade: item.quantidade || 1
-    }));
+        // Popular _ordemItens diretamente com os produtos do kit
+        _ordemItens[ctx] = itensRaw.map(item => ({
+            idx: Date.now() + Math.random(),
+            produto_id: item.produto_id || '',
+            quantidade: item.quantidade || 1
+        }));
 
-    // Renderizar as linhas de uma vez (já com produto_id preenchido → mostra nome via buildSelectProdutos)
-    renderLinhasOrdem(ctx);
+        // Renderizar as linhas de uma vez (já com produto_id preenchido → mostra nome via buildSelectProdutos)
+        renderLinhasOrdem(ctx);
 
-    // Mostrar label com nome do kit acima das linhas
-    const container = document.getElementById(ctx === 'modal' ? 'modalOrdemItens' : 'pageOrdemItens');
-    if (container) {
-        const label = document.createElement('div');
-        label.style.cssText = 'display:flex;align-items:center;gap:6px;font-size:0.78rem;font-weight:600;color:#6366F1;margin-bottom:6px;padding:6px 10px;background:rgba(99,102,241,0.08);border-radius:6px;border:1px solid rgba(99,102,241,0.2)';
-        label.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>' +
-            'Kit: <strong>' + (kit.nome || '') + '</strong> — ' + itens.length + ' material(is) carregado(s)';
-        container.insertBefore(label, container.firstChild);
+        // Mostrar label com nome do kit acima das linhas
+        const container = document.getElementById(ctx === 'modal' ? 'modalOrdemItens' : ctx === 'edit' ? 'editOrdemItens' : 'pageOrdemItens');
+        if (container) {
+            const label = document.createElement('div');
+            label.style.cssText = 'display:flex;align-items:center;gap:6px;font-size:0.78rem;font-weight:600;color:#6366F1;margin-bottom:6px;padding:6px 10px;background:rgba(99,102,241,0.08);border-radius:6px;border:1px solid rgba(99,102,241,0.2)';
+            label.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>' +
+                'Kit: <strong>' + (kit.nome || '') + '</strong> — ' + itensRaw.length + ' material(is) carregado(s)';
+            container.insertBefore(label, container.firstChild);
+        }
+
+        showToast('Kit "' + kit.nome + '" carregado! Clique em "Confirmar Kit" para adicionar à ordem.', 'success');
     }
 
-    // Auto-preencher dados tecnicos do kit na OS
+    // Auto-preencher dados tecnicos do kit na OS (vale para os dois tipos)
     const _kitDtOS = kit.dados_tecnicos
         ? (typeof kit.dados_tecnicos === 'string' ? JSON.parse(kit.dados_tecnicos) : kit.dados_tecnicos)
         : null;
@@ -7899,7 +8049,6 @@ function selecionarKitParaOS(kitId) {
     }
 
     closeModal('modalSeletorKit');
-    showToast('Kit "' + kit.nome + '" carregado! Clique em "Confirmar Kit" para adicionar à ordem.', 'success');
 }
 
 
@@ -7976,6 +8125,15 @@ function selecionarKitParaOS(kitId) {
         </div>
       </div>
 
+      <div class="form-group" style="margin-bottom:20px">
+        <label>Tipo de Kit *</label>
+        <select id="kitTipoCadastro" onchange="alternarTipoKitCadastro()" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
+          <option value="normal">Kit Padrão — lista única de materiais</option>
+          <option value="inversor">Kit Inversor — materiais separados por Inversor / Padrão de Entrada</option>
+        </select>
+        <p style="font-size:0.72rem;color:var(--text-3);margin-top:6px">No Kit Inversor você organiza os materiais em sub-kits (Inversor, Padrão de Entrada), assim como na Ordem de Serviço. Ao usar este kit num orçamento/ordem, os sub-kits já entram prontos.</p>
+      </div>
+
       <!-- ── Dados Técnicos da Instalação ── -->
       <details id="kitDadosTecnicos" style="margin-bottom:16px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden">
         <summary style="padding:10px 14px;cursor:pointer;font-size:0.78rem;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-2);list-style:none;display:flex;align-items:center;gap:8px;user-select:none">
@@ -8037,27 +8195,54 @@ function selecionarKitParaOS(kitId) {
         </div>
       </details>
 
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-        <label style="font-size:0.75rem;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-2)">Materiais do Kit</label>
-        <button type="button" class="btn-outline" style="padding:5px 12px;font-size:0.8rem" onclick="addKitItemLinha()">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Adicionar Material
-        </button>
-      </div>
-      <div id="kitItensList" style="display:flex;flex-direction:column;gap:0">
-        <p id="kitItensVazio" style="font-size:0.82rem;color:var(--text-3);text-align:center;padding:16px;background:var(--surface-2);border:1px dashed var(--border);border-radius:var(--radius)">
-          Clique em "Adicionar Material" para compor o kit.
-        </p>
-      </div>
-      <div id="kitResumo" style="display:none;margin-top:14px;background:var(--accent-soft);border:1px solid var(--accent);border-radius:var(--radius);padding:10px 14px;font-size:0.8rem;color:var(--accent)"></div>
-
-      <!-- Sub-modal de variante (ex: Linha/Carga para cabos) -->
-      <div id="kitVariantePanel" style="display:none;margin-top:10px;background:var(--surface-2);border:1px solid var(--accent);border-radius:var(--radius);padding:12px 14px">
-        <div style="font-size:0.78rem;font-weight:600;color:var(--text-2);margin-bottom:8px;display:flex;align-items:center;gap:6px">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          Selecione a variante para <strong id="kitVarianteNomeProd"></strong>:
+      <div id="kitSecaoNormal">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <label style="font-size:0.75rem;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-2)">Materiais do Kit</label>
+          <button type="button" class="btn-outline" style="padding:5px 12px;font-size:0.8rem" onclick="addKitItemLinha()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Adicionar Material
+          </button>
         </div>
-        <div id="kitVarianteBotoes" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+        <div id="kitItensList" style="display:flex;flex-direction:column;gap:0">
+          <p id="kitItensVazio" style="font-size:0.82rem;color:var(--text-3);text-align:center;padding:16px;background:var(--surface-2);border:1px dashed var(--border);border-radius:var(--radius)">
+            Clique em "Adicionar Material" para compor o kit.
+          </p>
+        </div>
+        <div id="kitResumo" style="display:none;margin-top:14px;background:var(--accent-soft);border:1px solid var(--accent);border-radius:var(--radius);padding:10px 14px;font-size:0.8rem;color:var(--accent)"></div>
+
+        <!-- Sub-modal de variante (ex: Linha/Carga para cabos) -->
+        <div id="kitVariantePanel" style="display:none;margin-top:10px;background:var(--surface-2);border:1px solid var(--accent);border-radius:var(--radius);padding:12px 14px">
+          <div style="font-size:0.78rem;font-weight:600;color:var(--text-2);margin-bottom:8px;display:flex;align-items:center;gap:6px">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Selecione a variante para <strong id="kitVarianteNomeProd"></strong>:
+          </div>
+          <div id="kitVarianteBotoes" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+        </div>
+      </div>
+
+      <!-- Seção Kit Inversor: materiais organizados em sub-kits (Inversor / Padrão de Entrada) -->
+      <div id="kitSecaoInversor" style="display:none">
+        <label style="font-size:0.75rem;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-2);display:block;margin-bottom:10px">Sub-Kits do Kit Inversor</label>
+        <div id="kitcadKitsConfirmados" style="margin-bottom:14px"></div>
+        <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);padding:16px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <select id="kitcadOrdemTipo" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:7px 12px;color:var(--text);font-family:inherit;font-size:0.875rem">
+                <option value="">Selecione o tipo de sub-kit...</option>
+                <option value="inversor"> Inversor</option>
+                <option value="padrao_entrada"> Padrão de Entrada</option>
+              </select>
+              <button type="button" class="btn-outline" style="padding:6px 12px;font-size:0.82rem" onclick="addLinhaOrdem('kitcad')">+ Produto</button>
+            </div>
+            <button type="button" class="btn-primary" style="background:#10B981;padding:7px 18px;font-size:0.82rem" onclick="confirmarKit('kitcad')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><polyline points="20 6 9 17 4 12"/></svg> Confirmar Sub-Kit</button>
+          </div>
+          <div id="kitcadOrdemItens" style="display:flex;flex-direction:column;gap:6px"></div>
+          <div id="osVariantePanelKitcad" style="display:none;margin-top:10px;padding:10px 14px;background:var(--accent-soft);border:1px solid var(--accent);border-radius:var(--radius)">
+            <div style="font-size:0.78rem;font-weight:600;color:var(--accent);margin-bottom:6px">Selecione a variante para <strong class="os-variante-nome-prod"></strong>:</div>
+            <div class="os-variante-botoes" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+          </div>
+          <p style="font-size:0.72rem;color:var(--text-3);margin-top:8px">Selecione o tipo, adicione os produtos e clique em "Confirmar Sub-Kit". Repita para cada sub-kit (Inversor, Padrão de Entrada).</p>
+        </div>
       </div>
     </div>
     <div class="modal-footer">
