@@ -490,7 +490,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
 
       <!-- Tabelas -->
       <div class="dashboard-grid">
-        <div class="card"><div class="card-header"><h3><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;color:var(--amber)"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Estoque Crítico</h3></div><div class="card-body no-pad"><table class="table"><thead><tr><th>Produto</th><th>Saldo</th><th>Mínimo</th><th>Status</th></tr></thead><tbody id="tbodyEstoqueBaixo"><tr><td colspan="4" class="empty">Nenhum item crítico <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><polyline points="20 6 9 17 4 12"/></svg></td></tr></tbody></table></div></div>
+        <div class="card"><div class="card-header"><h3><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;color:var(--amber)"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Estoque Crítico</h3></div><div class="card-body no-pad"><table class="table"><thead><tr><th>Produto</th><th>Saldo</th><th>Mínimo</th><th>Status</th></tr></thead><tbody id="tbodyEstoqueBaixo"><tr><td colspan="4" class="empty">Nenhum item crítico <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><polyline points="20 6 9 17 4 12"/></svg></td></tr></tbody></table><div id="criticosPaginacao" style="display:none;padding:12px 16px;border-top:1px solid var(--border)"></div></div></div>
         <div class="card"><div class="card-header"><h3>Últimas Movimentações</h3></div><div class="card-body no-pad"><table class="table"><thead><tr><th>Produto</th><th>Tipo</th><th>Qtd</th><th>Data</th></tr></thead><tbody id="tbodyMovimentacoes"><tr><td colspan="4" class="empty">Sem movimentações</td></tr></tbody></table></div></div>
       </div>
 
@@ -516,24 +516,6 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
       </div>
 
       <!-- Card: Materiais com Entrega Demorada -->
-      <!-- Card: Previsao de Ruptura -->
-      <div class="card" style="margin-top:20px" id="cardRuptura">
-        <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-          <h3><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;color:var(--red)"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Previsão de Ruptura de Estoque</h3>
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-            <span style="font-size:0.78rem;color:var(--text-2)">WhatsApp para alertas:</span>
-            <input type="text" id="rupturaWhatsapp" placeholder="5591999999999" style="width:160px;padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:0.78rem;background:var(--surface);color:var(--text);font-family:inherit" oninput="localStorage.setItem('dcm_whatsapp',this.value)" />
-            <button class="btn-outline" style="font-size:0.78rem;padding:5px 12px" onclick="enviarAlertaWhatsApp()"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style="display:inline-block;vertical-align:-2px;margin-right:3px"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M11.99 2C6.469 2 2 6.469 2 11.99c0 1.97.553 3.81 1.507 5.38L2 22l4.768-1.482A9.945 9.945 0 0011.99 22C17.511 22 22 17.531 22 11.99 22 6.469 17.511 2 11.99 2z"/></svg>Enviar Alerta</button>
-          </div>
-        </div>
-        <div class="card-body no-pad">
-          <table class="table">
-            <thead><tr><th>Produto</th><th style="text-align:center">Saldo Atual</th><th style="text-align:center">Média/dia (30d)</th><th style="text-align:center">Previsão de Ruptura</th><th style="text-align:center">Urgência</th></tr></thead>
-            <tbody id="tbodyRuptura"><tr><td colspan="5" class="empty">Calculando...</td></tr></tbody>
-          </table>
-        </div>
-      </div>
-
       <div class="card" style="margin-top:20px" id="cardEntregaDemorada">
         <div class="card-header" style="display:flex;align-items:center;justify-content:space-between">
           <h3><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;color:var(--amber)"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Materiais com Entrega Demorada</h3>
@@ -1896,8 +1878,6 @@ async function carregarDados() {
         
         console.log('Dados carregados com sucesso!');
         updateBadges();
-        // Verificar alertas de reposição automático
-        setTimeout(verificarAlertasReposicao, 1000);
         
     } catch (error) {
         console.error('Erro ao carregar dados:', error);
@@ -2238,7 +2218,6 @@ async function salvarSaida() {
         showToast('Saída registrada com sucesso!');
         updateBadges();
         // Verificar se algum produto ficou abaixo do mínimo
-        setTimeout(verificarAlertasReposicao, 500);
         
     } catch (error) {
         console.error('Erro ao registrar saída:', error);
@@ -3012,23 +2991,25 @@ async function updateOrdemStatus(status) {
                 // Dar baixa automática no estoque ao concluir (sem bloquear por saldo zerado)
                 for (const item of itens) {
                     const prod = state.produtos.find(p => p.id === item.produto_id);
-                    if (!prod) continue;
+                    if (!prod) { console.warn('Produto não encontrado para baixa:', item.produto_id); continue; }
                     const saida = {
                         produto_id: item.produto_id,
                         quantidade: item.quantidade,
                         motivo: 'Ordem de Serviço ' + (ordemAtual.numero || id),
                         responsavel: state.currentUser.nome,
-                        data: ordemAtual.data_necessaria ? ordemAtual.data_necessaria + 'T12:00:00' : new Date().toISOString(),
-                        criado_em: ordemAtual.data_necessaria ? ordemAtual.data_necessaria + 'T12:00:00' : new Date().toISOString(),
+                        usuario_id: state.currentUser.id,
+                        equipe_id: ordemAtual.equipe_id || null,
+                        data: new Date().toISOString(),
+                        criado_em: new Date().toISOString(),
                         observacoes: 'Saída automática ao concluir OS'
                     };
                     const { error: saidaError } = await sb.from('saidas').insert([saida]);
-                    if (saidaError) throw saidaError;
+                    if (saidaError) { console.error('Erro ao inserir saída:', saidaError); throw saidaError; }
                     const novoEstoque = (prod.saldo_atual || 0) - item.quantidade;
                     const { error: estoqueError } = await sb.from('produtos').update({ saldo_atual: novoEstoque }).eq('id', item.produto_id);
-                    if (estoqueError) throw estoqueError;
+                    if (estoqueError) { console.error('Erro ao atualizar saldo:', estoqueError); throw estoqueError; }
                     const iProd = state.produtos.findIndex(p => p.id === item.produto_id);
-                    if (iProd !== -1) state.produtos[iProd].saldo_atual = novoEstoque;
+                    if (iProd !== -1) Object.assign(state.produtos[iProd], { saldo_atual: novoEstoque });
                     state.saidas.unshift({ ...saida, produto: prod });
                 }
             }
@@ -3087,23 +3068,25 @@ async function quickUpdateOrdem(id, status, btnEl) {
                 // Dar baixa automática no estoque ao concluir (sem bloquear por saldo zerado)
                 for (const item of itens) {
                     const prod = state.produtos.find(p => p.id === item.produto_id);
-                    if (!prod) continue;
+                    if (!prod) { console.warn('Produto não encontrado para baixa:', item.produto_id); continue; }
                     const saida = {
                         produto_id: item.produto_id,
                         quantidade: item.quantidade,
                         motivo: 'Ordem de Serviço ' + (ordemAtual.numero || id),
                         responsavel: state.currentUser.nome,
-                        data: ordemAtual.data_necessaria ? ordemAtual.data_necessaria + 'T12:00:00' : new Date().toISOString(),
-                        criado_em: ordemAtual.data_necessaria ? ordemAtual.data_necessaria + 'T12:00:00' : new Date().toISOString(),
+                        usuario_id: state.currentUser.id,
+                        equipe_id: ordemAtual.equipe_id || null,
+                        data: new Date().toISOString(),
+                        criado_em: new Date().toISOString(),
                         observacoes: 'Saída automática ao concluir OS'
                     };
                     const { error: saidaError } = await sb.from('saidas').insert([saida]);
-                    if (saidaError) throw saidaError;
+                    if (saidaError) { console.error('Erro ao inserir saída:', saidaError); throw saidaError; }
                     const novoEstoque = (prod.saldo_atual || 0) - item.quantidade;
                     const { error: estoqueError } = await sb.from('produtos').update({ saldo_atual: novoEstoque }).eq('id', item.produto_id);
-                    if (estoqueError) throw estoqueError;
+                    if (estoqueError) { console.error('Erro ao atualizar saldo:', estoqueError); throw estoqueError; }
                     const iProd = state.produtos.findIndex(p => p.id === item.produto_id);
-                    if (iProd !== -1) state.produtos[iProd].saldo_atual = novoEstoque;
+                    if (iProd !== -1) Object.assign(state.produtos[iProd], { saldo_atual: novoEstoque });
                     state.saidas.unshift({ ...saida, produto: prod });
                 }
             } // end else estoque_descontado
@@ -4411,6 +4394,8 @@ async function carregarHistoricoInventarios() {
 // Funções de renderização (mantidas do original)
 // ── Chart instance ──────────────────────────────────────────
 let _chartInstance = null;
+let _criticosPagina = 1;
+const _CRITICOS_POR_PAG = 8;
 
 function renderGrafico() {
     const canvas = document.getElementById('graficoMovimentacoes');
@@ -4445,7 +4430,7 @@ function renderGrafico() {
             plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
             scales: {
                 x: { grid: { display: false }, ticks: { maxTicksLimit: 10, font: { size: 11 } } },
-                y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 11 } }, grid: { color: 'rgba(0,0,0,0.04)' } }
+                y: { beginAtZero: true, ticks: { precision: 0, maxTicksLimit: 8, font: { size: 11 } }, grid: { color: 'rgba(0,0,0,0.04)' } }
             }
         }
     });
@@ -4517,22 +4502,17 @@ function renderDashboard() {
             alertaEl.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>' +
                 '<span style="font-size:0.875rem;color:#991B1B;font-weight:500">' + baixo.length + ' produto(s) com estoque crítico: ' + nomes + (baixo.length > 3 ? '...' : '') + '</span>' +
                 '<div style="margin-left:auto;display:flex;gap:8px">' +
-                '<button onclick="enviarAlertaWhatsApp()" style="background:#25D366;color:white;border:none;border-radius:6px;padding:4px 12px;font-size:0.78rem;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:4px"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M11.99 2C6.469 2 2 6.469 2 11.99c0 1.97.553 3.81 1.507 5.38L2 22l4.768-1.482A9.945 9.945 0 0011.99 22C17.511 22 22 17.531 22 11.99 22 6.469 17.511 2 11.99 2z"/></svg> WhatsApp</button>' +
-                '<button onclick="showPage(&quot;produtos&quot;)" style="background:var(--red);color:white;border:none;border-radius:6px;padding:4px 12px;font-size:0.78rem;cursor:pointer;font-family:inherit">Ver produtos</button>' +
+                                '<button onclick="showPage(&quot;produtos&quot;)" style="background:var(--red);color:white;border:none;border-radius:6px;padding:4px 12px;font-size:0.78rem;cursor:pointer;font-family:inherit">Ver produtos</button>' +
                 '</div>';
         } else {
             alertaEl.style.display = 'none';
         }
     }
 
-    // Tabela estoque crítico
-    const tb = document.getElementById('tbodyEstoqueBaixo');
-    tb.innerHTML = baixo.length ? baixo.map(function(p) {
-        return '<tr><td><strong>' + (p.nome || '') + '</strong></td>' +
-            '<td><span class="tag tag-red">' + (p.saldo_atual || 0) + '</span></td>' +
-            '<td>' + (p.estoque_minimo || 0) + '</td>' +
-            '<td><span class="tag tag-red">Crítico</span></td></tr>';
-    }).join('') : '<tr><td colspan="4" class="empty">Nenhum item crítico <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><polyline points="20 6 9 17 4 12"/></svg></td></tr>';
+    // Tabela estoque crítico — paginada
+    window._criticosDashboard = baixo; // cache para a função de paginação
+    _criticosPagina = 1;
+    renderCriticosPagina();
 
     // Últimas movimentações
     const movs = state.entradas.map(function(e) { return Object.assign({}, e, { tipo: 'entrada' }); })
@@ -4557,141 +4537,71 @@ function renderDashboard() {
     // OS por equipe
     renderOSEquipes();
 
-    // Previsão de ruptura
-    renderRuptura();
 }
 
 // ============================================================
 // PREVISAO DE RUPTURA
 // ============================================================
-function renderRuptura() {
-    const tb = document.getElementById('tbodyRuptura');
+// ============================================================
+function renderCriticosPagina() {
+    const baixo = window._criticosDashboard || [];
+    const tb = document.getElementById('tbodyEstoqueBaixo');
+    const pagEl = document.getElementById('criticosPaginacao');
     if (!tb) return;
 
-    // Restaurar numero WhatsApp salvo
-    const inp = document.getElementById('rupturaWhatsapp');
-    if (inp && !inp.value) inp.value = localStorage.getItem('dcm_whatsapp') || '';
-
-    const hoje = new Date();
-    const limite = new Date(hoje); limite.setDate(limite.getDate() - 30);
-    const limiteStr = limite.getFullYear()+'-'+String(limite.getMonth()+1).padStart(2,'0')+'-'+String(limite.getDate()).padStart(2,'0');
-
-    // Agrupa saidas dos ultimos 30 dias por produto
-    const saidasRecentes = state.saidas.filter(s => {
-        const d = (s.data || s.criado_em || '').substring(0,10);
-        return d >= limiteStr;
-    });
-
-    const consumo = {};
-    saidasRecentes.forEach(s => {
-        if (!consumo[s.produto_id]) consumo[s.produto_id] = 0;
-        consumo[s.produto_id] += (s.quantidade || 0);
-    });
-
-    // Calcula previsao para cada produto com consumo > 0
-    const previsoes = [];
-    Object.keys(consumo).forEach(pid => {
-        const prod = state.produtos.find(p => p.id === pid);
-        if (!prod) return;
-        const mediaDia = consumo[pid] / 30;
-        const saldo = prod.saldo_atual || 0;
-        if (mediaDia <= 0) return;
-        const diasRestantes = Math.floor(saldo / mediaDia);
-        previsoes.push({ prod, mediaDia, saldo, diasRestantes });
-    });
-
-    // Ordena por mais urgente
-    previsoes.sort((a, b) => a.diasRestantes - b.diasRestantes);
-
-    if (!previsoes.length) {
-        tb.innerHTML = '<tr><td colspan="5" class="empty">Sem dados de saída nos últimos 30 dias para calcular previsão</td></tr>';
+    if (!baixo.length) {
+        tb.innerHTML = '<tr><td colspan="4" class="empty">Nenhum item crítico <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><polyline points="20 6 9 17 4 12"/></svg></td></tr>';
+        if (pagEl) pagEl.style.display = 'none';
         return;
     }
 
-    tb.innerHTML = previsoes.slice(0, 12).map(({ prod, mediaDia, saldo, diasRestantes }) => {
-        let urgClass, urgLabel;
-        if (diasRestantes <= 7)       { urgClass = 'tag-red';   urgLabel = ' Crítico'; }
-        else if (diasRestantes <= 15) { urgClass = 'tag-amber'; urgLabel = ' Atenção'; }
-        else if (diasRestantes <= 30) { urgClass = 'tag-blue';  urgLabel = ' Médio'; }
-        else                          { urgClass = 'tag-green'; urgLabel = ' Normal'; }
+    const totalPags = Math.ceil(baixo.length / _CRITICOS_POR_PAG);
+    if (_criticosPagina > totalPags) _criticosPagina = totalPags;
+    const inicio = (_criticosPagina - 1) * _CRITICOS_POR_PAG;
+    const pagina = baixo.slice(inicio, inicio + _CRITICOS_POR_PAG);
 
-        const dataRuptura = new Date(hoje);
-        dataRuptura.setDate(dataRuptura.getDate() + diasRestantes);
-        const dataStr = dataRuptura.toLocaleDateString('pt-BR');
-
-        return '<tr>' +
-            '<td><strong>' + (prod.nome||'') + '</strong></td>' +
-            '<td style="text-align:center">' + saldo + '</td>' +
-            '<td style="text-align:center">' + mediaDia.toFixed(2) + '/dia</td>' +
-            '<td style="text-align:center">' + (diasRestantes === 0 ? '<span style="color:var(--red);font-weight:600">Hoje!</span>' : dataStr + ' <span style="color:var(--text-2);font-size:0.78rem">(' + diasRestantes + ' dias)</span>') + '</td>' +
-            '<td style="text-align:center"><span class="tag ' + urgClass + '">' + urgLabel + '</span></td>' +
-            '</tr>';
+    tb.innerHTML = pagina.map(function(p) {
+        return '<tr><td><strong>' + (p.nome || '') + '</strong></td>' +
+            '<td><span class="tag tag-red">' + (p.saldo_atual || 0) + '</span></td>' +
+            '<td>' + (p.estoque_minimo || 0) + '</td>' +
+            '<td><span class="tag tag-red">Crítico</span></td></tr>';
     }).join('');
+
+    // Paginador
+    if (pagEl) {
+        if (totalPags <= 1) { pagEl.style.display = 'none'; return; }
+        pagEl.style.display = 'flex';
+        pagEl.style.cssText = 'display:flex;align-items:center;justify-content:center;gap:4px;padding:12px 16px;border-top:1px solid var(--border)';
+
+        let html = '<button onclick="irCriticosPage(' + (_criticosPagina - 1) + ')" ' +
+            'style="min-width:32px;height:32px;border:1px solid var(--border);border-radius:6px;background:var(--surface);cursor:pointer;font-size:0.85rem;color:var(--text-2);display:flex;align-items:center;justify-content:center"' +
+            (_criticosPagina === 1 ? ' disabled' : '') + '>‹</button>';
+
+        for (let p = 1; p <= totalPags; p++) {
+            const ativo = p === _criticosPagina;
+            html += '<button onclick="irCriticosPage(' + p + ')" style="min-width:32px;height:32px;border:1px solid ' +
+                (ativo ? 'var(--accent)' : 'var(--border)') +
+                ';border-radius:6px;background:' + (ativo ? 'var(--accent)' : 'var(--surface)') +
+                ';color:' + (ativo ? '#fff' : 'var(--text)') +
+                ';cursor:pointer;font-size:0.85rem;font-weight:' + (ativo ? '600' : '400') + '">' + p + '</button>';
+        }
+
+        html += '<button onclick="irCriticosPage(' + (_criticosPagina + 1) + ')" ' +
+            'style="min-width:32px;height:32px;border:1px solid var(--border);border-radius:6px;background:var(--surface);cursor:pointer;font-size:0.85rem;color:var(--text-2);display:flex;align-items:center;justify-content:center"' +
+            (_criticosPagina === totalPags ? ' disabled' : '') + '>›</button>';
+
+        pagEl.innerHTML = html;
+    }
 }
 
-function enviarAlertaWhatsApp() {
-    const numero = (localStorage.getItem('dcm_whatsapp') || '').replace(/\D/g,'');
-    if (!numero) {
-        showToast('Informe o número WhatsApp no card de Previsão de Ruptura', 'error');
-        // Scroll ate o card e foca o campo
-        const inp = document.getElementById('rupturaWhatsapp');
-        if (inp) { inp.focus(); inp.style.borderColor='var(--red)'; setTimeout(()=>inp.style.borderColor='',2000); }
-        return;
-    }
-
-    const hoje = new Date();
-    const limite = new Date(hoje); limite.setDate(limite.getDate() - 30);
-    const limiteStr = limite.getFullYear()+'-'+String(limite.getMonth()+1).padStart(2,'0')+'-'+String(limite.getDate()).padStart(2,'0');
-    const consumo = {};
-    state.saidas.filter(s => (s.data||s.criado_em||'').substring(0,10) >= limiteStr).forEach(s => {
-        if (!consumo[s.produto_id]) consumo[s.produto_id] = 0;
-        consumo[s.produto_id] += (s.quantidade||0);
-    });
-
-    // Criticos: saldo <= minimo
-    const criticos = state.produtos.filter(p => p.estoque_minimo > 0 && (p.saldo_atual||0) <= p.estoque_minimo);
-
-    // Ruptura em ate 7 dias
-    const ruptura = [];
-    Object.keys(consumo).forEach(pid => {
-        const prod = state.produtos.find(p => p.id === pid);
-        if (!prod) return;
-        const media = consumo[pid] / 30;
-        if (media <= 0) return;
-        const dias = Math.floor((prod.saldo_atual||0) / media);
-        if (dias <= 7) ruptura.push({ nome: prod.nome, dias });
-    });
-    ruptura.sort((a,b) => a.dias - b.dias);
-
-    let msg = '*🔴 DCM ESTOQUE — ALERTA DE ESTOQUE*\n';
-    msg += new Date().toLocaleString('pt-BR') + '\n\n';
-
-    if (criticos.length) {
-        msg += '*⚠️ Produtos em Estoque Crítico (' + criticos.length + '):*\n';
-        criticos.slice(0,10).forEach(p => {
-            msg += '• ' + p.nome + ' — Saldo: ' + (p.saldo_atual||0) + ' (mín: ' + p.estoque_minimo + ')\n';
-        });
-        if (criticos.length > 10) msg += '... e mais ' + (criticos.length-10) + ' produtos\n';
-        msg += '\n';
-    }
-
-    if (ruptura.length) {
-        msg += '*🕐 Ruptura Prevista em até 7 dias (' + ruptura.length + '):*\n';
-        ruptura.forEach(r => {
-            msg += '• ' + r.nome + ' — ' + (r.dias === 0 ? 'HOJE' : r.dias + ' dia(s)') + '\n';
-        });
-        msg += '\n';
-    }
-
-    if (!criticos.length && !ruptura.length) {
-        msg += '✅ Nenhum produto crítico ou em risco de ruptura no momento.';
-    }
-
-    const url = 'https://wa.me/' + numero + '?text=' + encodeURIComponent(msg);
-    window.open(url, '_blank');
+function irCriticosPage(pag) {
+    const baixo = window._criticosDashboard || [];
+    const totalPags = Math.ceil(baixo.length / _CRITICOS_POR_PAG);
+    if (pag < 1 || pag > totalPags) return;
+    _criticosPagina = pag;
+    renderCriticosPagina();
 }
 
-// ============================================================
 // OS POR EQUIPE — DASHBOARD
 // ============================================================
 function renderOSEquipes() {
@@ -7079,47 +6989,6 @@ function fecharScanner() {
 
 // Controle de alertas já notificados nesta sessão (evita spam)
 const _alertasEnviados = new Set();
-
-async function verificarAlertasReposicao() {
-    if (!state.currentUser || state.currentUser.perfil !== 'admin') return;
-    const criticos = state.produtos.filter(p =>
-        p.estoque_minimo > 0 && (p.saldo_atual || 0) <= p.estoque_minimo
-    );
-    for (const p of criticos) {
-        if (_alertasEnviados.has(p.id)) continue;
-        _alertasEnviados.add(p.id);
-        // Salvar alerta no Supabase (tabela alertas_reposicao)
-        try {
-            await sb.from('alertas_reposicao').insert([{
-                produto_id: p.id,
-                produto_nome: p.nome,
-                saldo_atual: p.saldo_atual || 0,
-                estoque_minimo: p.estoque_minimo || 0,
-                admin_email: state.currentUser.email || '',
-                criado_em: new Date().toISOString(),
-                notificado: false
-            }]);
-        } catch(e) {
-            // Tabela pode não existir ainda — apenas exibe banner
-        }
-        // Mostrar toast de alerta
-        showToast('<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;color:var(--amber)"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Estoque crítico: ' + p.nome + ' (saldo: ' + (p.saldo_atual||0) + ')', 'error');
-    }
-
-    // Atualizar banner do dashboard
-    const alertaEl = document.getElementById('alertaCritico');
-    if (!alertaEl) return;
-    if (criticos.length > 0) {
-        alertaEl.style.display = 'flex';
-        const nomes = criticos.slice(0, 3).map(p => p.nome).join(', ');
-        alertaEl.innerHTML =
-            '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>' +
-            '<span style="font-size:0.875rem;color:#991B1B;font-weight:500"> ' + criticos.length + ' produto(s) abaixo do mínimo (alerta registrado): ' + nomes + (criticos.length > 3 ? '...' : '') + '</span>' +
-            '<button onclick="showPage(&quot;produtos&quot;)" style="margin-left:auto;background:var(--red);color:white;border:none;border-radius:6px;padding:4px 12px;font-size:0.78rem;cursor:pointer;font-family:inherit">Ver produtos</button>';
-    } else {
-        alertaEl.style.display = 'none';
-    }
-}
 
 // ============================================
 // FAB — FLOATING ACTION BUTTON (MOBILE)
