@@ -238,7 +238,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
 .img-tabs{display:flex;gap:8px;margin-bottom:10px}
 .img-tab{background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:7px 14px;font-size:0.8rem;font-family:inherit;cursor:pointer;color:var(--text-2);transition:all 0.15s}
 .img-tab.active{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);font-weight:500}
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:200;padding:20px}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:500;padding:20px}
 .modal{background:var(--surface);border-radius:var(--radius-lg);width:100%;max-width:640px;max-height:90vh;display:flex;flex-direction:column;box-shadow:var(--shadow-lg);animation:slideUp 0.25s ease;overflow:hidden}
 @keyframes slideUp{from{opacity:0;transform:translateY(24px) scale(0.98)}to{opacity:1;transform:translateY(0) scale(1)}}
 .modal-header{display:flex;align-items:center;justify-content:space-between;padding:20px 24px 16px;border-bottom:1px solid var(--border);flex-shrink:0}
@@ -709,8 +709,8 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
           </div>
           <div class="card-body no-pad">
             <table class="table">
-              <thead><tr><th>Código</th><th>Produto</th><th>Categoria</th><th>Localização</th><th>Estoque Mín.</th><th>Saldo Atual</th><th>Status</th></tr></thead>
-              <tbody id="tbodyRelEstoque"><tr><td colspan="7" class="empty">Carregando...</td></tr></tbody>
+              <thead><tr><th>Código</th><th>Produto</th><th>Categoria</th><th>Localização</th><th>Estoque Mín.</th><th>Saldo Atual</th><th>Reservado</th><th>Disponível</th><th>Status</th></tr></thead>
+              <tbody id="tbodyRelEstoque"><tr><td colspan="9" class="empty">Carregando...</td></tr></tbody>
             </table>
           </div>
         </div>
@@ -720,6 +720,10 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
       <div id="relatorio-movimentacoes" class="hidden">
         <div class="card" style="margin-bottom:16px">
           <div class="card-body" style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
+            <div class="form-group" style="margin:0;min-width:200px">
+              <label>Produto</label>
+              <input type="text" id="relMovBusca" placeholder="Ex: cabo preto..." oninput="renderRelMovimentacoes()" style="padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface-2);color:var(--text);font-family:inherit"/>
+            </div>
             <div class="form-group" style="margin:0">
               <label>Tipo</label>
               <select id="relMovTipo" onchange="renderRelMovimentacoes()">
@@ -1413,7 +1417,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
     </div>
     <div class="modal-body">
       <div style="background:var(--red-soft);border:1px solid #FECACA;border-radius:var(--radius);padding:12px 14px;margin-bottom:14px;font-size:0.82rem;color:#991B1B;line-height:1.5">
-        A ordem foi criada, mas os materiais abaixo estão com <strong>estoque ZERADO</strong>. Eles precisam ser providenciados antes da conclusão desta OS.
+        A ordem foi criada, mas os materiais abaixo estão com <strong>estoque ZERADO ou INSUFICIENTE</strong> para a quantidade solicitada. Eles precisam ser providenciados antes da conclusão desta OS.
       </div>
       <table class="table">
         <thead><tr><th>Produto</th><th>Código</th><th style="text-align:center">Qtd. Necessária</th></tr></thead>
@@ -2251,7 +2255,8 @@ function buildSelectProdutos(selectedId, qtd, idx, ctx) {
     // Usa o nome salvo no estado (pode ter variante), ou reconstrói do produto
     const item = _ordemItens[ctx].find(i => i.idx === idx);
     const nomeSalvo = item && item.nome ? item.nome : '';
-    const nomeInicial = nomeSalvo || (prod ? prod.nome + ' (Saldo: ' + (prod.saldo_atual || 0) + ')' : '');
+    const dispInicial = prod ? saldoDisponivelCtx(prod.id, ctx) : 0;
+    const nomeInicial = nomeSalvo || (prod ? prod.nome + ' (Disponível: ' + dispInicial + ')' : '');
     const acId = 'ac_' + ctx + '_' + idx;
     const ddId = 'dd_' + ctx + '_' + idx;
     return '<div style="display:flex;gap:8px;align-items:center;margin-bottom:4px" id="itemOrdem_' + ctx + '_' + idx + '">' +
@@ -2349,15 +2354,17 @@ function acAbrir(inp) {
 }
 
 function acRenderDropdown(dd, lista, inp) {
+    var ctx = inp.dataset ? inp.dataset.ctx : null;
     if (!lista.length) {
         dd.innerHTML = '<div class="ac-empty">Nenhum produto encontrado</div>';
     } else {
         dd.innerHTML = lista.map(function(p) {
-            var low = p.estoque_minimo > 0 && (p.saldo_atual||0) <= p.estoque_minimo;
+            var disp = saldoDisponivelCtx(p.id, ctx);
+            var low = disp <= 0;
             return '<div class="ac-item" data-pid="' + p.id + '" data-iid="' + inp.id + '" onmousedown="acSelecionar(this.dataset.pid,this.dataset.iid)">' +
                 '<span class="ac-item-nome">' + (p.nome||'') + '</span>' +
                 '<span class="ac-item-info" style="color:' + (low ? 'var(--red)' : 'var(--green)') + '">' +
-                (p.codigo ? p.codigo + ' · ' : '') + 'Saldo: ' + (p.saldo_atual||0) + '</span>' +
+                (p.codigo ? p.codigo + ' · ' : '') + 'Disponível: ' + disp + '</span>' +
                 '</div>';
         }).join('');
     }
@@ -2369,12 +2376,13 @@ function acSelecionar(prodId, inpId) {
     if (!inp) return;
     var prod = state.produtos.find(function(p) { return p.id === prodId; });
     if (!prod) return;
-    inp.value = prod.nome + ' (Saldo: ' + (prod.saldo_atual||0) + ')';
+    var ctx = inp.dataset.ctx;
+    var disp = saldoDisponivelCtx(prodId, ctx);
+    inp.value = prod.nome + ' (Disponível: ' + disp + ')';
     var ddId = inpId.replace('ac_', 'dd_');
     acFechar(ddId);
     // Update state
     var idx = parseInt(inp.dataset.idx);
-    var ctx = inp.dataset.ctx;
     var item = _ordemItens[ctx].find(function(i) { return i.idx === idx; });
     if (item) {
         item.produto_id = prodId;
@@ -2423,13 +2431,23 @@ function confirmarKit(ctx) {
     const itens = _ordemItens[ctx].filter(i => i.produto_id);
     if (itens.length === 0) { showToast('Adicione ao menos um produto ao kit.', 'error'); return; }
 
-    // Verificar estoque de cada item (apenas aviso — não bloqueia a criação da OS,
-    // pois a validação definitiva ocorre ao concluir a ordem)
+    // Verificar disponibilidade de cada item (apenas aviso — não bloqueia a
+    // criação da OS, pois a validação definitiva ocorre ao concluir a ordem).
+    // A disponibilidade já desconta o que estiver reservado por outras OS
+    // em aberto (first-come-first-served), então mesmo com saldo físico > 0
+    // o item pode aparecer como indisponível se outra OS já o reservou.
     let avisoEstoque = '';
     for (const item of itens) {
         const prod = state.produtos.find(p => p.id === item.produto_id);
-        if (prod && (prod.saldo_atual || 0) < item.quantidade) {
-            avisoEstoque = 'Atenção: estoque insuficiente para "' + prod.nome + '" (disponível: ' + (prod.saldo_atual || 0) + '). O kit será adicionado mesmo assim.';
+        if (!prod) continue;
+        const disponivel = saldoDisponivelCtx(item.produto_id, ctx);
+        if (disponivel < item.quantidade) {
+            const saldoReal = prod.saldo_atual || 0;
+            if (saldoReal >= item.quantidade) {
+                avisoEstoque = 'Atenção: "' + prod.nome + '" já está reservado (total ou parcialmente) por outra Ordem de Serviço em aberto (disponível: ' + disponivel + '). Este item entrará como material pendente até a reposição ou conclusão/cancelamento da outra OS.';
+            } else {
+                avisoEstoque = 'Atenção: estoque insuficiente para "' + prod.nome + '" (disponível: ' + disponivel + '). O kit será adicionado mesmo assim.';
+            }
         }
     }
     if (avisoEstoque) showToast(avisoEstoque, 'info');
@@ -2442,7 +2460,7 @@ function confirmarKit(ctx) {
         let nomeDisplay = i.nome || '';
         if (acInp) {
             nomeDisplay = acInp.value
-                .replace(/\s*\(Saldo:\s*[\d-]+\)/gi, '')
+                .replace(/\s*\((?:Saldo|Dispon[ií]vel):\s*[\d-]+\)/gi, '')
                 .trim();
         }
         return {
@@ -2567,17 +2585,14 @@ async function gerarNumeroOS() {
 // Verifica se a OS recém-criada tem materiais com estoque zerado e, se sim,
 // exibe um modal com o botão "Imprimir Material Pendente"
 function verificarEMostrarMaterialPendente(ordem, todosItens) {
-    const itensZerados = todosItens.filter(i => {
-        const prod = state.produtos.find(p => p.id === i.produto_id) || i.produto;
-        return prod && (prod.saldo_atual || 0) <= 0;
-    });
+    const itensZerados = getItensPendentesOrdem(ordem);
     if (!itensZerados.length) return;
 
     _materialPendenteAtual = { ordem, itens: itensZerados };
 
     document.getElementById('matPendenteOS').textContent = ordem.numero || '';
     document.getElementById('matPendenteLista').innerHTML = itensZerados.map(i => {
-        const p = state.produtos.find(x => x.id === i.produto_id) || i.produto;
+        const p = i.produto || state.produtos.find(x => x.id === i.produto_id);
         return '<tr><td>' + (p ? p.nome : '—') + '</td>' +
             '<td>' + (p ? (p.codigo || '—') : '—') + '</td>' +
             '<td style="text-align:center;font-weight:700;color:var(--red)">' + i.quantidade + '</td></tr>';
@@ -2588,15 +2603,12 @@ function verificarEMostrarMaterialPendente(ordem, todosItens) {
 
 function printMaterialPendente() {
     if (!_materialPendenteAtual) return;
-    const { ordem, itens } = _materialPendenteAtual;
+    const { ordem } = _materialPendenteAtual;
 
     // Re-checa o saldo ATUAL de cada item antes de imprimir — caso algum
     // material já tenha sido reposto (por entrada, edição de produto,
     // inventário, etc.) desde que o modal foi aberto, ele sai da lista.
-    const itensAindaZerados = itens.filter(i => {
-        const p = state.produtos.find(x => x.id === i.produto_id) || i.produto;
-        return p && (p.saldo_atual || 0) <= 0;
-    });
+    const itensAindaZerados = getItensPendentesOrdem(ordem);
     if (!itensAindaZerados.length) {
         showToast('Todos os materiais já foram repostos. Nada pendente para imprimir.', 'info');
         closeModal('modalMaterialPendente');
@@ -2604,7 +2616,7 @@ function printMaterialPendente() {
     }
 
     const rows = itensAindaZerados.map(i => {
-        const p = state.produtos.find(x => x.id === i.produto_id) || i.produto;
+        const p = i.produto || state.produtos.find(x => x.id === i.produto_id);
         return '<tr>' +
             '<td>' + (p ? p.nome : '—') + '</td>' +
             '<td>' + (p ? (p.codigo || '—') : '—') + '</td>' +
@@ -2650,7 +2662,7 @@ tr:last-child td{border-bottom:none}
 </div>
 
 <div class="alert-box">
-  Os materiais listados abaixo foram solicitados na Ordem de Serviço <strong>${ordem.numero || ''}</strong> e estão com <strong>estoque ZERADO</strong>. É necessário providenciar a reposição para que esta OS possa ser concluída.
+  Os materiais listados abaixo foram solicitados na Ordem de Serviço <strong>${ordem.numero || ''}</strong> e estão com <strong>estoque ZERADO ou INSUFICIENTE</strong> para a quantidade solicitada. É necessário providenciar a reposição para que esta OS possa ser concluída.
 </div>
 
 <table>
@@ -2678,23 +2690,14 @@ tr:last-child td{border-bottom:none}
 function getItensZeradosOrdem(ordemId) {
     const o = state.ordens.find(x => x.id === ordemId);
     if (!o) return null;
-    const itens = extrairItensOrdem(o);
-    const zerados = itens.filter(i => {
-        const p = state.produtos.find(x => x.id === i.produto_id);
-        return p && (p.saldo_atual || 0) <= 0;
-    });
-    return { ordem: o, itens: zerados };
+    return { ordem: o, itens: getItensPendentesOrdem(o) };
 }
 
 // Usado para decidir se o botão "Imprimir Material Pendente" aparece na
 // tabela de Ordens para uma determinada linha.
 function ordemTemMaterialZerado(o) {
     if (!o || o.status === 'concluida' || o.status === 'cancelada') return false;
-    const itens = extrairItensOrdem(o);
-    return itens.some(i => {
-        const p = state.produtos.find(x => x.id === i.produto_id);
-        return p && (p.saldo_atual || 0) <= 0;
-    });
+    return getItensPendentesOrdem(o).length > 0;
 }
 
 // Botão da tabela: imprime direto o material pendente de uma OS já existente,
@@ -2703,7 +2706,7 @@ function imprimirMaterialPendenteOrdem(ordemId) {
     const res = getItensZeradosOrdem(ordemId);
     if (!res) { showToast('Ordem não encontrada.', 'error'); return; }
     if (!res.itens.length) {
-        showToast('Não há materiais com estoque zerado nesta ordem no momento.', 'info');
+        showToast('Não há materiais com estoque zerado ou insuficiente nesta ordem no momento.', 'info');
         if (document.getElementById('page-ordens').classList.contains('active')) renderOrdens(document.getElementById('searchOrdens') ? document.getElementById('searchOrdens').value : '', state.filtroOrdens);
         if (document.getElementById('page-minhasOrdens').classList.contains('active')) renderMinhasOrdens();
         return;
@@ -2908,15 +2911,110 @@ function extrairItensOrdem(ordemAtual) {
     return raw.map(i => ({ produto_id: i.produto_id, quantidade: i.quantidade }));
 }
 
+// ── Reserva de estoque por Ordens de Serviço em aberto ────────────────────
+// Regra: quando um produto é escolhido numa OS, ele fica "separado" (reservado)
+// para ela até a OS ser CONCLUÍDA (aí sim sai de fato do saldo, na baixa
+// automática) ou CANCELADA (aí a reserva é liberada). Enquanto isso, se o
+// mesmo produto for escolhido em outra OS e não houver saldo livre suficiente,
+// ele deve entrar como MATERIAL PENDENTE nessa outra OS — mesmo que o saldo
+// físico (saldo_atual) ainda mostre a unidade, porque ela já está comprometida
+// com a primeira OS. A prioridade é por ordem de criação (quem pegou primeiro,
+// leva primeiro).
+
+// Soma quanto de um produto está reservado, no total, por todas as OS em
+// aberto (não concluídas/canceladas). Útil para exibir "Disponível" em
+// relatórios. excluirOrdemId permite ignorar a própria ordem (ex: ao editá-la).
+function calcularReservadoTotal(produtoId, excluirOrdemId) {
+    let total = 0;
+    state.ordens.forEach(function(o) {
+        if (o.status === 'concluida' || o.status === 'cancelada') return;
+        if (excluirOrdemId && o.id === excluirOrdemId) return;
+        extrairItensOrdem(o).forEach(function(i) {
+            if (i.produto_id === produtoId) total += (i.quantidade || 0);
+        });
+    });
+    return total;
+}
+
+// Calcula quanto de um produto está REALMENTE disponível para uma ordem
+// específica (ordemAlvo), respeitando a fila de chegada: OS abertas criadas
+// ANTES da ordemAlvo têm prioridade sobre o saldo. Se ordemAlvo for null/
+// undefined, calcula a disponibilidade para uma OS NOVA (ainda não criada) —
+// ou seja, todas as OS abertas já existentes têm prioridade sobre ela.
+function calcularDisponivelParaOrdem(produtoId, ordemAlvo) {
+    const p = state.produtos.find(function(x) { return x.id === produtoId; });
+    const saldo = Math.max(0, p ? (p.saldo_atual || 0) : 0);
+
+    const abertas = state.ordens
+        .filter(function(o) { return o.status !== 'concluida' && o.status !== 'cancelada'; })
+        .slice()
+        .sort(function(a, b) { return new Date(a.criado_em || 0) - new Date(b.criado_em || 0); });
+
+    let disponivel = saldo;
+    for (let k = 0; k < abertas.length; k++) {
+        const o = abertas[k];
+        if (ordemAlvo && o.id === ordemAlvo.id) break; // chegou na ordem-alvo: o que sobrou é o que ela pode usar
+        const qtd = extrairItensOrdem(o)
+            .filter(function(i) { return i.produto_id === produtoId; })
+            .reduce(function(a, i) { return a + (i.quantidade || 0); }, 0);
+        disponivel -= qtd;
+    }
+    return Math.max(0, disponivel);
+}
+
+// Atalho para seletores de OS NOVA (ainda não salva): considera todas as
+// OS abertas existentes como prioritárias.
+function saldoDisponivel(produtoId) {
+    return calcularDisponivelParaOrdem(produtoId, null);
+}
+
+// Atalho ciente do contexto de edição: se estivermos editando uma OS
+// (state.editingOrdemId), exclui a própria reserva dela do cálculo, para
+// que ao reabrir a OS para edição ela não apareça brigando com sua própria
+// reserva anterior.
+function saldoDisponivelCtx(produtoId, ctx) {
+    const ordemAlvo = (ctx === 'edit' && state.editingOrdemId)
+        ? state.ordens.find(function(o) { return o.id === state.editingOrdemId; })
+        : null;
+    return calcularDisponivelParaOrdem(produtoId, ordemAlvo);
+}
+
+// Retorna os itens de uma ordem cujo estoque ATUAL é insuficiente para
+// cobrir a quantidade solicitada — seja porque está zerado/negativo, seja
+// porque está apenas parcial (ex: saldo 5, OS precisa de 8). Consolida por
+// produto (soma as quantidades quando o mesmo produto aparece em mais de um
+// kit da OS) e calcula a quantidade EXATA que ainda falta providenciar PARA
+// ESTA ORDEM. Importante: o saldo é limitado a um mínimo de 0 antes de
+// subtrair — se o saldo já estiver negativo (déficit causado por OUTRAS
+// ordens/movimentações), essa dívida alheia não deve ser somada à
+// necessidade desta OS; nesse caso, o que falta é simplesmente a quantidade
+// que esta OS pediu. Usada em todos os pontos do sistema que mostram/
+// imprimem material pendente, para manter o cálculo consistente.
+function getItensPendentesOrdem(ordem) {
+    const itens = extrairItensOrdem(ordem);
+    const porProduto = new Map();
+    itens.forEach(i => {
+        if (!i.produto_id) return;
+        porProduto.set(i.produto_id, (porProduto.get(i.produto_id) || 0) + (i.quantidade || 0));
+    });
+    const pendentes = [];
+    porProduto.forEach((quantidadeTotal, produtoId) => {
+        const p = state.produtos.find(x => x.id === produtoId);
+        // Disponibilidade considerando a fila: OS abertas criadas antes desta
+        // já reservaram sua parte do saldo, então o que sobra pode não ser
+        // suficiente mesmo que o saldo físico do produto pareça positivo.
+        const disponivel = calcularDisponivelParaOrdem(produtoId, ordem);
+        const faltante = quantidadeTotal - disponivel;
+        if (faltante > 0) pendentes.push({ produto_id: produtoId, produto: p, quantidade: faltante });
+    });
+    return pendentes;
+}
+
 // Verifica se uma ordem (já existente) tem algum material com estoque
 // ATUALMENTE zerado — usado para exibir o botão de impressão na tabela
 function temMaterialZerado(ordem) {
     if (!ordem || ordem.status === 'concluida' || ordem.status === 'cancelada') return false;
-    const itens = extrairItensOrdem(ordem);
-    return itens.some(i => {
-        const p = state.produtos.find(x => x.id === i.produto_id);
-        return p && (p.saldo_atual || 0) <= 0;
-    });
+    return getItensPendentesOrdem(ordem).length > 0;
 }
 
 // Reabre o modal de Material Pendente para uma ordem já existente (ex: quando
@@ -2925,12 +3023,9 @@ function abrirMaterialPendenteOrdem(id) {
     const ordem = state.ordens.find(o => o.id === id);
     if (!ordem) return;
 
-    const itensZerados = extrairItensOrdem(ordem).filter(i => {
-        const p = state.produtos.find(x => x.id === i.produto_id);
-        return p && (p.saldo_atual || 0) <= 0;
-    });
+    const itensZerados = getItensPendentesOrdem(ordem);
     if (!itensZerados.length) {
-        showToast('Não há materiais pendentes (estoque zerado) nesta ordem no momento.', 'info');
+        showToast('Não há materiais pendentes (estoque zerado ou insuficiente) nesta ordem no momento.', 'info');
         return;
     }
 
@@ -2938,7 +3033,7 @@ function abrirMaterialPendenteOrdem(id) {
 
     document.getElementById('matPendenteOS').textContent = ordem.numero || '';
     document.getElementById('matPendenteLista').innerHTML = itensZerados.map(i => {
-        const p = state.produtos.find(x => x.id === i.produto_id);
+        const p = i.produto || state.produtos.find(x => x.id === i.produto_id);
         return '<tr><td>' + (p ? p.nome : '—') + '</td>' +
             '<td>' + (p ? (p.codigo || '—') : '—') + '</td>' +
             '<td style="text-align:center;font-weight:700;color:var(--red)">' + i.quantidade + '</td></tr>';
@@ -6041,7 +6136,7 @@ function renderRelEstoque() {    popularFiltrosEstoque();
     if (count) count.textContent = list.length + ' produto(s)';
 
     var tb = document.getElementById('tbodyRelEstoque');
-    if (!list.length) { tb.innerHTML = '<tr><td colspan="7" class="empty">Nenhum produto encontrado com os filtros selecionados</td></tr>'; var old = document.getElementById('pgCardRelEstoque')?.querySelector('.pagination-bar'); if (old) old.remove(); return; }
+    if (!list.length) { tb.innerHTML = '<tr><td colspan="9" class="empty">Nenhum produto encontrado com os filtros selecionados</td></tr>'; var old = document.getElementById('pgCardRelEstoque')?.querySelector('.pagination-bar'); if (old) old.remove(); return; }
     var page = pgApply('relEstoque', list, 'pgCardRelEstoque');
     tb.innerHTML = page.map(function(p) {
         var saldo = p.saldo_atual || 0;
@@ -6050,6 +6145,10 @@ function renderRelEstoque() {    popularFiltrosEstoque();
         var tagClass = zerado ? 'tag-purple' : (critico ? 'tag-red' : 'tag-green');
         var tagLabel = zerado ? 'Zerado' : (critico ? 'Crítico' : 'Normal');
         var saldoColor = zerado ? 'var(--purple)' : (critico ? 'var(--red)' : 'var(--green)');
+        // Quanto desse saldo já está separado (reservado) para OS em aberto,
+        // e quanto realmente sobra livre para novas ordens.
+        var reservado = calcularReservadoTotal(p.id);
+        var disponivel = Math.max(0, saldo - reservado);
         return '<tr>' +
             '<td><code style="font-size:0.78rem">' + (p.codigo || '—') + '</code></td>' +
             '<td><strong>' + (p.nome || '') + '</strong></td>' +
@@ -6057,6 +6156,8 @@ function renderRelEstoque() {    popularFiltrosEstoque();
             '<td>' + (p.localizacao || '—') + '</td>' +
             '<td style="text-align:center">' + (p.estoque_minimo || 0) + '</td>' +
             '<td style="text-align:center;font-weight:600;color:' + saldoColor + '">' + saldo + '</td>' +
+            '<td style="text-align:center;color:var(--text-2)">' + (reservado > 0 ? reservado : '—') + '</td>' +
+            '<td style="text-align:center;font-weight:600;color:' + (disponivel === 0 ? 'var(--red)' : 'var(--green)') + '">' + disponivel + '</td>' +
             '<td><span class="tag ' + tagClass + '">' + tagLabel + '</span></td>' +
             '</tr>';
     }).join('');
@@ -6066,6 +6167,7 @@ function renderRelMovimentacoes() {
     var tipo  = document.getElementById('relMovTipo').value;
     var di    = document.getElementById('relMovDataInicio').value;
     var df    = document.getElementById('relMovDataFim').value;
+    var busca = (document.getElementById('relMovBusca').value || '').trim().toLowerCase();
 
     var entradas = tipo !== 'saida' ? state.entradas.map(function(e) {
         return { tipo: 'Entrada', data: e.data || e.criado_em, produto: e.produto || state.produtos.find(function(p) { return p.id === e.produto_id; }),
@@ -6080,6 +6182,7 @@ function renderRelMovimentacoes() {
         var d = new Date(m.data);
         if (di && d < new Date(di)) return false;
         if (df && d > new Date(df + 'T23:59:59')) return false;
+        if (busca && !(m.produto && (m.produto.nome || '').toLowerCase().includes(busca))) return false;
         return true;
     }).sort(function(a, b) { return new Date(b.data) - new Date(a.data); });
 
@@ -6106,6 +6209,7 @@ function limparFiltrosMov() {
     document.getElementById('relMovTipo').value = '';
     document.getElementById('relMovDataInicio').value = '';
     document.getElementById('relMovDataFim').value = '';
+    document.getElementById('relMovBusca').value = '';
     renderRelMovimentacoes();
 }
 
@@ -6283,7 +6387,8 @@ function imprimirRelatorio(tipo) {
         var tipoMov = document.getElementById('relMovTipo').value;
         var di = document.getElementById('relMovDataInicio').value;
         var df = document.getElementById('relMovDataFim').value;
-        filtrosDesc = [tipoMov ? 'Tipo: ' + (tipoMov === 'entrada' ? 'Entradas' : 'Saídas') : 'Todas', di ? 'De: ' + formatDate(di) : '', df ? 'Até: ' + formatDate(df) : ''].filter(Boolean).join(' | ');
+        var buscaMov = (document.getElementById('relMovBusca').value || '').trim().toLowerCase();
+        filtrosDesc = [tipoMov ? 'Tipo: ' + (tipoMov === 'entrada' ? 'Entradas' : 'Saídas') : 'Todas', di ? 'De: ' + formatDate(di) : '', df ? 'Até: ' + formatDate(df) : '', buscaMov ? 'Produto: ' + buscaMov : ''].filter(Boolean).join(' | ');
         headers = '<tr><th>Data</th><th>Tipo</th><th>Produto</th><th>Quantidade</th><th>Responsável</th><th>Motivo / Fornecedor</th></tr>';
         var entradas2 = tipoMov !== 'saida' ? state.entradas.map(function(e) {
             return { tipo: 'Entrada', data: e.data || e.criado_em, produto: e.produto || state.produtos.find(function(p) { return p.id === e.produto_id; }), quantidade: e.quantidade, responsavel: e.responsavel, extra: (e.fornecedor || {}).nome || '—' };
@@ -6295,6 +6400,7 @@ function imprimirRelatorio(tipo) {
             var d = new Date(m.data);
             if (di && d < new Date(di)) return false;
             if (df && d > new Date(df + 'T23:59:59')) return false;
+            if (buscaMov && !(m.produto && (m.produto.nome || '').toLowerCase().includes(buscaMov))) return false;
             return true;
         }).sort(function(a, b) { return new Date(b.data) - new Date(a.data); });
         rows = listMov.map(function(m) {
@@ -7338,6 +7444,11 @@ function _osVerificarVariante(prodId, inpId, ctx) {
     if (!prod) return;
     const entrada = KIT_VARIANTES.find(v => v.regex.test(prod.nome));
     if (!entrada) return;
+    // Se o produto selecionado JÁ é uma variante específica (ex: o nome dele
+    // já contém "Carga" ou "Linha"), não faz sentido perguntar de novo —
+    // a seleção já está correta e completa.
+    const jaEspecifico = entrada.variantes.some(v => (prod.nome || '').toLowerCase().includes(v.toLowerCase()));
+    if (jaEspecifico) return;
 
     const panelId = _OS_VARIANTE_PANEL[ctx];
     if (!panelId) return;
@@ -7359,16 +7470,35 @@ function _osSelecionarVariante(inpId, variante, panelId) {
     const inp = document.getElementById(inpId);
     if (inp) {
         let val = inp.value
-            .replace(/\s*\(Saldo:\s*[\d-]+\)/gi, '')
+            .replace(/\s*\((?:Saldo|Dispon[ií]vel):\s*[\d-]+\)/gi, '')
             .replace(/\s*\([^)]+\)\s*$/, '')
             .trim();
         const nomeComVariante = val + ' (' + variante + ')';
-        inp.value = nomeComVariante;
-        // Atualizar nome no estado (com variante, sem "(Saldo: ...)")
+
+        // Localiza o produto REAL correspondente a essa variante específica
+        // no catálogo (ex: "Cabo Preto 10mm (Carga)") e RELIGA o item a ele.
+        // Sem isso, o item continuava vinculado ao produto originalmente
+        // pesquisado, mesmo depois de trocar a variante — fazendo a
+        // quantidade cair no produto errado no cálculo de material pendente.
+        const alvo = nomeComVariante.toLowerCase();
+        let prodVariante = state.produtos.find(p => (p.nome || '').toLowerCase() === alvo);
+        if (!prodVariante) {
+            prodVariante = state.produtos.find(p => (p.nome || '').toLowerCase().includes(val.toLowerCase()) && (p.nome || '').toLowerCase().includes(variante.toLowerCase()));
+        }
+
         const idx = parseInt(inp.dataset.idx);
         const ctx = inp.dataset.ctx;
         const item = _ordemItens[ctx].find(i => i.idx === idx);
-        if (item) item.nome = nomeComVariante;
+
+        if (prodVariante) {
+            const dispVariante = saldoDisponivelCtx(prodVariante.id, ctx);
+            inp.value = prodVariante.nome + ' (Disponível: ' + dispVariante + ')';
+            if (item) { item.produto_id = prodVariante.id; item.nome = prodVariante.nome; }
+        } else {
+            inp.value = nomeComVariante;
+            if (item) item.nome = nomeComVariante;
+            showToast('Produto "' + nomeComVariante + '" não encontrado no catálogo — cadastre-o ou selecione manualmente na busca.', 'error');
+        }
     }
     const panel = document.getElementById(panelId);
     if (panel) panel.style.display = 'none';
@@ -7381,6 +7511,10 @@ function _kitVerificarVariante(prodId, inpId) {
     if (!prod) return;
     const entrada = KIT_VARIANTES.find(v => v.regex.test(prod.nome));
     if (!entrada) return;   // sem variantes para esse produto
+    // Se o produto selecionado JÁ é uma variante específica (ex: o nome dele
+    // já contém "Carga" ou "Linha"), não faz sentido perguntar de novo.
+    const jaEspecifico = entrada.variantes.some(v => (prod.nome || '').toLowerCase().includes(v.toLowerCase()));
+    if (jaEspecifico) return;
 
     const panel  = document.getElementById('kitVariantePanel');
     const titulo = document.getElementById('kitVarianteNomeProd');
@@ -7405,7 +7539,27 @@ function _kitSelecionarVariante(inpId, variante) {
             .replace(/\s*\(Saldo:\s*[\d-]+\)/gi, '')
             .replace(/\s*\([^)]+\)\s*$/, '')
             .trim();
-        inp.value = val + ' (' + variante + ')';
+        const nomeComVariante = val + ' (' + variante + ')';
+
+        // Localiza o produto REAL correspondente a essa variante específica
+        // e religa o campo oculto (produto_id da linha) a ele — sem isso o
+        // item ficava vinculado ao produto originalmente pesquisado, mesmo
+        // após trocar de variante.
+        const alvo = nomeComVariante.toLowerCase();
+        let prodVariante = state.produtos.find(p => (p.nome || '').toLowerCase() === alvo);
+        if (!prodVariante) {
+            prodVariante = state.produtos.find(p => (p.nome || '').toLowerCase().includes(val.toLowerCase()) && (p.nome || '').toLowerCase().includes(variante.toLowerCase()));
+        }
+        const hid = document.getElementById(inpId.replace('kitProdInput_', 'kitProdId_'));
+
+        if (prodVariante) {
+            inp.value = prodVariante.nome + ' (Saldo: ' + (prodVariante.saldo_atual || 0) + ')';
+            if (hid) hid.value = prodVariante.id;
+        } else {
+            inp.value = nomeComVariante;
+            if (hid) hid.value = '';
+            showToast('Produto "' + nomeComVariante + '" não encontrado no catálogo — cadastre-o ou selecione manualmente na busca.', 'error');
+        }
     }
     document.getElementById('kitVariantePanel').style.display = 'none';
 }
