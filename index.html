@@ -1010,6 +1010,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
                     <option value="">Selecione o tipo de kit...</option>
                     <option value="inversor"> Inversor</option>
                     <option value="padrao_entrada"> Padrão de Entrada</option>
+                    <option value="padrao_entrada_auxiliar"> Padrão de Entrada (Porte Auxiliar)</option>
                     <option value="personalizado"> Personalizado</option>
                   </select>
                   <button type="button" class="btn-outline" style="padding:6px 12px;font-size:0.82rem" onclick="addLinhaOrdem('page')">+ Produto</button>
@@ -1323,6 +1324,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
               <option value="">Selecione o tipo de kit...</option>
               <option value="inversor"> Inversor</option>
               <option value="padrao_entrada"> Padrão de Entrada</option>
+              <option value="padrao_entrada_auxiliar"> Padrão de Entrada (Porte Auxiliar)</option>
               <option value="personalizado"> Personalizado</option>
             </select>
             <button type="button" class="btn-outline" style="padding:6px 12px;font-size:0.78rem" onclick="addLinhaOrdem('modal')">+ Produto</button>
@@ -1458,6 +1460,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
               <option value="">Selecione o tipo de kit...</option>
               <option value="inversor"> Inversor</option>
               <option value="padrao_entrada"> Padrão de Entrada</option>
+              <option value="padrao_entrada_auxiliar"> Padrão de Entrada (Porte Auxiliar)</option>
               <option value="personalizado"> Personalizado</option>
             </select>
             <button type="button" class="btn-outline" style="padding:6px 12px;font-size:0.82rem" onclick="addLinhaOrdem('edit')">+ Produto</button>
@@ -2238,6 +2241,7 @@ async function salvarSaida() {
 const KIT_LABELS = {
     inversor: ' Inversor',
     padrao_entrada: ' Padrão de Entrada',
+    padrao_entrada_auxiliar: ' Padrão de Entrada (Porte Auxiliar)',
     personalizado: ' Personalizado'
 };
 
@@ -2873,6 +2877,22 @@ async function criarOrdemModal() {
         _kitsConfirmados['modal'] = [];
         _kitEditPos['modal'] = null;
         _ordemItens['modal'] = [];
+        // Atualiza a tela do modal (chips de kit e linhas de item ficavam
+        // visualmente "presos" da ordem anterior, mesmo com o estado já
+        // zerado, porque a re-renderização nunca era chamada aqui) e limpa
+        // os demais campos do formulário para a próxima ordem.
+        renderLinhasOrdem('modal');
+        renderKitsConfirmados('modal');
+        document.getElementById('modalOrdemDescricao').value = '';
+        document.getElementById('modalOrdemData').value = '';
+        document.getElementById('modalOrdemPrioridade').value = 'media';
+        const _mEquipeEl = document.getElementById('modalOrdemEquipe'); if (_mEquipeEl) _mEquipeEl.value = '';
+        ['modalOrdemResidencia','modalOrdemTipoTelha','modalOrdemTipoEstrutura','modalOrdemCondicaoTelhado'].forEach(function(elId){
+            const el = document.getElementById(elId); if (el) el.value = '';
+        });
+        const _mObsEl2 = document.getElementById('modalOrdemObsTecnica'); if (_mObsEl2) _mObsEl2.value = '';
+        const _mDetEl2 = document.getElementById('modalOrdemDadosTecnicos'); if (_mDetEl2) _mDetEl2.open = false;
+        const _mvp2 = document.getElementById('osVariantePanelModal'); if (_mvp2) _mvp2.style.display = 'none';
         closeModal('modalOrdem');
 
         showToast('Ordem criada com sucesso!', 'success');
@@ -8254,6 +8274,7 @@ function selecionarKitParaOS(kitId) {
                 <option value="">Selecione o tipo de sub-kit...</option>
                 <option value="inversor"> Inversor</option>
                 <option value="padrao_entrada"> Padrão de Entrada</option>
+                <option value="padrao_entrada_auxiliar"> Padrão de Entrada (Porte Auxiliar)</option>
               </select>
               <button type="button" class="btn-outline" style="padding:6px 12px;font-size:0.82rem" onclick="addLinhaOrdem('kitcad')">+ Produto</button>
             </div>
