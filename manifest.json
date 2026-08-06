@@ -12,6 +12,6 @@
   "orientation": "any",
   "lang": "pt-BR",
   "icons": [
-    { "src": "https://pfst.cf2.poecdn.net/base/image/fa391d909c82f3cbde6ea0e3f705ed649c544780d640740752e1af9484c576e4?w=222&h=219&pmaid=589441570", "sizes": "222x219", "type": "image/png", "purpose": "any" }
+    { "src": "https://pfst.cf2.poecdn.net/base/image/fa391d909c82f3cbde6ea0e3f705ed649c544780d640740752e1af9484c576e4?w=222&h=219&pmaid=589441570", "sizes": "", "type": "", "purpose": "any" }
   ]
 }
