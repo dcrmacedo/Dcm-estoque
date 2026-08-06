@@ -2,7 +2,7 @@
   "name": "DCM — Gestão de Estoque",
   "short_name": "DCM Estoque",
   "description": "Sistema de gestão de estoque, ordens de serviço e requisições da DCM SANISU",
-  "id": "/",
+  "id": "./",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
