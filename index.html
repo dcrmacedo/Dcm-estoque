@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -129,7 +130,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
 .ac-wrap{position:relative;flex:1}
 .ac-input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px;color:var(--text);font-family:inherit;font-size:0.875rem;outline:none}
 .ac-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,130,246,0.1)}
-.ac-dropdown{position:absolute;top:calc(100% + 2px);left:0;right:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-md);z-index:300;max-height:220px;overflow-y:auto;display:none}
+.ac-dropdown{position:absolute;top:calc(100% + 2px);left:0;right:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-md);z-index:500;max-height:220px;overflow-y:auto;display:none}
 .ac-dropdown.open{display:block}
 .ac-item{padding:8px 12px;cursor:pointer;font-size:0.875rem;display:flex;justify-content:space-between;align-items:center;gap:8px}
 .ac-item:hover,.ac-item.active{background:var(--accent-soft)}
@@ -361,10 +362,11 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
   .form-grid{grid-template-columns:1fr!important}
   .form-group input,.form-group select,.form-group textarea{font-size:0.9rem;padding:10px 12px}
 
-  /* Modais */
-  .modal-overlay{padding:0;align-items:flex-end}
+  /* Modais — precisam ficar ACIMA da sidebar lateral (z-index:300), senão
+     a faixa de ícones fica sobreposta e corta o conteúdo do modal */
+  .modal-overlay{padding:0;align-items:flex-end;z-index:500;inset:0;width:100vw}
   .modal{
-    max-width:100%!important;border-radius:var(--radius-lg) var(--radius-lg) 0 0;
+    max-width:100%!important;width:100%;margin:0;border-radius:var(--radius-lg) var(--radius-lg) 0 0;
     max-height:92vh;animation:slideUpMobile 0.3s ease
   }
   @keyframes slideUpMobile{from{transform:translateY(100%)}to{transform:translateY(0)}}
@@ -1430,10 +1432,10 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
     </div>
     <div class="modal-body">
       <div style="background:var(--red-soft);border:1px solid #FECACA;border-radius:var(--radius);padding:12px 14px;margin-bottom:14px;font-size:0.82rem;color:#991B1B;line-height:1.5">
-        A ordem foi criada, mas os materiais abaixo estão com <strong>estoque ZERADO</strong>. Eles precisam ser providenciados antes da conclusão desta OS.
+        A ordem foi criada, mas os materiais abaixo estão com <strong>estoque insuficiente</strong> para atender a quantidade solicitada. A diferença precisa ser providenciada antes da conclusão desta OS.
       </div>
       <table class="table">
-        <thead><tr><th>Produto</th><th>Código</th><th style="text-align:center">Qtd. Necessária</th></tr></thead>
+        <thead><tr><th>Produto</th><th>Código</th><th style="text-align:center">Qtd. Faltante</th></tr></thead>
         <tbody id="matPendenteLista"></tbody>
       </table>
     </div>
@@ -2406,11 +2408,20 @@ function acRenderDropdown(dd, lista, inp) {
         dd.innerHTML = '<div class="ac-empty">Nenhum produto encontrado</div>';
     } else {
         dd.innerHTML = lista.map(function(p) {
-            var low = p.estoque_minimo > 0 && (p.saldo_atual||0) <= p.estoque_minimo;
-            return '<div class="ac-item" data-pid="' + p.id + '" data-iid="' + inp.id + '" onmousedown="acSelecionar(this.dataset.pid,this.dataset.iid)">' +
+            // Saldo líquido = saldo físico menos o que já está reservado em outras OS ativas.
+            // O produto continua selecionável mesmo sem saldo líquido — só fica visualmente
+            // esmaecido como aviso — pois a falta deve gerar Material Pendente na OS.
+            var reserva = calcularReservaProduto(p.id);
+            var saldoLiquido = Math.max(0, (p.saldo_atual || 0) - reserva);
+            var semSaldo = saldoLiquido <= 0;
+            var low = p.estoque_minimo > 0 && saldoLiquido <= p.estoque_minimo;
+            var infoTxt = 'Saldo: ' + saldoLiquido + (reserva > 0 ? ' · Reservado: ' + reserva : '');
+            var estiloItem = semSaldo ? ' style="opacity:0.55"' : '';
+            var titulo = semSaldo ? ' title="Saldo indisponível (reservado em outra OS) — ainda pode ser selecionado, ficará como material pendente"' : '';
+            return '<div class="ac-item" data-pid="' + p.id + '" data-iid="' + inp.id + '"' + estiloItem + titulo + ' onmousedown="acSelecionar(this.dataset.pid,this.dataset.iid)">' +
                 '<span class="ac-item-nome">' + (p.nome||'') + '</span>' +
                 '<span class="ac-item-info" style="color:' + (low ? 'var(--red)' : 'var(--green)') + '">' +
-                (p.codigo ? p.codigo + ' · ' : '') + 'Saldo: ' + (p.saldo_atual||0) + '</span>' +
+                (p.codigo ? p.codigo + ' · ' : '') + infoTxt + '</span>' +
                 '</div>';
         }).join('');
     }
@@ -2422,7 +2433,9 @@ function acSelecionar(prodId, inpId) {
     if (!inp) return;
     var prod = state.produtos.find(function(p) { return p.id === prodId; });
     if (!prod) return;
-    inp.value = prod.nome + ' (Saldo: ' + (prod.saldo_atual||0) + ')';
+    var reserva = calcularReservaProduto(prodId);
+    var saldoLiquido = Math.max(0, (prod.saldo_atual || 0) - reserva);
+    inp.value = prod.nome + ' (Saldo: ' + saldoLiquido + ')';
     var ddId = inpId.replace('ac_', 'dd_');
     acFechar(ddId);
     // Update state
@@ -2515,13 +2528,18 @@ function confirmarKit(ctx) {
     const itens = _ordemItens[ctx].filter(i => i.produto_id);
     if (itens.length === 0) { showToast('Adicione ao menos um produto ao kit.', 'error'); return; }
 
-    // Verificar estoque de cada item (apenas aviso — não bloqueia a criação da OS,
-    // pois a validação definitiva ocorre ao concluir a ordem)
+    // Verificar estoque líquido (saldo - reservado em outras OS) de cada item
+    // (apenas aviso — não bloqueia a criação da OS, pois a validação definitiva
+    // ocorre ao concluir a ordem)
     let avisoEstoque = '';
     for (const item of itens) {
         const prod = state.produtos.find(p => p.id === item.produto_id);
-        if (prod && (prod.saldo_atual || 0) < item.quantidade) {
-            avisoEstoque = 'Atenção: estoque insuficiente para "' + prod.nome + '" (disponível: ' + (prod.saldo_atual || 0) + '). O kit será adicionado mesmo assim.';
+        if (prod) {
+            const reserva = calcularReservaProduto(prod.id);
+            const saldoLiquido = Math.max(0, (prod.saldo_atual || 0) - reserva);
+            if (saldoLiquido < item.quantidade) {
+                avisoEstoque = 'Atenção: estoque insuficiente para "' + prod.nome + '" (disponível: ' + saldoLiquido + (reserva > 0 ? ', reservado: ' + reserva : '') + '). O kit será adicionado mesmo assim.';
+            }
         }
     }
     if (avisoEstoque) showToast(avisoEstoque, 'info');
@@ -2636,7 +2654,7 @@ async function gerarNumeroOS() {
 function verificarEMostrarMaterialPendente(ordem, todosItens) {
     const itensZerados = todosItens.filter(i => {
         const prod = state.produtos.find(p => p.id === i.produto_id) || i.produto;
-        return prod && (prod.saldo_atual || 0) <= 0;
+        return prod && (prod.saldo_atual || 0) < i.quantidade;
     });
     if (!itensZerados.length) return;
 
@@ -2645,9 +2663,11 @@ function verificarEMostrarMaterialPendente(ordem, todosItens) {
     document.getElementById('matPendenteOS').textContent = ordem.numero || '';
     document.getElementById('matPendenteLista').innerHTML = itensZerados.map(i => {
         const p = state.produtos.find(x => x.id === i.produto_id) || i.produto;
+        const saldoAtual = p ? (p.saldo_atual || 0) : 0;
+        const falta = Math.max(0, i.quantidade - saldoAtual);
         return '<tr><td>' + (p ? p.nome : '—') + '</td>' +
             '<td>' + (p ? (p.codigo || '—') : '—') + '</td>' +
-            '<td style="text-align:center;font-weight:700;color:var(--red)">' + i.quantidade + '</td></tr>';
+            '<td style="text-align:center;font-weight:700;color:var(--red)">' + falta + '</td></tr>';
     }).join('');
 
     openModal('modalMaterialPendente');
@@ -2662,7 +2682,7 @@ function printMaterialPendente() {
     // inventário, etc.) desde que o modal foi aberto, ele sai da lista.
     const itensAindaZerados = itens.filter(i => {
         const p = state.produtos.find(x => x.id === i.produto_id) || i.produto;
-        return p && (p.saldo_atual || 0) <= 0;
+        return p && (p.saldo_atual || 0) < i.quantidade;
     });
     if (!itensAindaZerados.length) {
         showToast('Todos os materiais já foram repostos. Nada pendente para imprimir.', 'info');
@@ -2672,12 +2692,14 @@ function printMaterialPendente() {
 
     const rows = itensAindaZerados.map(i => {
         const p = state.produtos.find(x => x.id === i.produto_id) || i.produto;
+        const saldoAtual = p ? (p.saldo_atual || 0) : 0;
+        const falta = Math.max(0, i.quantidade - saldoAtual);
         return '<tr>' +
             '<td>' + (p ? p.nome : '—') + '</td>' +
             '<td>' + (p ? (p.codigo || '—') : '—') + '</td>' +
             '<td>' + (p ? (p.categoria || '—') : '—') + '</td>' +
             '<td>' + (p ? (p.localizacao || '—') : '—') + '</td>' +
-            '<td style="text-align:center;font-weight:700;color:#DC2626">' + i.quantidade + '</td>' +
+            '<td style="text-align:center;font-weight:700;color:#DC2626">' + falta + '</td>' +
             '</tr>';
     }).join('');
 
@@ -2717,11 +2739,11 @@ tr:last-child td{border-bottom:none}
 </div>
 
 <div class="alert-box">
-  Os materiais listados abaixo foram solicitados na Ordem de Serviço <strong>${ordem.numero || ''}</strong> e estão com <strong>estoque ZERADO</strong>. É necessário providenciar a reposição para que esta OS possa ser concluída.
+  Os materiais listados abaixo foram solicitados na Ordem de Serviço <strong>${ordem.numero || ''}</strong> e estão com <strong>estoque insuficiente</strong> para a quantidade solicitada. É necessário providenciar a reposição da diferença para que esta OS possa ser concluída.
 </div>
 
 <table>
-  <thead><tr><th>Produto</th><th>Código</th><th>Categoria</th><th>Localização</th><th style="text-align:center">Qtd. Necessária</th></tr></thead>
+  <thead><tr><th>Produto</th><th>Código</th><th>Categoria</th><th>Localização</th><th style="text-align:center">Qtd. Faltante</th></tr></thead>
   <tbody>${rows}</tbody>
 </table>
 
@@ -2748,7 +2770,7 @@ function getItensZeradosOrdem(ordemId) {
     const itens = extrairItensOrdem(o);
     const zerados = itens.filter(i => {
         const p = state.produtos.find(x => x.id === i.produto_id);
-        return p && (p.saldo_atual || 0) <= 0;
+        return p && (p.saldo_atual || 0) < i.quantidade;
     });
     return { ordem: o, itens: zerados };
 }
@@ -2760,7 +2782,7 @@ function ordemTemMaterialZerado(o) {
     const itens = extrairItensOrdem(o);
     return itens.some(i => {
         const p = state.produtos.find(x => x.id === i.produto_id);
-        return p && (p.saldo_atual || 0) <= 0;
+        return p && (p.saldo_atual || 0) < i.quantidade;
     });
 }
 
@@ -2770,7 +2792,7 @@ function imprimirMaterialPendenteOrdem(ordemId) {
     const res = getItensZeradosOrdem(ordemId);
     if (!res) { showToast('Ordem não encontrada.', 'error'); return; }
     if (!res.itens.length) {
-        showToast('Não há materiais com estoque zerado nesta ordem no momento.', 'info');
+        showToast('Não há materiais pendentes (estoque insuficiente) nesta ordem no momento.', 'info');
         if (document.getElementById('page-ordens').classList.contains('active')) renderOrdens(document.getElementById('searchOrdens') ? document.getElementById('searchOrdens').value : '', state.filtroOrdens);
         if (document.getElementById('page-minhasOrdens').classList.contains('active')) renderMinhasOrdens();
         return;
@@ -3073,7 +3095,7 @@ function temMaterialZerado(ordem) {
     const itens = extrairItensOrdem(ordem);
     return itens.some(i => {
         const p = state.produtos.find(x => x.id === i.produto_id);
-        return p && (p.saldo_atual || 0) <= 0;
+        return p && (p.saldo_atual || 0) < i.quantidade;
     });
 }
 
@@ -3085,10 +3107,10 @@ function abrirMaterialPendenteOrdem(id) {
 
     const itensZerados = extrairItensOrdem(ordem).filter(i => {
         const p = state.produtos.find(x => x.id === i.produto_id);
-        return p && (p.saldo_atual || 0) <= 0;
+        return p && (p.saldo_atual || 0) < i.quantidade;
     });
     if (!itensZerados.length) {
-        showToast('Não há materiais pendentes (estoque zerado) nesta ordem no momento.', 'info');
+        showToast('Não há materiais pendentes (estoque insuficiente) nesta ordem no momento.', 'info');
         return;
     }
 
@@ -3097,9 +3119,11 @@ function abrirMaterialPendenteOrdem(id) {
     document.getElementById('matPendenteOS').textContent = ordem.numero || '';
     document.getElementById('matPendenteLista').innerHTML = itensZerados.map(i => {
         const p = state.produtos.find(x => x.id === i.produto_id);
+        const saldoAtual = p ? (p.saldo_atual || 0) : 0;
+        const falta = Math.max(0, i.quantidade - saldoAtual);
         return '<tr><td>' + (p ? p.nome : '—') + '</td>' +
             '<td>' + (p ? (p.codigo || '—') : '—') + '</td>' +
-            '<td style="text-align:center;font-weight:700;color:var(--red)">' + i.quantidade + '</td></tr>';
+            '<td style="text-align:center;font-weight:700;color:var(--red)">' + falta + '</td></tr>';
     }).join('');
 
     openModal('modalMaterialPendente');
@@ -7431,8 +7455,19 @@ document.addEventListener('DOMContentLoaded', async function() {
         updateDate();
         setInterval(updateDate, 60000);
         
+        // Fecha o modal ao clicar fora dele (no backdrop escurecido).
+        // IMPORTANTE: usa 'mousedown' em vez de 'click'. O motivo: ao selecionar
+        // um item do autocomplete de produtos (ac-item), o item é escondido
+        // imediatamente no próprio 'mousedown' (acFechar remove a classe "open").
+        // Se este listener usasse 'click', o navegador recalcula o alvo do clique
+        // no momento do mouseup/click — e como o dropdown (posicionado com
+        // position:fixed, podendo ultrapassar visualmente os limites do modal)
+        // já não está mais ali, o clique "vaza" para o backdrop por trás dele,
+        // fechando o modal e resetando o formulário sem motivo aparente. Usando
+        // 'mousedown', o alvo do evento é capturado ANTES dessa mutação do DOM,
+        // então continua sendo o item clicado (e não o overlay), corrigindo isso.
         document.querySelectorAll('.modal-overlay').forEach(ov => {
-            ov.addEventListener('click', function(e) {
+            ov.addEventListener('mousedown', function(e) {
                 if (e.target === ov) closeModal(ov.id);
             });
         });
