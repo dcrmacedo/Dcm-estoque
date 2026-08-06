@@ -4,7 +4,7 @@
 // aqui — sempre vão direto pra rede, para os dados nunca ficarem desatualizados
 // ou serem enviados "no vazio" enquanto offline.
 
-const CACHE_VERSION = 'dcm-estoque-v1';
+const CACHE_VERSION = 'dcm-estoque-v2';
 const CACHE_NAME = CACHE_VERSION;
 
 // Domínios que NUNCA devem ser interceptados (dados ao vivo)
