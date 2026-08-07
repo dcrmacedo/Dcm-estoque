@@ -4,22 +4,22 @@
 // aqui — sempre vão direto pra rede, para os dados nunca ficarem desatualizados
 // ou serem enviados "no vazio" enquanto offline.
 
-const CACHE_VERSION = 'dcm-estoque-v2';
+const CACHE_VERSION = 'dcm-estoque-v3';
 const CACHE_NAME = CACHE_VERSION;
 
 // Domínios que NUNCA devem ser interceptados (dados ao vivo)
 const BYPASS_HOSTS = ['supabase.co', 'supabase.in'];
 
-const LOGO_URL = 'https://pfst.cf2.poecdn.net/base/image/fa391d909c82f3cbde6ea0e3f705ed649c544780d640740752e1af9484c576e4?w=222&h=219&pmaid=589441570';
-
 const APP_SHELL = [
   './',
   './index.html',
-  './manifest.json'
+  './manifest.json',
+  './icon-192.png',
+  './icon-512.png',
+  './icon-maskable-512.png'
 ];
 
 const CDN_ASSETS = [
-  LOGO_URL,
   'https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap',
   'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2',
   'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js',
