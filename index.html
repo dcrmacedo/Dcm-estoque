@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -130,7 +129,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
 .ac-wrap{position:relative;flex:1}
 .ac-input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px;color:var(--text);font-family:inherit;font-size:0.875rem;outline:none}
 .ac-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,130,246,0.1)}
-.ac-dropdown{position:absolute;top:calc(100% + 2px);left:0;right:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-md);z-index:500;max-height:220px;overflow-y:auto;display:none}
+.ac-dropdown{position:absolute;top:calc(100% + 2px);left:0;right:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-md);z-index:300;max-height:220px;overflow-y:auto;display:none}
 .ac-dropdown.open{display:block}
 .ac-item{padding:8px 12px;cursor:pointer;font-size:0.875rem;display:flex;justify-content:space-between;align-items:center;gap:8px}
 .ac-item:hover,.ac-item.active{background:var(--accent-soft)}
@@ -2301,6 +2300,12 @@ const KIT_LABELS = {
 const _ordemItens = { modal: [], page: [], edit: [] };
 // Kits já confirmados (array de { tipo, label, itens[] })
 const _kitsConfirmados = { modal: [], page: [], edit: [] };
+// Guarda a posição original de um kit quando ele está sendo re-editado
+// (clique em "Editar" num kit já confirmado), para que "Confirmar Kit"
+// devolva o kit editado ao mesmo lugar em vez de jogá-lo para o final da
+// lista — sem isso, editar o 1º kit (ex: Inversor) fazia ele pular para
+// depois dos outros, invertendo a ordem (Inversor / Padrão de Entrada).
+const _kitEditIndex = { modal: null, page: null, edit: null };
 
 let _materialPendenteAtual = null;
 
@@ -2443,6 +2448,9 @@ function acSelecionar(prodId, inpId) {
     var ctx = inp.dataset.ctx;
     var item = _ordemItens[ctx].find(function(i) { return i.idx === idx; });
     if (item) item.produto_id = prodId;
+    // Se o produto tiver variantes cadastradas (ex: Cabo -> Linha/Carga),
+    // mostra o painel de escolha — igual já acontecia na tela de Kits.
+    if (typeof _kitVerificarVariante === 'function') _kitVerificarVariante(prodId, inpId);
 }
 
 function acFechar(ddId) {
@@ -2553,6 +2561,15 @@ function confirmarKit(ctx) {
     _kitsConfirmados[ctx].push({ tipo, label: KIT_LABELS[tipo] || tipo, itens: itensCompletos });
     _ordemItens[ctx] = [];
 
+    // Se este kit veio de "Editar" um kit já confirmado, devolve ele à
+    // mesma posição em que estava, em vez de deixá-lo no final da lista.
+    if (_kitEditIndex[ctx] !== null && _kitEditIndex[ctx] !== undefined) {
+        const novoKit = _kitsConfirmados[ctx].pop();
+        const posOriginal = Math.min(_kitEditIndex[ctx], _kitsConfirmados[ctx].length);
+        _kitsConfirmados[ctx].splice(posOriginal, 0, novoKit);
+        _kitEditIndex[ctx] = null;
+    }
+
     // Reset tipo selector
     document.getElementById(tipoId).value = '';
     renderLinhasOrdem(ctx);
@@ -2562,6 +2579,9 @@ function confirmarKit(ctx) {
 
 function removerKitConfirmado(ctx, kitIdx) {
     _kitsConfirmados[ctx].splice(kitIdx, 1);
+    // Se o kit removido era o que estava sendo editado, cancela o rastreamento
+    // de posição para não bagunçar a ordem quando outro kit for confirmado.
+    if (_kitEditIndex[ctx] === kitIdx) _kitEditIndex[ctx] = null;
     renderKitsConfirmados(ctx);
 }
 
@@ -2607,6 +2627,10 @@ function renderKitsConfirmados(ctx) {
 function editarKitConfirmado(ctx, ki) {
     const kit = _kitsConfirmados[ctx][ki];
     if (!kit) return;
+
+    // Guarda a posição original — "Confirmar Kit" vai devolver o kit
+    // editado exatamente aqui, em vez de jogá-lo para o final da lista.
+    _kitEditIndex[ctx] = ki;
 
     // Remove o kit da lista confirmada
     _kitsConfirmados[ctx].splice(ki, 1);
@@ -2663,7 +2687,10 @@ function verificarEMostrarMaterialPendente(ordem, todosItens) {
     document.getElementById('matPendenteOS').textContent = ordem.numero || '';
     document.getElementById('matPendenteLista').innerHTML = itensZerados.map(i => {
         const p = state.produtos.find(x => x.id === i.produto_id) || i.produto;
-        const saldoAtual = p ? (p.saldo_atual || 0) : 0;
+        // Saldo negativo (déficit de OS antigas já concluídas) não deve se somar
+        // ao pedido desta OS — a falta mostrada nunca deve passar da quantidade
+        // que esta OS realmente pediu nesta linha.
+        const saldoAtual = Math.max(0, p ? (p.saldo_atual || 0) : 0);
         const falta = Math.max(0, i.quantidade - saldoAtual);
         return '<tr><td>' + (p ? p.nome : '—') + '</td>' +
             '<td>' + (p ? (p.codigo || '—') : '—') + '</td>' +
@@ -2692,7 +2719,7 @@ function printMaterialPendente() {
 
     const rows = itensAindaZerados.map(i => {
         const p = state.produtos.find(x => x.id === i.produto_id) || i.produto;
-        const saldoAtual = p ? (p.saldo_atual || 0) : 0;
+        const saldoAtual = Math.max(0, p ? (p.saldo_atual || 0) : 0);
         const falta = Math.max(0, i.quantidade - saldoAtual);
         return '<tr>' +
             '<td>' + (p ? p.nome : '—') + '</td>' +
@@ -2853,6 +2880,7 @@ async function criarOrdem() {
 
         state.ordens.unshift({ ...data, solicitante: state.currentUser });
         _kitsConfirmados['page'] = [];
+        _kitEditIndex['page'] = null;
         _ordemItens['page'] = [];
         renderLinhasOrdem('page');
         renderKitsConfirmados('page');
@@ -2926,6 +2954,7 @@ async function criarOrdemModal() {
 
         state.ordens.unshift({ ...data, solicitante: state.currentUser });
         _kitsConfirmados['modal'] = [];
+        _kitEditIndex['modal'] = null;
         _ordemItens['modal'] = [];
         ['modalOrdemResidencia','modalOrdemTipoTelha','modalOrdemTipoEstrutura','modalOrdemCondicaoTelhado','modalOrdemObsTecnica'].forEach(id => {
             const el = document.getElementById(id); if (el) el.value = '';
@@ -3010,6 +3039,22 @@ function verReservasProduto(produtoId) {
         });
     });
 
+    // Uma mesma OS pode ter o produto em mais de uma linha (ex: veio em dois
+    // kits diferentes dentro da mesma ordem). Isso não são "duas reservas" —
+    // é uma reserva só, então agrupamos por OS e somamos as quantidades antes
+    // de exibir, para não parecer que existem duas ordens pedindo o material.
+    const porOrdem = new Map();
+    entradas.forEach(e => {
+        const key = e.ordem.id;
+        if (!porOrdem.has(key)) {
+            porOrdem.set(key, { ordem: e.ordem, quantidade: 0, idxs: [] });
+        }
+        const grupo = porOrdem.get(key);
+        grupo.quantidade += (e.item.quantidade || 0);
+        grupo.idxs.push(e.idx);
+    });
+    const grupos = Array.from(porOrdem.values());
+
     const total = entradas.reduce((s, e) => s + (e.item.quantidade || 0), 0);
     resumo.innerHTML =
         '<strong style="color:var(--text)">' + prod.nome + '</strong><br>' +
@@ -3018,11 +3063,11 @@ function verReservasProduto(produtoId) {
         'Disponível líquido: <strong style="color:' + ((prod.saldo_atual||0) - total >= 0 ? 'var(--green)' : 'var(--red)') + '">' +
         ((prod.saldo_atual||0) - total) + '</strong>';
 
-    if (!entradas.length) {
+    if (!grupos.length) {
         lista.innerHTML = '<p style="color:var(--text-3);font-size:0.84rem;text-align:center;padding:20px 0">Nenhuma reserva ativa para este produto.</p>';
     } else {
-        lista.innerHTML = entradas.map(e => {
-            const o = e.ordem;
+        lista.innerHTML = grupos.map(g => {
+            const o = g.ordem;
             const stLabel = ST[o.status] || o.status;
             const stColor = ST_COLOR[o.status] || 'var(--text-3)';
             const solNome = (o.solicitante && o.solicitante.nome) ? o.solicitante.nome : (o.solicitante_nome || '—');
@@ -3031,11 +3076,11 @@ function verReservasProduto(produtoId) {
                 + '<div style="min-width:0">'
                 + '<div style="font-weight:600;font-size:0.88rem;margin-bottom:3px">' + (o.numero || 'OS') + ' <span style="font-size:0.75rem;color:' + stColor + ';font-weight:500">' + stLabel + '</span></div>'
                 + '<div style="font-size:0.78rem;color:var(--text-2)">Solicitante: ' + solNome + ' · Data necessária: ' + dataNec + '</div>'
-                + '<div style="font-size:0.78rem;color:var(--text-2);margin-top:2px">Qtd reservada: <strong>' + e.item.quantidade + '</strong></div>'
+                + '<div style="font-size:0.78rem;color:var(--text-2);margin-top:2px">Qtd reservada: <strong>' + g.quantidade + '</strong></div>'
                 + '</div>'
                 + '<div style="display:flex;gap:8px;flex-shrink:0">'
                 + '<button class="tbl-btn" title="Ver OS" onclick="closeModal(\'modalReservasProduto\');abrirOrdemDetalhe(\'' + o.id + '\')">Ver OS</button>'
-                + '<button class="tbl-btn danger" title="Liberar reserva" onclick="liberarItemReserva(\'' + o.id + '\',' + e.idx + ',\'' + produtoId + '\')" style="white-space:nowrap">Liberar</button>'
+                + '<button class="tbl-btn danger" title="Liberar reserva" onclick="liberarItensReserva(\'' + o.id + '\',\'' + g.idxs.join(',') + '\',\'' + produtoId + '\')" style="white-space:nowrap">Liberar</button>'
                 + '</div>'
                 + '</div>';
         }).join('');
@@ -3086,6 +3131,49 @@ async function liberarItemReserva(ordemId, itemIdx, produtoId) {
     }
 }
 
+// Remove várias linhas de uma OS de uma vez (mesmo produto repetido em
+// mais de um kit dentro da mesma ordem). idxsCsv vem como string
+// "3,7" (índices globais separados por vírgula) vindos do modal de Reservas,
+// que agrupa por OS.
+async function liberarItensReserva(ordemId, idxsCsv, produtoId) {
+    const idxs = String(idxsCsv).split(',').map(n => parseInt(n, 10)).filter(n => !isNaN(n));
+    if (!idxs.length) return;
+    if (!confirm((idxs.length > 1 ? 'Remover estas ' + idxs.length + ' linhas' : 'Remover este item') + ' da OS libera a reserva sem afetar o estoque. Confirmar?')) return;
+
+    const ordem = state.ordens.find(o => o.id === ordemId);
+    if (!ordem) return;
+
+    let raw = [];
+    try { raw = ordem.itens_json ? JSON.parse(ordem.itens_json) : []; } catch(e) {}
+
+    const idxSet = new Set(idxs);
+    let novoJson;
+    if (raw.length && raw[0] && raw[0].itens && Array.isArray(raw[0].itens)) {
+        let globalIdx = 0;
+        const novosKits = raw.map(kit => ({
+            ...kit,
+            itens: kit.itens.filter(i => !idxSet.has(globalIdx++))
+        })).filter(kit => kit.itens.length > 0);
+        novoJson = JSON.stringify(novosKits);
+    } else {
+        const novos = raw.filter((_, i) => !idxSet.has(i));
+        novoJson = JSON.stringify(novos);
+    }
+
+    try {
+        const { error } = await sb.from('ordens').update({ itens_json: novoJson }).eq('id', ordemId);
+        if (error) throw error;
+        const idx = state.ordens.findIndex(o => o.id === ordemId);
+        if (idx !== -1) state.ordens[idx].itens_json = novoJson;
+        showToast('Reserva liberada com sucesso!', 'success');
+        verReservasProduto(produtoId);
+        renderProdutos();
+        updateBadges();
+    } catch(err) {
+        showToast('Erro ao liberar reserva: ' + (err.message || ''), 'error');
+    }
+}
+
 // ── FIM RESERVAS ──────────────────────────────────────────────────────────────
 
 // Verifica se uma ordem (já existente) tem algum material com estoque
@@ -3119,7 +3207,7 @@ function abrirMaterialPendenteOrdem(id) {
     document.getElementById('matPendenteOS').textContent = ordem.numero || '';
     document.getElementById('matPendenteLista').innerHTML = itensZerados.map(i => {
         const p = state.produtos.find(x => x.id === i.produto_id);
-        const saldoAtual = p ? (p.saldo_atual || 0) : 0;
+        const saldoAtual = Math.max(0, p ? (p.saldo_atual || 0) : 0);
         const falta = Math.max(0, i.quantidade - saldoAtual);
         return '<tr><td>' + (p ? p.nome : '—') + '</td>' +
             '<td>' + (p ? (p.codigo || '—') : '—') + '</td>' +
@@ -5504,7 +5592,7 @@ function renderSaidas(filter = '') {
             '<td>' + formatDate(s.data) + '</td>' +
             '<td>' + (p ? p.nome : '—') + '</td>' +
             '<td><span class="tag tag-amber">-' + (s.quantidade || 0) + '</span></td>' +
-            '<td>' + (() => { const eq = s.equipe_id ? state.equipes.find(e => e.id === s.equipe_id) : null; return eq ? eq.nome : (s.motivo || '—'); })() + '</td>' +
+            '<td>' + (() => { const eq = s.equipe_id ? state.equipes.find(e => e.id === s.equipe_id) : null; return (s.motivo || '—') + (eq ? ' <span style="color:var(--text-3)">· ' + eq.nome + '</span>' : ''); })() + '</td>' +
             '<td>' + (s.responsavel || '—') + '</td>' +
             '<td><button class="tbl-btn" onclick="editarSaida(\'' + s.id + '\')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button></td>' +
             '</tr>';
@@ -5958,6 +6046,7 @@ async function editarOrdem(id) {
         }
     } catch(e) {}
     _kitsConfirmados['edit'] = [];
+    _kitEditIndex['edit'] = null;
     _ordemItens['edit'] = [];
     try {
         const raw = o.itens_json ? JSON.parse(o.itens_json) : [];
@@ -5975,6 +6064,7 @@ async function editarOrdem(id) {
                 itens: [{ produto_id: o.produto_id, quantidade: o.quantidade, produto: p0 }] }];
         }
     } catch(e) { _kitsConfirmados['edit'] = []; }
+    _kitEditIndex['edit'] = null;
     renderKitsConfirmados('edit');
     renderLinhasOrdem('edit');
     document.getElementById('editOrdemTipo').value = '';
@@ -6083,7 +6173,7 @@ async function salvarEdicaoOrdem() {
 
         var idx = state.ordens.findIndex(function(o) { return o.id === id; });
         if (idx !== -1) state.ordens[idx] = Object.assign({}, state.ordens[idx], res.data);
-        _kitsConfirmados['edit'] = []; _ordemItens['edit'] = [];
+        _kitsConfirmados['edit'] = []; _kitEditIndex['edit'] = null; _ordemItens['edit'] = [];
         closeModal('modalEditOrdem');
         renderOrdens(document.getElementById('searchOrdens') ? document.getElementById('searchOrdens').value : '', state.filtroOrdens);
 
@@ -7680,25 +7770,41 @@ const KIT_VARIANTES = [
     { regex: /\btomada\b/i,      variantes: ['2P', '2P+T', 'Schuko'] },
 ];
 
-// Chamado quando o autocomplete seleciona um produto na linha de kit.
-// Verifica se o produto tem variantes e, se sim, mostra o painel de escolha.
+// Chamado quando o autocomplete seleciona um produto na linha de kit (ou de
+// item de Ordem de Serviço). Verifica se o produto tem variantes e, se sim,
+// mostra um painel de escolha logo abaixo da linha do produto — funciona em
+// qualquer modal/tela, pois o painel é criado dinamicamente ao lado do campo,
+// em vez de depender de um único elemento fixo (#kitVariantePanel).
 function _kitVerificarVariante(prodId, inpId) {
+    // Remove qualquer painel anterior desta mesma linha antes de decidir
+    const anterior = document.getElementById('varPanel_' + inpId);
+    if (anterior) anterior.remove();
+
     const prod = state.produtos.find(p => p.id === prodId);
     if (!prod) return;
     const entrada = KIT_VARIANTES.find(v => v.regex.test(prod.nome));
     if (!entrada) return;   // sem variantes para esse produto
 
-    const panel  = document.getElementById('kitVariantePanel');
-    const titulo = document.getElementById('kitVarianteNomeProd');
-    const bots   = document.getElementById('kitVarianteBotoes');
+    const inp = document.getElementById(inpId);
+    if (!inp) return;
+    // Âncora: a linha inteira do item (funciona tanto na Ordem de Serviço
+    // quanto na criação de Kit), com fallback pro wrapper do autocomplete.
+    const row = inp.closest('[id^="itemOrdem_"]') || inp.closest('.kit-modal-item-row') || inp.closest('.ac-wrap') || inp.parentElement;
+    if (!row) return;
 
-    titulo.textContent = prod.nome;
-    bots.innerHTML = entrada.variantes.map(v =>
-        `<button type="button" class="btn-outline" style="padding:5px 16px;font-size:0.82rem"
-            onclick="_kitSelecionarVariante('${inpId}','${v}')">${v}</button>`
-    ).join('');
-    panel.style.display = 'block';
-    // Rolar o modal para mostrar o painel
+    const panel = document.createElement('div');
+    panel.id = 'varPanel_' + inpId;
+    panel.style.cssText = 'margin:2px 0 8px;background:var(--surface-2);border:1px solid var(--accent);border-radius:var(--radius);padding:10px 12px';
+    panel.innerHTML =
+        '<div style="font-size:0.76rem;font-weight:600;color:var(--text-2);margin-bottom:6px;display:flex;align-items:center;gap:6px">' +
+        '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>' +
+        'Selecione a variante para <strong>' + (prod.nome || '') + '</strong>:</div>' +
+        '<div style="display:flex;flex-wrap:wrap;gap:8px">' +
+        entrada.variantes.map(v =>
+            '<button type="button" class="btn-outline" style="padding:5px 16px;font-size:0.82rem" onclick="_kitSelecionarVariante(\'' + inpId + '\',\'' + v + '\')">' + v + '</button>'
+        ).join('') +
+        '</div>';
+    row.insertAdjacentElement('afterend', panel);
     panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
@@ -7713,7 +7819,12 @@ function _kitSelecionarVariante(inpId, variante) {
             .trim();
         inp.value = val + ' (' + variante + ')';
     }
-    document.getElementById('kitVariantePanel').style.display = 'none';
+    // Painel fixo (usado no fluxo de sub-kits dentro do modal de Kit)
+    const fixo = document.getElementById('kitVariantePanel');
+    if (fixo) fixo.style.display = 'none';
+    // Painel dinâmico (usado na Ordem de Serviço e na lista simples de Kit)
+    const dinamico = document.getElementById('varPanel_' + inpId);
+    if (dinamico) dinamico.remove();
 }
 
 // ────────────────────────────────────────────────────────────────────────────
