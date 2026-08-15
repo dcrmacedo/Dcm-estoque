@@ -1046,13 +1046,13 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
                     <label>Tipo de Telha</label>
                     <select id="pageOrdemTipoTelha" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
                       <option value="">— Selecione —</option>
-                      <option value="portuguesa_concreto">Fibrocimento/Brasilit</option>
-                      <option value="portuguesa_ceramica">Fibrocimento/Ondulada</option>
+                      <option value="">Fibrocimento/Brasilit</option>
+                      <option value=""> </option>
                       <option value="romana"></option>
                       <option value="francesa"></option>
                       <option value="colonial">Colonial</option>
                       <option value="metalica">Metálica</option>
-                      <option value="fibrocimento"></option>
+                      <option value="fibrocimento">Fibrocimento</option>
                       <option value="shingle"></option>
                       <option value="laje">Laje / Terraço</option>
                       <option value="outro">Outro</option>
@@ -1192,7 +1192,10 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
       <!-- Lista de itens -->
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
         <label style="font-size:0.75rem;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-2)">Materiais</label>
-        <button type="button" class="btn-outline" style="padding:5px 12px;font-size:0.8rem" onclick="entradaAddItem()">+ Adicionar Material</button>
+        <div style="display:flex;gap:8px">
+          <button type="button" class="btn-outline" style="padding:5px 12px;font-size:0.8rem" onclick="abrirScannerContinuo('entrada')" title="Escanear vários produtos seguidos"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Scanner</button>
+          <button type="button" class="btn-outline" style="padding:5px 12px;font-size:0.8rem" onclick="entradaAddItem()">+ Adicionar Material</button>
+        </div>
       </div>
       <div id="entradaItensList" style="display:flex;flex-direction:column;gap:8px"></div>
     </div>
@@ -1214,7 +1217,10 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
       <!-- Lista de itens -->
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
         <label style="font-size:0.75rem;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-2)">Materiais</label>
-        <button type="button" class="btn-outline" style="padding:5px 12px;font-size:0.8rem" onclick="saidaAddItem()">+ Adicionar Material</button>
+        <div style="display:flex;gap:8px">
+          <button type="button" class="btn-outline" style="padding:5px 12px;font-size:0.8rem" onclick="abrirScannerContinuo('saida')" title="Escanear vários produtos seguidos"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Scanner</button>
+          <button type="button" class="btn-outline" style="padding:5px 12px;font-size:0.8rem" onclick="saidaAddItem()">+ Adicionar Material</button>
+        </div>
       </div>
       <div id="saidaItensList" style="display:flex;flex-direction:column;gap:8px"></div>
     </div>
@@ -1349,7 +1355,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
               <label>Tipo de Telha</label>
               <select id="modalOrdemTipoTelha" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
                 <option value="">— Selecione —</option>
-                <option value="portuguesa_concreto">Portuguesa de Concreto</option>
+                <option value=""></option>
                 <option value="portuguesa_ceramica">Portuguesa de Cerâmica</option>
                 <option value="romana">Romana</option>
                 <option value="francesa">Francesa</option>
@@ -1486,7 +1492,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
               <label>Tipo de Telha</label>
               <select id="editOrdemTipoTelha" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
                 <option value="">— Selecione —</option>
-                <option value="portuguesa_concreto">Portuguesa de Concreto</option>
+                <option value=""></option>
                 <option value="portuguesa_ceramica">Portuguesa de Cerâmica</option>
                 <option value="romana">Romana</option>
                 <option value="francesa">Francesa</option>
@@ -5887,14 +5893,13 @@ function printOrdem(id) {
                 '<td>' + (p ? (p.categoria || '—') : '—') + '</td>' +
                 '<td>' + (p ? (p.localizacao || '—') : '—') + '</td>' +
                 '<td style="text-align:center;font-weight:700;color:#3B82F6">' + item.quantidade + '</td>' +
-                '<td style="text-align:center;color:#059669">' + (p ? (p.saldo_atual || 0) : '—') + '</td>' +
                 '</tr>';
         }).join('');
         return '<div class="kit-block">' +
             '<div class="kit-header">' + kit.label + '</div>' +
             '<table><thead><tr>' +
             '<th>Produto</th><th>Código</th><th>Categoria</th><th>Localização</th>' +
-            '<th style="text-align:center">Qtd</th><th style="text-align:center">Saldo</th>' +
+            '<th style="text-align:center">Qtd</th>' +
             '</tr></thead><tbody>' + rows + '</tbody></table>' +
             '</div>';
     }).join('');
@@ -5907,7 +5912,7 @@ function printOrdem(id) {
     const dt = dtRaw ? (typeof dtRaw === 'string' ? JSON.parse(dtRaw) : dtRaw) : {};
     const dtMap = {
         residencia:       { label: 'Residência',           values: { monofasico:'Monofásico', bifasico:'Bifásico', trifasico:'Trifásico' } },
-        tipo_telha:       { label: 'Tipo de Telha',        values: { portuguesa_concreto:'Portuguesa de Concreto', portuguesa_ceramica:'Portuguesa de Cerâmica', romana:'Romana', francesa:'Francesa', colonial:'Colonial', metalica:'Metálica', fibrocimento:'Fibrocimento', shingle:'Shingle', laje:'Laje / Terraço', outro:'Outro' } },
+        tipo_telha:       { label: 'Tipo de Telha',        values: { Fibrocimento :'', portuguesa_ceramica:'Portuguesa de Cerâmica', romana:'Romana', francesa:'Francesa', colonial:'Colonial', metalica:'Metálica', fibrocimento:'Fibrocimento', shingle:'Shingle', laje:'Laje / Terraço', outro:'Outro' } },
         tipo_estrutura:   { label: 'Tipo de Estrutura',    values: { madeira:'Madeira', metalica:'Metálica', concreto:'Concreto', mista:'Mista' } },
         condicao_telhado: { label: 'Condição do Telhado',  values: { bom:'✅ Boas condições de instalação', regular:'⚠️ Regular — requer atenção', ruim:'❌ Ruim — necessita reparo' } },
         obs_tecnica:      { label: 'Obs. Técnicas',        values: {} },
@@ -7171,8 +7176,9 @@ function gerarRelatorioExcel(tipo) {
 // ============================================
 
 let _scannerStream = null;
-let _scannerMode = null; // 'entrada' | 'saida' | 'busca'
+let _scannerMode = null; // 'entrada' | 'saida' | 'busca' | 'entrada_continuo' | 'saida_continuo'
 let _scannerInterval = null;
+let _scannerContinuoCtx = null; // 'entrada' | 'saida' — usado no modo de leitura contínua
 
 function gerarEtiquetaQR(prodId) {
     const p = state.produtos.find(x => x.id === prodId);
@@ -7229,6 +7235,10 @@ function _prepararScanner(titulo, instrucao, btnTexto, modo) {
     document.getElementById('btnScannerAcao').style.display = 'none';
     document.getElementById('scannerResult').textContent = 'Solicitando acesso à câmera...';
     document.getElementById('scannerProdutoInfo').style.display = 'none';
+    const listaContinua = document.getElementById('scannerContinuoLista');
+    if (listaContinua) { listaContinua.style.display = 'none'; listaContinua.innerHTML = ''; }
+    const btnFechar = document.getElementById('btnScannerFechar');
+    if (btnFechar) btnFechar.textContent = 'Fechar';
     // Reconstroi o video element
     const box = document.getElementById('scannerBox');
     box.innerHTML = '<video id="scannerVideo" autoplay muted playsinline style="width:100%;display:block"></video><div class="scan-line"></div>';
@@ -7247,6 +7257,22 @@ function abrirScannerEntrada() {
 
 function abrirScannerSaida() {
     _prepararScanner('<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Scanner — Registrar Saída', 'Escaneie o QR Code do produto para pré-preencher a saída.', '- Abrir Saída', 'saida');
+}
+
+// Scanner contínuo, aberto de DENTRO do modal de Entrada/Saída já aberto —
+// cada leitura adiciona (ou soma quantidade a) um material na lista, sem
+// fechar a câmera, permitindo escanear vários produtos seguidos na mesma tela.
+function abrirScannerContinuo(ctx) {
+    _scannerContinuoCtx = ctx; // 'entrada' | 'saida'
+    const icone = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>';
+    _prepararScanner(
+        icone + ' Scanner — Adicionar Materiais',
+        'Aponte a câmera para o código de cada produto. Cada leitura adiciona automaticamente à lista — pode escanear vários seguidos, sem fechar.',
+        '',
+        ctx === 'entrada' ? 'entrada_continuo' : 'saida_continuo'
+    );
+    const btnFechar = document.getElementById('btnScannerFechar');
+    if (btnFechar) btnFechar.textContent = 'Concluir escaneamento';
 }
 
 async function iniciarScanner() {
@@ -7324,6 +7350,12 @@ let _ultimoCodigoEscaneado = null;
 function processarCodigoEscaneado(codigo) {
     if (codigo === _ultimoCodigoEscaneado) return;
     _ultimoCodigoEscaneado = codigo;
+    // No modo contínuo, o mesmo código pode ser escaneado de novo em seguida
+    // (ex: 3 unidades iguais, uma por vez) — libera o "debounce" após 1.2s.
+    if (_scannerMode === 'entrada_continuo' || _scannerMode === 'saida_continuo') {
+        setTimeout(() => { if (_ultimoCodigoEscaneado === codigo) _ultimoCodigoEscaneado = null; }, 1200);
+    }
+
     document.getElementById('scannerResult').textContent = codigo;
 
     // Tentar encontrar produto pelo código
@@ -7331,6 +7363,11 @@ function processarCodigoEscaneado(codigo) {
         (x.codigo || '').toLowerCase() === codigo.toLowerCase() ||
         x.id === codigo
     );
+
+    if (_scannerMode === 'entrada_continuo' || _scannerMode === 'saida_continuo') {
+        _processarCodigoContinuo(p, codigo);
+        return;
+    }
 
     const infoBox = document.getElementById('scannerProdutoInfo');
     const btnAcao = document.getElementById('btnScannerAcao');
@@ -7351,6 +7388,109 @@ function processarCodigoEscaneado(codigo) {
         infoBox.innerHTML = '<span style="color:var(--amber);font-size:0.85rem"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;color:var(--amber)"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Produto com código "' + codigo + '" não encontrado no sistema.</span>';
         btnAcao.style.display = 'none';
     }
+}
+
+// ── Scanner contínuo (dentro do modal de Entrada/Saída) ─────────────────────
+// A cada leitura: se o produto já está numa linha, soma 1 à quantidade; senão
+// preenche a próxima linha vazia (ou cria uma nova) com quantidade 1.
+function _processarCodigoContinuo(p, codigo) {
+    const infoBox = document.getElementById('scannerProdutoInfo');
+    infoBox.style.display = 'block';
+
+    if (!p) {
+        infoBox.style.background = 'var(--amber-soft)';
+        infoBox.style.borderColor = 'var(--amber)';
+        infoBox.innerHTML = '<span style="color:#92400e;font-size:0.85rem"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Produto com código "' + codigo + '" não encontrado no sistema.</span>';
+        return;
+    }
+
+    const ctx = _scannerContinuoCtx;
+    const resultado = _adicionarProdutoNaListaCtx(ctx, p.id, 1);
+
+    infoBox.style.background = 'var(--green-soft)';
+    infoBox.style.borderColor = 'var(--green)';
+    infoBox.innerHTML =
+        '<div style="display:flex;align-items:center;gap:12px">' +
+        '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><polyline points="20 6 9 17 4 12"/></svg>' +
+        '<div><div style="font-weight:700;font-size:0.95rem;color:var(--text)">' + p.nome + '</div>' +
+        '<div style="font-size:0.8rem;color:var(--text-2)">' + (resultado.novo ? 'Adicionado à lista' : 'Quantidade somada') + ' · Qtd nesta OS: <strong style="color:var(--green)">' + resultado.qtd + '</strong></div>' +
+        '</div></div>';
+
+    _atualizarPainelScannerContinuo();
+}
+
+// Encontra/atualiza a linha do produto na lista de materiais do modal já
+// aberto (Entrada ou Saída). Retorna { novo, qtd }.
+function _adicionarProdutoNaListaCtx(ctx, prodId, incremento) {
+    const listEl = document.getElementById(ctx + 'ItensList');
+    const rows = listEl ? Array.from(listEl.querySelectorAll('.multi-item-row')) : [];
+
+    // 1) Já existe uma linha com este produto? Soma a quantidade.
+    for (const row of rows) {
+        const idx = row.id.replace(ctx + 'Item_', '');
+        const hid = document.getElementById(ctx + 'ProdutoId_' + idx);
+        if (hid && hid.value === prodId) {
+            const qtdInp = document.getElementById(ctx + 'Qtd_' + idx);
+            const novaQtd = (parseInt(qtdInp.value, 10) || 0) + incremento;
+            if (qtdInp) qtdInp.value = novaQtd;
+            return { novo: false, qtd: novaQtd };
+        }
+    }
+    // 2) Existe uma linha vazia (sem produto escolhido)? Usa ela.
+    for (const row of rows) {
+        const idx = row.id.replace(ctx + 'Item_', '');
+        const hid = document.getElementById(ctx + 'ProdutoId_' + idx);
+        if (hid && !hid.value) {
+            _preencherLinhaComProdutoCtx(ctx, idx, prodId, incremento);
+            return { novo: true, qtd: incremento };
+        }
+    }
+    // 3) Nenhuma linha disponível — cria uma nova.
+    if (ctx === 'entrada') entradaAddItem(); else saidaAddItem();
+    const novasRows = listEl.querySelectorAll('.multi-item-row');
+    const ultima = novasRows[novasRows.length - 1];
+    const idx = ultima.id.replace(ctx + 'Item_', '');
+    _preencherLinhaComProdutoCtx(ctx, idx, prodId, incremento);
+    return { novo: true, qtd: incremento };
+}
+
+function _preencherLinhaComProdutoCtx(ctx, idx, prodId, qtd) {
+    const p = state.produtos.find(x => x.id === prodId);
+    const inp = document.getElementById(ctx + 'ProdutoInput_' + idx);
+    const hid = document.getElementById(ctx + 'ProdutoId_' + idx);
+    const qtdInp = document.getElementById(ctx + 'Qtd_' + idx);
+    if (inp && p) inp.value = p.nome + ' (Saldo: ' + (p.saldo_atual || 0) + ')';
+    if (hid) hid.value = prodId;
+    if (qtdInp) qtdInp.value = qtd;
+}
+
+// Lista lateral com o resumo do que já foi escaneado nesta sessão, lida
+// direto das linhas do modal (sempre em sincronia com o que será salvo).
+function _atualizarPainelScannerContinuo() {
+    const ctx = _scannerContinuoCtx;
+    const painel = document.getElementById('scannerContinuoLista');
+    const listEl = document.getElementById(ctx + 'ItensList');
+    if (!painel || !listEl) return;
+
+    const rows = Array.from(listEl.querySelectorAll('.multi-item-row'));
+    const itens = [];
+    rows.forEach(row => {
+        const idx = row.id.replace(ctx + 'Item_', '');
+        const hid = document.getElementById(ctx + 'ProdutoId_' + idx);
+        const qtdInp = document.getElementById(ctx + 'Qtd_' + idx);
+        if (hid && hid.value) {
+            const p = state.produtos.find(x => x.id === hid.value);
+            itens.push({ nome: p ? p.nome : '—', qtd: qtdInp ? (qtdInp.value || 0) : 0 });
+        }
+    });
+
+    if (!itens.length) { painel.style.display = 'none'; return; }
+    painel.style.display = 'block';
+    painel.innerHTML =
+        '<label style="font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-2)">Materiais na lista (' + itens.length + ')</label>' +
+        '<div style="margin-top:6px;display:flex;flex-direction:column;gap:4px">' +
+        itens.map(i => '<div style="display:flex;justify-content:space-between;gap:10px;font-size:0.82rem;padding:6px 10px;background:var(--surface-2);border-radius:6px"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + i.nome + '</span><strong style="flex-shrink:0">×' + i.qtd + '</strong></div>').join('') +
+        '</div>';
 }
 
 function executarAcaoScanner() {
@@ -7394,6 +7534,7 @@ function fecharScanner() {
         window._scannerCodeReader = null;
     }
     _ultimoCodigoEscaneado = null;
+    _scannerContinuoCtx = null;
     const video = document.getElementById('scannerVideo');
     if (video) { video.srcObject = null; }
     document.getElementById('modalQRScanner').classList.add('hidden');
@@ -7726,7 +7867,7 @@ function renderKits(filter) {
             ? (typeof kit.dados_tecnicos === 'string' ? JSON.parse(kit.dados_tecnicos) : kit.dados_tecnicos)
             : {};
         const dtMap = { monofasico:'Monofásico', bifasico:'Bifásico', trifasico:'Trifásico',
-            portuguesa_concreto:'P. Concreto', portuguesa_ceramica:'P. Cerâmica',
+            Fibrocimento:'P. Concreto', portuguesa_ceramica:'P. Cerâmica',
             romana:'Romana', francesa:'Francesa', colonial:'Colonial', metalica:'Metálica',
             fibrocimento:'Fibrocimento', shingle:'Shingle', laje:'Laje',
             madeira:'Madeira', concreto:'Concreto', mista:'Mista',
@@ -8465,7 +8606,7 @@ function verKit(id) {
     // Dados Técnicos
     const dtLabels = {
         residencia:       { label: 'Residência', map: { monofasico:'Monofásico', bifasico:'Bifásico', trifasico:'Trifásico' } },
-        tipo_telha:       { label: 'Tipo de Telha', map: { portuguesa_concreto:'Portuguesa de Concreto', portuguesa_ceramica:'Portuguesa de Cerâmica', romana:'Romana', francesa:'Francesa', colonial:'Colonial', metalica:'Metálica', fibrocimento:'Fibrocimento', shingle:'Shingle', laje:'Laje / Terraço', outro:'Outro' } },
+        tipo_telha:       { label: 'Tipo de Telha', map: { pFibrocimento:'Portuguesa de Concreto', portuguesa_ceramica:'Portuguesa de Cerâmica', romana:'Romana', francesa:'Francesa', colonial:'Colonial', metalica:'Metálica', fibrocimento:'Fibrocimento', shingle:'Shingle', laje:'Laje / Terraço', outro:'Outro' } },
         tipo_estrutura:   { label: 'Tipo de Estrutura', map: { madeira:'Madeira', metalica:'Metálica', concreto:'Concreto', mista:'Mista' } },
         condicao_telhado: { label: 'Condição do Telhado', map: { bom:'✅ Boas condições', regular:'⚠️ Regular', ruim:'❌ Necessita reparo' } },
         obs_tecnica:      { label: 'Obs. Técnicas', map: {} },
@@ -8817,9 +8958,10 @@ function _autoPreencherDtOS(kit, ctx) {
         <div class="scanner-result" id="scannerResult">Aguardando leitura...</div>
       </div>
       <div id="scannerProdutoInfo" style="margin-top:12px;display:none;background:var(--accent-soft);border:1px solid var(--accent);border-radius:var(--radius);padding:12px 16px"></div>
+      <div id="scannerContinuoLista" style="margin-top:12px;display:none;max-height:180px;overflow-y:auto"></div>
     </div>
     <div class="modal-footer">
-      <button class="btn-ghost" onclick="fecharScanner()">Fechar</button>
+      <button class="btn-ghost" id="btnScannerFechar" onclick="fecharScanner()">Fechar</button>
       <button class="btn-primary" id="btnScannerAcao" style="display:none" onclick="executarAcaoScanner()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><polyline points="20 6 9 17 4 12"/></svg> Confirmar</button>
     </div>
   </div>
@@ -8880,11 +9022,13 @@ function _autoPreencherDtOS(kit, ctx) {
               <select id="kitTipoTelha" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
                 <option value="">— Selecione —</option>
                 <option value="portuguesa_concreto">Fibrocimento/Brasilit</option>
-                <option value="portuguesa_ceramica">Fibrocimento/Ondulada</option>
-                <option value="colonial">Colonial/Barro</option>
+                <option value="portuguesa_ceramica">Portuguesa de Cerâmica</option>
+                <option value="romana">Romana</option>
+                <option value="francesa">Francesa</option>
+                <option value="colonial">Colonial</option>
                 <option value="metalica">Metálica</option>
-                <option value="fibrocimento"></option>
-                <option value="shingle"></option>
+                <option value="fibrocimento">Fibrocimento</option>
+                <option value="shingle">Shingle</option>
                 <option value="laje">Laje / Terraço</option>
                 <option value="outro">Outro</option>
               </select>
