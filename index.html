@@ -7252,11 +7252,16 @@ function abrirScannerBusca() {
 }
 
 function abrirScannerEntrada() {
-    _prepararScanner('<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Scanner — Registrar Entrada', 'Escaneie o QR Code do produto para pré-preencher a entrada.', '+ Abrir Entrada', 'entrada');
+    // Unificado com o scanner contínuo: abre o modal de Entrada por trás
+    // (inicializando a lista de materiais) e já entra escaneando, sem
+    // precisar fechar a câmera entre um produto e outro.
+    openModal('modalEntrada');
+    abrirScannerContinuo('entrada');
 }
 
 function abrirScannerSaida() {
-    _prepararScanner('<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Scanner — Registrar Saída', 'Escaneie o QR Code do produto para pré-preencher a saída.', '- Abrir Saída', 'saida');
+    openModal('modalSaida');
+    abrirScannerContinuo('saida');
 }
 
 // Scanner contínuo, aberto de DENTRO do modal de Entrada/Saída já aberto —
