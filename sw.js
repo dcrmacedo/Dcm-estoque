@@ -4,22 +4,22 @@
 // aqui — sempre vão direto pra rede, para os dados nunca ficarem desatualizados
 // ou serem enviados "no vazio" enquanto offline.
 
-const CACHE_VERSION = 'dcm-estoque-v3';
+const CACHE_VERSION = 'dcm-estoque-v2';
 const CACHE_NAME = CACHE_VERSION;
 
 // Domínios que NUNCA devem ser interceptados (dados ao vivo)
 const BYPASS_HOSTS = ['supabase.co', 'supabase.in'];
 
+const LOGO_URL = 'https://pfst.cf2.poecdn.net/base/image/fa391d909c82f3cbde6ea0e3f705ed649c544780d640740752e1af9484c576e4?w=222&h=219&pmaid=589441570';
+
 const APP_SHELL = [
   './',
   './index.html',
-  './manifest.json',
-  './icon-192.png',
-  './icon-512.png',
-  './icon-maskable-512.png'
+  './manifest.json'
 ];
 
 const CDN_ASSETS = [
+  LOGO_URL,
   'https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap',
   'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2',
   'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js',
@@ -60,8 +60,28 @@ self.addEventListener('fetch', (event) => {
   // Nunca interceptar chamadas de dados (Supabase)
   if (BYPASS_HOSTS.some((h) => url.hostname.endsWith(h))) return;
 
-  // Estratégia: stale-while-revalidate — responde do cache na hora (se existir)
-  // e atualiza o cache em segundo plano; se estiver offline, cai no cache.
+  // A página principal (HTML) usa "network-first": tenta buscar a versão mais
+  // nova primeiro e só cai no cache se estiver offline. Antes usava
+  // stale-while-revalidate pra tudo, o que fazia uma atualização só aparecer
+  // no SEGUNDO recarregamento (o 1º ainda mostrava a versão antiga em cache
+  // enquanto atualizava por trás) — confundia bastante durante os testes.
+  const isNavegacao = req.mode === 'navigate' || req.destination === 'document';
+  if (isNavegacao) {
+    event.respondWith(
+      fetch(req).then((res) => {
+        if (res && res.status === 200) {
+          const clone = res.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(req, clone)).catch(() => {});
+        }
+        return res;
+      }).catch(() => caches.match(req))
+    );
+    return;
+  }
+
+  // Demais recursos (libs de terceiros, ícones, manifest): continuam com
+  // stale-while-revalidate — aqui a velocidade importa mais que a atualização
+  // instantânea, e eles mudam raramente.
   event.respondWith(
     caches.match(req).then((cached) => {
       const network = fetch(req).then((res) => {
