@@ -7359,9 +7359,11 @@ function processarCodigoEscaneado(codigo) {
     if (codigo === _ultimoCodigoEscaneado) return;
     _ultimoCodigoEscaneado = codigo;
     // No modo contínuo, o mesmo código pode ser escaneado de novo em seguida
-    // (ex: 3 unidades iguais, uma por vez) — libera o "debounce" após 1.2s.
+    // (ex: 3 unidades iguais, uma por vez) — mas o "debounce" precisa ser
+    // longo o bastante pra dar tempo de afastar a câmera e mirar no próximo
+    // produto, senão ele conta o mesmo item de novo antes de você trocar.
     if (_scannerMode === 'entrada_continuo' || _scannerMode === 'saida_continuo') {
-        setTimeout(() => { if (_ultimoCodigoEscaneado === codigo) _ultimoCodigoEscaneado = null; }, 1200);
+        setTimeout(() => { if (_ultimoCodigoEscaneado === codigo) _ultimoCodigoEscaneado = null; }, 2500);
     }
 
     document.getElementById('scannerResult').textContent = codigo;
