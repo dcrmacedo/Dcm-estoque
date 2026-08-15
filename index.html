@@ -7326,7 +7326,10 @@ async function iniciarScanner() {
             try {
                 if (video.readyState >= 2) {
                     const codes = await detector.detect(video);
-                    if (codes.length > 0) { processarCodigoEscaneado(codes[0].rawValue); return; }
+                    // Importante: NÃO retorna aqui depois de achar um código — precisa
+                    // continuar reagendando o próximo scan, senão a leitura trava no
+                    // primeiro produto e parece que "precisa confirmar" pra ler outro.
+                    if (codes.length > 0) processarCodigoEscaneado(codes[0].rawValue);
                 }
             } catch(e) {}
             _scannerInterval = setTimeout(scan, 250);
