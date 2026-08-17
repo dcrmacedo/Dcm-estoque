@@ -924,7 +924,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
       </div>
       <div class="card" id="pgCardDevolucoes"><div class="card-body no-pad">
         <table class="table">
-          <thead><tr><th>Data</th><th>Produto</th><th>Qtd Dev.</th><th>Equipe</th><th>OS Ref.</th><th>Responsável</th><th>Obs.</th></tr></thead>
+          <thead><tr><th>Data</th><th>Materiais</th><th>Equipe</th><th>OS Ref.</th><th>Responsável</th><th>Obs.</th><th></th></tr></thead>
           <tbody id="tbodyDevolucoes"><tr><td colspan="7" class="empty">Nenhuma devolução registrada</td></tr></tbody>
         </table>
       </div></div>
@@ -1046,13 +1046,13 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
                     <label>Tipo de Telha</label>
                     <select id="pageOrdemTipoTelha" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
                       <option value="">— Selecione —</option>
-                      <option value="">Fibrocimento/Brasilit</option>
-                      <option value=""> </option>
+                      <option value="portuguesa_concreto">Fibrocimento/Brasilit</option>
+                      <option value="portuguesa_ceramica">Fibrocimento/Ondulada</option>
                       <option value="romana"></option>
                       <option value="francesa"></option>
                       <option value="colonial">Colonial</option>
                       <option value="metalica">Metálica</option>
-                      <option value="fibrocimento">Fibrocimento</option>
+                      <option value="fibrocimento"></option>
                       <option value="shingle"></option>
                       <option value="laje">Laje / Terraço</option>
                       <option value="outro">Outro</option>
@@ -1192,10 +1192,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
       <!-- Lista de itens -->
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
         <label style="font-size:0.75rem;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-2)">Materiais</label>
-        <div style="display:flex;gap:8px">
-          <button type="button" class="btn-outline" style="padding:5px 12px;font-size:0.8rem" onclick="abrirScannerContinuo('entrada')" title="Escanear vários produtos seguidos"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Scanner</button>
-          <button type="button" class="btn-outline" style="padding:5px 12px;font-size:0.8rem" onclick="entradaAddItem()">+ Adicionar Material</button>
-        </div>
+        <button type="button" class="btn-outline" style="padding:5px 12px;font-size:0.8rem" onclick="entradaAddItem()">+ Adicionar Material</button>
       </div>
       <div id="entradaItensList" style="display:flex;flex-direction:column;gap:8px"></div>
     </div>
@@ -1217,10 +1214,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
       <!-- Lista de itens -->
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
         <label style="font-size:0.75rem;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-2)">Materiais</label>
-        <div style="display:flex;gap:8px">
-          <button type="button" class="btn-outline" style="padding:5px 12px;font-size:0.8rem" onclick="abrirScannerContinuo('saida')" title="Escanear vários produtos seguidos"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Scanner</button>
-          <button type="button" class="btn-outline" style="padding:5px 12px;font-size:0.8rem" onclick="saidaAddItem()">+ Adicionar Material</button>
-        </div>
+        <button type="button" class="btn-outline" style="padding:5px 12px;font-size:0.8rem" onclick="saidaAddItem()">+ Adicionar Material</button>
       </div>
       <div id="saidaItensList" style="display:flex;flex-direction:column;gap:8px"></div>
     </div>
@@ -1355,7 +1349,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
               <label>Tipo de Telha</label>
               <select id="modalOrdemTipoTelha" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
                 <option value="">— Selecione —</option>
-                <option value=""></option>
+                <option value="portuguesa_concreto">Portuguesa de Concreto</option>
                 <option value="portuguesa_ceramica">Portuguesa de Cerâmica</option>
                 <option value="romana">Romana</option>
                 <option value="francesa">Francesa</option>
@@ -1492,7 +1486,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
               <label>Tipo de Telha</label>
               <select id="editOrdemTipoTelha" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
                 <option value="">— Selecione —</option>
-                <option value=""></option>
+                <option value="portuguesa_concreto">Portuguesa de Concreto</option>
                 <option value="portuguesa_ceramica">Portuguesa de Cerâmica</option>
                 <option value="romana">Romana</option>
                 <option value="francesa">Francesa</option>
@@ -1621,6 +1615,23 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
     </div>
   </div>
 </div>
+
+<div id="modalDevolucaoDetalhe" class="modal-overlay hidden">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-header"><h3 id="devDetalheTitulo">↩ Devolução</h3><button class="modal-close" onclick="closeModal('modalDevolucaoDetalhe')">×</button></div>
+    <div class="modal-body">
+      <div id="devDetalheInfo" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;font-size:0.875rem"></div>
+      <table class="table">
+        <thead><tr><th>Produto</th><th>Qtd. Devolvida</th></tr></thead>
+        <tbody id="devDetalheLista"></tbody>
+      </table>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeModal('modalDevolucaoDetalhe')">Fechar</button>
+    </div>
+  </div>
+</div>
+
 
 <div id="modalNovaRequisicao" class="modal-overlay hidden">
   <div class="modal" style="max-width:680px">
@@ -2450,10 +2461,10 @@ function acSelecionar(prodId, inpId) {
     var ddId = inpId.replace('ac_', 'dd_');
     acFechar(ddId);
     // Update state
-    var idx = parseInt(inp.dataset.idx);
+    var idx = parseFloat(inp.dataset.idx);
     var ctx = inp.dataset.ctx;
     var item = _ordemItens[ctx].find(function(i) { return i.idx === idx; });
-    if (item) item.produto_id = prodId;
+    if (item) { item.produto_id = prodId; item.nome = prod.nome; }
     // Se o produto tiver variantes cadastradas (ex: Cabo -> Linha/Carga),
     // mostra o painel de escolha — igual já acontecia na tela de Kits.
     if (typeof _kitVerificarVariante === 'function') _kitVerificarVariante(prodId, inpId);
@@ -2509,7 +2520,7 @@ function _acReposicionar(dd) {
 })();
 
 function addLinhaOrdem(ctx) {
-    const idx = Date.now();
+    const idx = Date.now() + Math.random();
     _ordemItens[ctx].push({ idx, produto_id: '', quantidade: 1 });
     renderLinhasOrdem(ctx);
 }
@@ -4182,6 +4193,11 @@ async function salvarDevolucao() {
     }
     if (!itens.length) { showToast('Adicione ao menos um item.', 'error'); return; }
 
+    // Identificador da "ordem" de devolução — agrupa todos os itens desta
+    // submissão (mesmo que seja só 1) pra aparecerem juntos como uma única
+    // linha na aba de Devoluções, em vez de um material por linha.
+    const loteId = 'dev_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+
     try {
         for (const item of itens) {
             const dev = {
@@ -4193,9 +4209,17 @@ async function salvarDevolucao() {
                 observacoes: obs,
                 responsavel: state.currentUser.nome,
                 usuario_id: state.currentUser.id,
-                criado_em: new Date().toISOString()
+                criado_em: new Date().toISOString(),
+                lote_id: loteId
             };
-            const { data, error } = await sb.from('devolucoes').insert([dev]).select('*, produto:produtos(*)').single();
+            let { data, error } = await sb.from('devolucoes').insert([dev]).select('*, produto:produtos(*)').single();
+            if (error && (error.message || '').toLowerCase().includes('column')) {
+                // Fallback: banco ainda sem a coluna lote_id — salva sem agrupar
+                const devSemLote = { ...dev };
+                delete devSemLote.lote_id;
+                const res2 = await sb.from('devolucoes').insert([devSemLote]).select('*, produto:produtos(*)').single();
+                data = res2.data; error = res2.error;
+            }
             if (error) throw error;
             const produto = state.produtos.find(p => p.id === item.prodId);
             const novoSaldo = (produto ? produto.saldo_atual || 0 : 0) + item.qtd;
@@ -4213,6 +4237,25 @@ async function salvarDevolucao() {
     }
 }
 
+// Agrupa devoluções pelo lote_id (uma "ordem" de devolução = todos os
+// itens registrados juntos numa mesma submissão do formulário). Registros
+// antigos sem lote_id (antes dessa mudança) viram um grupo de item único,
+// pra não sumir nem se misturar com outras devoluções.
+function _agruparDevolucoes(list) {
+    const grupos = [];
+    const idxPorChave = {};
+    for (const d of list) {
+        const chave = d.lote_id || ('__individual_' + d.id);
+        if (idxPorChave[chave] === undefined) {
+            idxPorChave[chave] = grupos.length;
+            grupos.push({ chave, itens: [d] });
+        } else {
+            grupos[idxPorChave[chave]].itens.push(d);
+        }
+    }
+    return grupos;
+}
+
 function renderDevolucoes() {
     const q = (document.getElementById('searchDevolucoes')?.value || '').toLowerCase();
     let list = state.devolucoes;
@@ -4220,29 +4263,70 @@ function renderDevolucoes() {
         const p = d.produto || state.produtos.find(x => x.id === d.produto_id);
         return (p && (p.nome||'').toLowerCase().includes(q)) || (d.responsavel||'').toLowerCase().includes(q);
     });
+
+    const grupos = _agruparDevolucoes(list);
+
     const tb = document.getElementById('tbodyDevolucoes');
     if (!tb) return;
-    if (!list.length) {
+    if (!grupos.length) {
         tb.innerHTML = '<tr><td colspan="7" class="empty">Nenhuma devolução registrada</td></tr>';
         const old = document.getElementById('pgCardDevolucoes')?.querySelector('.pagination-bar');
         if (old) old.remove();
         return;
     }
-    const page = pgApply('devolucoes', list, 'pgCardDevolucoes');
-    tb.innerHTML = page.map(d => {
-        const p = d.produto || state.produtos.find(x => x.id === d.produto_id);
-        const eq = state.equipes.find(e => e.id === d.equipe_id);
-        const os = state.ordens.find(o => o.id === d.ordem_id);
-        return '<tr>' +
-            '<td>' + formatDate(d.data || d.criado_em) + '</td>' +
-            '<td>' + (p ? p.nome : '—') + '</td>' +
-            '<td><span class="tag tag-green">+' + (d.quantidade||0) + '</span></td>' +
+    const page = pgApply('devolucoes', grupos, 'pgCardDevolucoes');
+    tb.innerHTML = page.map(g => {
+        const itens = g.itens;
+        const d0 = itens[0];
+        const eq = state.equipes.find(e => e.id === d0.equipe_id);
+        const os = state.ordens.find(o => o.id === d0.ordem_id);
+        const qtdTotal = itens.reduce((s, i) => s + (i.quantidade || 0), 0);
+        const nomesPreview = itens.slice(0, 2).map(i => {
+            const p = i.produto || state.produtos.find(x => x.id === i.produto_id);
+            return p ? p.nome : '—';
+        }).join(', ') + (itens.length > 2 ? '...' : '');
+        return '<tr style="cursor:pointer" onclick="abrirDetalheDevolucao(\'' + g.chave + '\')">' +
+            '<td>' + formatDate(d0.data || d0.criado_em) + '</td>' +
+            '<td><strong>' + itens.length + ' material' + (itens.length > 1 ? 'is' : '') + '</strong> <span class="tag tag-green">+' + qtdTotal + '</span><br><small style="color:var(--text-3)">' + nomesPreview + '</small></td>' +
             '<td>' + (eq ? eq.nome : '—') + '</td>' +
             '<td>' + (os ? '<code style="font-size:0.78rem;font-family:monospace">' + (os.numero||'OS') + '</code>' : '—') + '</td>' +
-            '<td>' + (d.responsavel||'—') + '</td>' +
-            '<td style="font-size:0.8rem;color:var(--text-2)">' + (d.observacoes||'—') + '</td>' +
+            '<td>' + (d0.responsavel||'—') + '</td>' +
+            '<td style="font-size:0.8rem;color:var(--text-2);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (d0.observacoes||'—') + '</td>' +
+            '<td><button type="button" class="tbl-btn" onclick="event.stopPropagation();abrirDetalheDevolucao(\'' + g.chave + '\')">Ver materiais</button></td>' +
             '</tr>';
     }).join('');
+}
+
+// Abre o modal com a lista de materiais de uma "ordem" de devolução —
+// chave é o lote_id (vários itens) ou "__individual_<id>" (devolução
+// antiga, de item único, salva antes de existir o agrupamento).
+function abrirDetalheDevolucao(chave) {
+    let itens;
+    if ((chave || '').startsWith('__individual_')) {
+        const id = chave.replace('__individual_', '');
+        const d = state.devolucoes.find(x => x.id === id);
+        itens = d ? [d] : [];
+    } else {
+        itens = state.devolucoes.filter(d => d.lote_id === chave);
+    }
+    if (!itens.length) return;
+
+    const d0 = itens[0];
+    const eq = state.equipes.find(e => e.id === d0.equipe_id);
+    const os = state.ordens.find(o => o.id === d0.ordem_id);
+
+    document.getElementById('devDetalheTitulo').textContent = '↩ Devolução — ' + formatDate(d0.data || d0.criado_em);
+    document.getElementById('devDetalheInfo').innerHTML =
+        '<div><div style="font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-3);margin-bottom:3px">Equipe</div><div>' + (eq ? eq.nome : '—') + '</div></div>' +
+        '<div><div style="font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-3);margin-bottom:3px">OS Ref.</div><div>' + (os ? (os.numero||'OS') : '—') + '</div></div>' +
+        '<div><div style="font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-3);margin-bottom:3px">Responsável</div><div>' + (d0.responsavel||'—') + '</div></div>' +
+        '<div style="grid-column:1/-1"><div style="font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-3);margin-bottom:3px">Observações</div><div>' + (d0.observacoes||'—') + '</div></div>';
+    document.getElementById('devDetalheLista').innerHTML = itens.map(i => {
+        const p = i.produto || state.produtos.find(x => x.id === i.produto_id);
+        return '<tr><td>' + (p ? p.nome : '—') + '</td><td><span class="tag tag-green">+' + (i.quantidade||0) + '</span></td></tr>';
+    }).join('');
+
+    openModal('modalDevolucaoDetalhe');
 }
 
 function filterDevolucoes() { pgReset('devolucoes'); renderDevolucoes(); }
@@ -4312,6 +4396,13 @@ async function salvarRequisicao() {
     }
     if (!itens.length) { showToast('Adicione ao menos um item.', 'error'); return; }
 
+    // Identificador de lote comum a todos os itens desta submissão — só
+    // usado quando há mais de um material (lista), pra poder agrupá-los
+    // depois na aba de Pendentes como uma única requisição a aprovar.
+    // Requisição de item único fica com lote_id null e continua aparecendo
+    // sozinha, como antes.
+    const loteId = itens.length > 1 ? ('lote_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8)) : null;
+
     try {
         for (const item of itens) {
             const produto = state.produtos.find(p => p.id === item.prodId);
@@ -4324,9 +4415,17 @@ async function salvarRequisicao() {
                 status: 'pendente',
                 solicitante_id: state.currentUser.id,
                 solicitante_nome: state.currentUser.nome,
-                criado_em: new Date().toISOString()
+                criado_em: new Date().toISOString(),
+                lote_id: loteId
             };
-            const { data, error } = await sb.from('requisicoes').insert([req]).select('*, produto:produtos(*)').single();
+            let { data, error } = await sb.from('requisicoes').insert([req]).select('*, produto:produtos(*)').single();
+            if (error && (error.message || '').toLowerCase().includes('column')) {
+                // Fallback: banco ainda sem a coluna lote_id — salva sem agrupar
+                const reqSemLote = { ...req };
+                delete reqSemLote.lote_id;
+                const res2 = await sb.from('requisicoes').insert([reqSemLote]).select('*, produto:produtos(*)').single();
+                data = res2.data; error = res2.error;
+            }
             if (error) throw error;
             state.requisicoes.unshift(data);
         }
@@ -4529,47 +4628,152 @@ async function responderRequisicao(novoStatus) {
     }
 }
 
+// Agrupa a lista de requisições: itens com o mesmo lote_id (enviados juntos
+// como lista de materiais) viram um único grupo tipo 'lote'; itens sem
+// lote_id (requisição individual) viram grupo tipo 'individual' sozinho.
+// Preserva a ordem original da lista (mais recentes primeiro).
+function _agruparRequisicoes(list) {
+    const grupos = [];
+    const idxPorLote = {};
+    for (const r of list) {
+        if (r.lote_id) {
+            if (idxPorLote[r.lote_id] === undefined) {
+                idxPorLote[r.lote_id] = grupos.length;
+                grupos.push({ tipo: 'lote', lote_id: r.lote_id, itens: [r] });
+            } else {
+                grupos[idxPorLote[r.lote_id]].itens.push(r);
+            }
+        } else {
+            grupos.push({ tipo: 'individual', itens: [r] });
+        }
+    }
+    return grupos;
+}
+
+// Status agregado de um lote: se todos os itens tiverem o mesmo status,
+// usa esse status; se estiverem misturados (ex: parte já aprovada
+// separadamente), mostra "parcial".
+function _statusLote(itens) {
+    const status = new Set(itens.map(i => i.status));
+    return status.size === 1 ? itens[0].status : 'parcial';
+}
+
+// Junta os ids de todos os checkboxes marcados na aba Requisições — tanto
+// os de requisição individual (data-id) quanto os de um lote inteiro
+// (data-ids, separados por vírgula) — numa única lista de ids.
+function _idsRequisicoesSelecionadas() {
+    const ids = [];
+    document.querySelectorAll('.chk-requisicao:checked').forEach(cb => {
+        if (cb.dataset.ids) ids.push(...cb.dataset.ids.split(','));
+        else if (cb.dataset.id) ids.push(cb.dataset.id);
+    });
+    return ids;
+}
+
+// Aprova ou rejeita de uma vez todos os itens pendentes de um lote (lista
+// de materiais enviada junto) — usado pelo botão "Aprovar tudo"/"Rejeitar
+// tudo" que aparece na aba Pendentes quando a requisição foi feita em lista.
+async function avaliarLoteRequisicoes(loteId, novoStatus) {
+    if (state.currentUser?.perfil !== 'admin') return;
+    const itens = state.requisicoes.filter(r => r.lote_id === loteId && r.status === 'pendente');
+    if (!itens.length) return;
+    const acao = novoStatus === 'aprovada' ? 'Aprovar' : 'Rejeitar';
+    if (!confirm(acao + ' os ' + itens.length + ' materiais desta lista de requisição?' + (novoStatus === 'aprovada' ? ' O estoque de cada item será baixado.' : ''))) return;
+
+    let ok = 0, semEstoque = 0, erros = 0;
+    for (const item of itens) {
+        try {
+            const res = await _processarRespostaRequisicao(item.id, novoStatus, '');
+            if (res.ok) ok++;
+            else if (res.motivo === 'estoque_insuficiente') semEstoque++;
+            else erros++;
+        } catch (e) { erros++; }
+    }
+
+    renderRequisicoes();
+    updateBadges();
+
+    let msg = ok + ' de ' + itens.length + ' item(ns) da lista ' + (novoStatus === 'aprovada' ? 'aprovado(s)' : 'rejeitado(s)') + '.';
+    if (semEstoque) msg += ' ' + semEstoque + ' sem estoque suficiente (mantido(s) pendente(s)).';
+    if (erros) msg += ' ' + erros + ' com erro.';
+    showToast(msg, (semEstoque || erros) ? 'info' : 'success');
+}
+
 function renderRequisicoes() {
     const q = (document.getElementById('searchRequisicoes')?.value || '').toLowerCase();
     const sf = state.filtroRequisicoes || 'todas';
     let list = state.requisicoes;
     if (q) list = list.filter(r => (r.produto_nome||'').toLowerCase().includes(q) || (r.solicitante_nome||'').toLowerCase().includes(q) || (r.motivo||'').toLowerCase().includes(q));
-    if (sf !== 'todas') list = list.filter(r => r.status === sf);
+
+    let grupos = _agruparRequisicoes(list);
+    if (sf !== 'todas') grupos = grupos.filter(g => _statusLote(g.itens) === sf);
 
     const tb = document.getElementById('tbodyRequisicoes');
     if (!tb) return;
-    if (!list.length) {
+    if (!grupos.length) {
         tb.innerHTML = '<tr><td colspan="9" class="empty">Nenhuma requisição encontrada</td></tr>';
         const old = document.getElementById('pgCardRequisicoes')?.querySelector('.pagination-bar');
         if (old) old.remove();
         return;
     }
 
-    const page = pgApply('requisicoes', list, 'pgCardRequisicoes');
+    const page = pgApply('requisicoes', grupos, 'pgCardRequisicoes');
 
     const STR = {
         pendente: '<span class="tag tag-amber"> Pendente</span>',
         aprovada: '<span class="tag tag-green"> Aprovada</span>',
-        rejeitada: '<span class="tag tag-red"> Rejeitada</span>'
+        rejeitada: '<span class="tag tag-red"> Rejeitada</span>',
+        parcial: '<span class="tag tag-amber">Parcial</span>'
     };
 
-    tb.innerHTML = page.map((r, i) => {
-        const p = r.produto || state.produtos.find(x => x.id === r.produto_id);
-        const eq = state.equipes.find(e => e.id === r.equipe_id);
-        const acoes = r.status === 'pendente' && state.currentUser?.perfil === 'admin'
-            ? '<button class="tbl-btn success" onclick="abrirAprovarReq(\'' + r.id + '\')"> Avaliar</button>'
-            : r.status === 'aprovada' ? '<span style="font-size:0.78rem;color:var(--green)">Por ' + (r.respondido_por||'—') + '</span>'
-            : r.status === 'rejeitada' ? '<span style="font-size:0.78rem;color:var(--red)">' + (r.obs_admin||'Rejeitada') + '</span>' : '—';
-        return '<tr>' +
-            '<td><input type="checkbox" class="chk-requisicao" data-id="' + r.id + '" onchange="atualizarContadorRequisicoes()" style="cursor:pointer;width:15px;height:15px"/></td>' +
+    tb.innerHTML = page.map((g, i) => {
+        if (g.tipo === 'individual') {
+            const r = g.itens[0];
+            const p = r.produto || state.produtos.find(x => x.id === r.produto_id);
+            const eq = state.equipes.find(e => e.id === r.equipe_id);
+            const acoes = r.status === 'pendente' && state.currentUser?.perfil === 'admin'
+                ? '<button class="tbl-btn success" onclick="abrirAprovarReq(\'' + r.id + '\')"> Avaliar</button>'
+                : r.status === 'aprovada' ? '<span style="font-size:0.78rem;color:var(--green)">Por ' + (r.respondido_por||'—') + '</span>'
+                : r.status === 'rejeitada' ? '<span style="font-size:0.78rem;color:var(--red)">' + (r.obs_admin||'Rejeitada') + '</span>' : '—';
+            return '<tr>' +
+                '<td><input type="checkbox" class="chk-requisicao" data-id="' + r.id + '" onchange="atualizarContadorRequisicoes()" style="cursor:pointer;width:15px;height:15px"/></td>' +
+                '<td style="font-family:monospace;font-size:0.78rem">#' + String(i+1).padStart(3,'0') + '</td>' +
+                '<td>' + (r.solicitante_nome||'—') + '</td>' +
+                '<td><strong>' + (p ? p.nome : r.produto_nome||'—') + '</strong><br><small style="color:var(--text-3)">Qtd: ' + r.quantidade + '</small></td>' +
+                '<td>' + (eq ? eq.nome : '—') + '</td>' +
+                '<td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:0.82rem;color:var(--text-2)">' + (r.motivo||'—') + '</td>' +
+                '<td>' + (STR[r.status] || r.status) + '</td>' +
+                '<td>' + formatDate(r.criado_em) + '</td>' +
+                '<td><div class="tbl-actions">' + acoes + '</div></td>' +
+                '</tr>';
+        }
+
+        // Grupo — lista de materiais enviada junto numa única requisição
+        const itens = g.itens;
+        const r0 = itens[0];
+        const eq = state.equipes.find(e => e.id === r0.equipe_id);
+        const statusLote = _statusLote(itens);
+        const idsCsv = itens.map(x => x.id).join(',');
+        const produtosHtml = itens.map(it => {
+            const p = it.produto || state.produtos.find(x => x.id === it.produto_id);
+            return '<div>' + (p ? p.nome : it.produto_nome||'—') + ' <span style="color:var(--text-3)">(Qtd: ' + it.quantidade + ')</span></div>';
+        }).join('');
+        const acoes = statusLote === 'pendente' && state.currentUser?.perfil === 'admin'
+            ? '<button class="tbl-btn success" onclick="avaliarLoteRequisicoes(\'' + g.lote_id + '\',\'aprovada\')"> Aprovar tudo</button>' +
+              '<button class="tbl-btn danger" style="margin-left:4px" onclick="avaliarLoteRequisicoes(\'' + g.lote_id + '\',\'rejeitada\')"> Rejeitar tudo</button>'
+            : statusLote === 'aprovada' ? '<span style="font-size:0.78rem;color:var(--green)">Por ' + (r0.respondido_por||'—') + '</span>'
+            : statusLote === 'rejeitada' ? '<span style="font-size:0.78rem;color:var(--red)">Rejeitada</span>'
+            : '—';
+        return '<tr style="background:var(--surface-2)">' +
+            '<td><input type="checkbox" class="chk-requisicao" data-ids="' + idsCsv + '" onchange="atualizarContadorRequisicoes()" style="cursor:pointer;width:15px;height:15px"/></td>' +
             '<td style="font-family:monospace;font-size:0.78rem">#' + String(i+1).padStart(3,'0') + '</td>' +
-            '<td>' + (r.solicitante_nome||'—') + '</td>' +
-            '<td><strong>' + (p ? p.nome : r.produto_nome||'—') + '</strong><br><small style="color:var(--text-3)">Qtd: ' + r.quantidade + '</small></td>' +
+            '<td>' + (r0.solicitante_nome||'—') + '</td>' +
+            '<td><div style="font-weight:600;font-size:0.78rem;color:var(--accent);margin-bottom:3px"> Lista de Materiais (' + itens.length + ' itens)</div>' + produtosHtml + '</td>' +
             '<td>' + (eq ? eq.nome : '—') + '</td>' +
-            '<td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:0.82rem;color:var(--text-2)">' + (r.motivo||'—') + '</td>' +
-            '<td>' + (STR[r.status] || r.status) + '</td>' +
-            '<td>' + formatDate(r.criado_em) + '</td>' +
-            '<td><div class="tbl-actions">' + acoes + '</div></td>' +
+            '<td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:0.82rem;color:var(--text-2)">' + (r0.motivo||'—') + '</td>' +
+            '<td>' + (STR[statusLote] || statusLote) + '</td>' +
+            '<td>' + formatDate(r0.criado_em) + '</td>' +
+            '<td><div class="tbl-actions" style="flex-wrap:wrap">' + acoes + '</div></td>' +
             '</tr>';
     }).join('');
 }
@@ -4605,7 +4809,7 @@ function toggleSelecionarRequisicoes(checked) {
 }
 
 async function excluirRequisicoesSelecionadas() {
-    const ids = Array.from(document.querySelectorAll('.chk-requisicao:checked')).map(cb => cb.dataset.id);
+    const ids = _idsRequisicoesSelecionadas();
     if (!ids.length) return;
     if (!confirm('Excluir ' + ids.length + ' requisição(ões) selecionada(s)? Esta ação não pode ser desfeita.')) return;
     try {
@@ -4632,7 +4836,7 @@ async function excluirRequisicoesSelecionadas() {
 // (aprovadas/rejeitadas), pois selecionar+aprovar todas é o fluxo comum na obra.
 async function aprovarRequisicoesSelecionadas() {
     if (state.currentUser?.perfil !== 'admin') return;
-    const ids = Array.from(document.querySelectorAll('.chk-requisicao:checked')).map(cb => cb.dataset.id);
+    const ids = _idsRequisicoesSelecionadas();
     if (!ids.length) return;
 
     const pendentesIds = ids.filter(id => {
@@ -5893,13 +6097,14 @@ function printOrdem(id) {
                 '<td>' + (p ? (p.categoria || '—') : '—') + '</td>' +
                 '<td>' + (p ? (p.localizacao || '—') : '—') + '</td>' +
                 '<td style="text-align:center;font-weight:700;color:#3B82F6">' + item.quantidade + '</td>' +
+                '<td style="text-align:center;color:#059669">' + (p ? (p.saldo_atual || 0) : '—') + '</td>' +
                 '</tr>';
         }).join('');
         return '<div class="kit-block">' +
             '<div class="kit-header">' + kit.label + '</div>' +
             '<table><thead><tr>' +
             '<th>Produto</th><th>Código</th><th>Categoria</th><th>Localização</th>' +
-            '<th style="text-align:center">Qtd</th>' +
+            '<th style="text-align:center">Qtd</th><th style="text-align:center">Saldo</th>' +
             '</tr></thead><tbody>' + rows + '</tbody></table>' +
             '</div>';
     }).join('');
@@ -5912,7 +6117,7 @@ function printOrdem(id) {
     const dt = dtRaw ? (typeof dtRaw === 'string' ? JSON.parse(dtRaw) : dtRaw) : {};
     const dtMap = {
         residencia:       { label: 'Residência',           values: { monofasico:'Monofásico', bifasico:'Bifásico', trifasico:'Trifásico' } },
-        tipo_telha:       { label: 'Tipo de Telha',        values: { Fibrocimento :'', portuguesa_ceramica:'Portuguesa de Cerâmica', romana:'Romana', francesa:'Francesa', colonial:'Colonial', metalica:'Metálica', fibrocimento:'Fibrocimento', shingle:'Shingle', laje:'Laje / Terraço', outro:'Outro' } },
+        tipo_telha:       { label: 'Tipo de Telha',        values: { portuguesa_concreto:'Portuguesa de Concreto', portuguesa_ceramica:'Portuguesa de Cerâmica', romana:'Romana', francesa:'Francesa', colonial:'Colonial', metalica:'Metálica', fibrocimento:'Fibrocimento', shingle:'Shingle', laje:'Laje / Terraço', outro:'Outro' } },
         tipo_estrutura:   { label: 'Tipo de Estrutura',    values: { madeira:'Madeira', metalica:'Metálica', concreto:'Concreto', mista:'Mista' } },
         condicao_telhado: { label: 'Condição do Telhado',  values: { bom:'✅ Boas condições de instalação', regular:'⚠️ Regular — requer atenção', ruim:'❌ Ruim — necessita reparo' } },
         obs_tecnica:      { label: 'Obs. Técnicas',        values: {} },
@@ -7176,9 +7381,8 @@ function gerarRelatorioExcel(tipo) {
 // ============================================
 
 let _scannerStream = null;
-let _scannerMode = null; // 'entrada' | 'saida' | 'busca' | 'entrada_continuo' | 'saida_continuo'
+let _scannerMode = null; // 'entrada' | 'saida' | 'busca'
 let _scannerInterval = null;
-let _scannerContinuoCtx = null; // 'entrada' | 'saida' — usado no modo de leitura contínua
 
 function gerarEtiquetaQR(prodId) {
     const p = state.produtos.find(x => x.id === prodId);
@@ -7235,10 +7439,6 @@ function _prepararScanner(titulo, instrucao, btnTexto, modo) {
     document.getElementById('btnScannerAcao').style.display = 'none';
     document.getElementById('scannerResult').textContent = 'Solicitando acesso à câmera...';
     document.getElementById('scannerProdutoInfo').style.display = 'none';
-    const listaContinua = document.getElementById('scannerContinuoLista');
-    if (listaContinua) { listaContinua.style.display = 'none'; listaContinua.innerHTML = ''; }
-    const btnFechar = document.getElementById('btnScannerFechar');
-    if (btnFechar) btnFechar.textContent = 'Fechar';
     // Reconstroi o video element
     const box = document.getElementById('scannerBox');
     box.innerHTML = '<video id="scannerVideo" autoplay muted playsinline style="width:100%;display:block"></video><div class="scan-line"></div>';
@@ -7252,32 +7452,11 @@ function abrirScannerBusca() {
 }
 
 function abrirScannerEntrada() {
-    // Unificado com o scanner contínuo: abre o modal de Entrada por trás
-    // (inicializando a lista de materiais) e já entra escaneando, sem
-    // precisar fechar a câmera entre um produto e outro.
-    openModal('modalEntrada');
-    abrirScannerContinuo('entrada');
+    _prepararScanner('<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Scanner — Registrar Entrada', 'Escaneie o QR Code do produto para pré-preencher a entrada.', '+ Abrir Entrada', 'entrada');
 }
 
 function abrirScannerSaida() {
-    openModal('modalSaida');
-    abrirScannerContinuo('saida');
-}
-
-// Scanner contínuo, aberto de DENTRO do modal de Entrada/Saída já aberto —
-// cada leitura adiciona (ou soma quantidade a) um material na lista, sem
-// fechar a câmera, permitindo escanear vários produtos seguidos na mesma tela.
-function abrirScannerContinuo(ctx) {
-    _scannerContinuoCtx = ctx; // 'entrada' | 'saida'
-    const icone = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>';
-    _prepararScanner(
-        icone + ' Scanner — Adicionar Materiais',
-        'Aponte a câmera para o código de cada produto. Cada leitura adiciona automaticamente à lista — pode escanear vários seguidos, sem fechar.',
-        '',
-        ctx === 'entrada' ? 'entrada_continuo' : 'saida_continuo'
-    );
-    const btnFechar = document.getElementById('btnScannerFechar');
-    if (btnFechar) btnFechar.textContent = 'Concluir escaneamento';
+    _prepararScanner('<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Scanner — Registrar Saída', 'Escaneie o QR Code do produto para pré-preencher a saída.', '- Abrir Saída', 'saida');
 }
 
 async function iniciarScanner() {
@@ -7326,10 +7505,7 @@ async function iniciarScanner() {
             try {
                 if (video.readyState >= 2) {
                     const codes = await detector.detect(video);
-                    // Importante: NÃO retorna aqui depois de achar um código — precisa
-                    // continuar reagendando o próximo scan, senão a leitura trava no
-                    // primeiro produto e parece que "precisa confirmar" pra ler outro.
-                    if (codes.length > 0) processarCodigoEscaneado(codes[0].rawValue);
+                    if (codes.length > 0) { processarCodigoEscaneado(codes[0].rawValue); return; }
                 }
             } catch(e) {}
             _scannerInterval = setTimeout(scan, 250);
@@ -7358,14 +7534,6 @@ let _ultimoCodigoEscaneado = null;
 function processarCodigoEscaneado(codigo) {
     if (codigo === _ultimoCodigoEscaneado) return;
     _ultimoCodigoEscaneado = codigo;
-    // No modo contínuo, o mesmo código pode ser escaneado de novo em seguida
-    // (ex: 3 unidades iguais, uma por vez) — mas o "debounce" precisa ser
-    // longo o bastante pra dar tempo de afastar a câmera e mirar no próximo
-    // produto, senão ele conta o mesmo item de novo antes de você trocar.
-    if (_scannerMode === 'entrada_continuo' || _scannerMode === 'saida_continuo') {
-        setTimeout(() => { if (_ultimoCodigoEscaneado === codigo) _ultimoCodigoEscaneado = null; }, 2500);
-    }
-
     document.getElementById('scannerResult').textContent = codigo;
 
     // Tentar encontrar produto pelo código
@@ -7373,11 +7541,6 @@ function processarCodigoEscaneado(codigo) {
         (x.codigo || '').toLowerCase() === codigo.toLowerCase() ||
         x.id === codigo
     );
-
-    if (_scannerMode === 'entrada_continuo' || _scannerMode === 'saida_continuo') {
-        _processarCodigoContinuo(p, codigo);
-        return;
-    }
 
     const infoBox = document.getElementById('scannerProdutoInfo');
     const btnAcao = document.getElementById('btnScannerAcao');
@@ -7398,109 +7561,6 @@ function processarCodigoEscaneado(codigo) {
         infoBox.innerHTML = '<span style="color:var(--amber);font-size:0.85rem"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;color:var(--amber)"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Produto com código "' + codigo + '" não encontrado no sistema.</span>';
         btnAcao.style.display = 'none';
     }
-}
-
-// ── Scanner contínuo (dentro do modal de Entrada/Saída) ─────────────────────
-// A cada leitura: se o produto já está numa linha, soma 1 à quantidade; senão
-// preenche a próxima linha vazia (ou cria uma nova) com quantidade 1.
-function _processarCodigoContinuo(p, codigo) {
-    const infoBox = document.getElementById('scannerProdutoInfo');
-    infoBox.style.display = 'block';
-
-    if (!p) {
-        infoBox.style.background = 'var(--amber-soft)';
-        infoBox.style.borderColor = 'var(--amber)';
-        infoBox.innerHTML = '<span style="color:#92400e;font-size:0.85rem"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Produto com código "' + codigo + '" não encontrado no sistema.</span>';
-        return;
-    }
-
-    const ctx = _scannerContinuoCtx;
-    const resultado = _adicionarProdutoNaListaCtx(ctx, p.id, 1);
-
-    infoBox.style.background = 'var(--green-soft)';
-    infoBox.style.borderColor = 'var(--green)';
-    infoBox.innerHTML =
-        '<div style="display:flex;align-items:center;gap:12px">' +
-        '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><polyline points="20 6 9 17 4 12"/></svg>' +
-        '<div><div style="font-weight:700;font-size:0.95rem;color:var(--text)">' + p.nome + '</div>' +
-        '<div style="font-size:0.8rem;color:var(--text-2)">' + (resultado.novo ? 'Adicionado à lista' : 'Quantidade somada') + ' · Qtd nesta OS: <strong style="color:var(--green)">' + resultado.qtd + '</strong></div>' +
-        '</div></div>';
-
-    _atualizarPainelScannerContinuo();
-}
-
-// Encontra/atualiza a linha do produto na lista de materiais do modal já
-// aberto (Entrada ou Saída). Retorna { novo, qtd }.
-function _adicionarProdutoNaListaCtx(ctx, prodId, incremento) {
-    const listEl = document.getElementById(ctx + 'ItensList');
-    const rows = listEl ? Array.from(listEl.querySelectorAll('.multi-item-row')) : [];
-
-    // 1) Já existe uma linha com este produto? Soma a quantidade.
-    for (const row of rows) {
-        const idx = row.id.replace(ctx + 'Item_', '');
-        const hid = document.getElementById(ctx + 'ProdutoId_' + idx);
-        if (hid && hid.value === prodId) {
-            const qtdInp = document.getElementById(ctx + 'Qtd_' + idx);
-            const novaQtd = (parseInt(qtdInp.value, 10) || 0) + incremento;
-            if (qtdInp) qtdInp.value = novaQtd;
-            return { novo: false, qtd: novaQtd };
-        }
-    }
-    // 2) Existe uma linha vazia (sem produto escolhido)? Usa ela.
-    for (const row of rows) {
-        const idx = row.id.replace(ctx + 'Item_', '');
-        const hid = document.getElementById(ctx + 'ProdutoId_' + idx);
-        if (hid && !hid.value) {
-            _preencherLinhaComProdutoCtx(ctx, idx, prodId, incremento);
-            return { novo: true, qtd: incremento };
-        }
-    }
-    // 3) Nenhuma linha disponível — cria uma nova.
-    if (ctx === 'entrada') entradaAddItem(); else saidaAddItem();
-    const novasRows = listEl.querySelectorAll('.multi-item-row');
-    const ultima = novasRows[novasRows.length - 1];
-    const idx = ultima.id.replace(ctx + 'Item_', '');
-    _preencherLinhaComProdutoCtx(ctx, idx, prodId, incremento);
-    return { novo: true, qtd: incremento };
-}
-
-function _preencherLinhaComProdutoCtx(ctx, idx, prodId, qtd) {
-    const p = state.produtos.find(x => x.id === prodId);
-    const inp = document.getElementById(ctx + 'ProdutoInput_' + idx);
-    const hid = document.getElementById(ctx + 'ProdutoId_' + idx);
-    const qtdInp = document.getElementById(ctx + 'Qtd_' + idx);
-    if (inp && p) inp.value = p.nome + ' (Saldo: ' + (p.saldo_atual || 0) + ')';
-    if (hid) hid.value = prodId;
-    if (qtdInp) qtdInp.value = qtd;
-}
-
-// Lista lateral com o resumo do que já foi escaneado nesta sessão, lida
-// direto das linhas do modal (sempre em sincronia com o que será salvo).
-function _atualizarPainelScannerContinuo() {
-    const ctx = _scannerContinuoCtx;
-    const painel = document.getElementById('scannerContinuoLista');
-    const listEl = document.getElementById(ctx + 'ItensList');
-    if (!painel || !listEl) return;
-
-    const rows = Array.from(listEl.querySelectorAll('.multi-item-row'));
-    const itens = [];
-    rows.forEach(row => {
-        const idx = row.id.replace(ctx + 'Item_', '');
-        const hid = document.getElementById(ctx + 'ProdutoId_' + idx);
-        const qtdInp = document.getElementById(ctx + 'Qtd_' + idx);
-        if (hid && hid.value) {
-            const p = state.produtos.find(x => x.id === hid.value);
-            itens.push({ nome: p ? p.nome : '—', qtd: qtdInp ? (qtdInp.value || 0) : 0 });
-        }
-    });
-
-    if (!itens.length) { painel.style.display = 'none'; return; }
-    painel.style.display = 'block';
-    painel.innerHTML =
-        '<label style="font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-2)">Materiais na lista (' + itens.length + ')</label>' +
-        '<div style="margin-top:6px;display:flex;flex-direction:column;gap:4px">' +
-        itens.map(i => '<div style="display:flex;justify-content:space-between;gap:10px;font-size:0.82rem;padding:6px 10px;background:var(--surface-2);border-radius:6px"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + i.nome + '</span><strong style="flex-shrink:0">×' + i.qtd + '</strong></div>').join('') +
-        '</div>';
 }
 
 function executarAcaoScanner() {
@@ -7544,7 +7604,6 @@ function fecharScanner() {
         window._scannerCodeReader = null;
     }
     _ultimoCodigoEscaneado = null;
-    _scannerContinuoCtx = null;
     const video = document.getElementById('scannerVideo');
     if (video) { video.srcObject = null; }
     document.getElementById('modalQRScanner').classList.add('hidden');
@@ -7877,7 +7936,7 @@ function renderKits(filter) {
             ? (typeof kit.dados_tecnicos === 'string' ? JSON.parse(kit.dados_tecnicos) : kit.dados_tecnicos)
             : {};
         const dtMap = { monofasico:'Monofásico', bifasico:'Bifásico', trifasico:'Trifásico',
-            Fibrocimento:'P. Concreto', portuguesa_ceramica:'P. Cerâmica',
+            portuguesa_concreto:'P. Concreto', portuguesa_ceramica:'P. Cerâmica',
             romana:'Romana', francesa:'Francesa', colonial:'Colonial', metalica:'Metálica',
             fibrocimento:'Fibrocimento', shingle:'Shingle', laje:'Laje',
             madeira:'Madeira', concreto:'Concreto', mista:'Mista',
@@ -7926,6 +7985,19 @@ const KIT_VARIANTES = [
 // mostra um painel de escolha logo abaixo da linha do produto — funciona em
 // qualquer modal/tela, pois o painel é criado dinamicamente ao lado do campo,
 // em vez de depender de um único elemento fixo (#kitVariantePanel).
+// Dado o id de um input de item de OS (formato "ac_<ctx>_<idx>"), retorna
+// o tipo de kit selecionado atualmente (select #ordemTipo/#modalOrdemTipo/
+// #editOrdemTipo) para esse contexto. Retorna null se não conseguir
+// determinar (ex: linha do modal "Novo Kit", que não tem esse select).
+function _kitTipoAtualPorInput(inpId) {
+    const m = /^ac_(modal|page|edit)_/.exec(inpId || '');
+    if (!m) return null;
+    const ctx = m[1];
+    const tipoId = ctx === 'modal' ? 'modalOrdemTipo' : ctx === 'edit' ? 'editOrdemTipo' : 'ordemTipo';
+    const sel = document.getElementById(tipoId);
+    return sel ? sel.value : null;
+}
+
 function _kitVerificarVariante(prodId, inpId) {
     // Remove qualquer painel anterior desta mesma linha antes de decidir
     const anterior = document.getElementById('varPanel_' + inpId);
@@ -7935,6 +8007,13 @@ function _kitVerificarVariante(prodId, inpId) {
     if (!prod) return;
     const entrada = KIT_VARIANTES.find(v => v.regex.test(prod.nome));
     if (!entrada) return;   // sem variantes para esse produto
+
+    // A escolha de variante (Linha/Carga) só faz sentido no sub-kit
+    // "Padrão de Entrada" — não mostrar esse painel em Inversor (ou em
+    // telas sem esse select, como a linha do modal "Novo Kit", que segue
+    // o comportamento anterior sem essa restrição).
+    const tipoAtual = _kitTipoAtualPorInput(inpId);
+    if (tipoAtual !== null && tipoAtual !== 'padrao_entrada') return;
 
     const inp = document.getElementById(inpId);
     if (!inp) return;
@@ -7947,9 +8026,12 @@ function _kitVerificarVariante(prodId, inpId) {
     panel.id = 'varPanel_' + inpId;
     panel.style.cssText = 'margin:2px 0 8px;background:var(--surface-2);border:1px solid var(--accent);border-radius:var(--radius);padding:10px 12px';
     panel.innerHTML =
-        '<div style="font-size:0.76rem;font-weight:600;color:var(--text-2);margin-bottom:6px;display:flex;align-items:center;gap:6px">' +
+        '<div style="font-size:0.76rem;font-weight:600;color:var(--text-2);margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;gap:6px">' +
+        '<span style="display:flex;align-items:center;gap:6px">' +
         '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>' +
-        'Selecione a variante para <strong>' + (prod.nome || '') + '</strong>:</div>' +
+        'Selecione a variante para <strong>' + (prod.nome || '') + '</strong>:</span>' +
+        '<button type="button" onclick="_kitFecharPainelVariante(\'' + inpId + '\')" title="Não escolher variante" style="background:none;border:none;cursor:pointer;color:var(--text-3);font-size:1rem;line-height:1;padding:0 2px">×</button>' +
+        '</div>' +
         '<div style="display:flex;flex-wrap:wrap;gap:8px">' +
         entrada.variantes.map(v =>
             '<button type="button" class="btn-outline" style="padding:5px 16px;font-size:0.82rem" onclick="_kitSelecionarVariante(\'' + inpId + '\',\'' + v + '\')">' + v + '</button>'
@@ -7957,6 +8039,12 @@ function _kitVerificarVariante(prodId, inpId) {
         '</div>';
     row.insertAdjacentElement('afterend', panel);
     panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// Fecha o painel de variante sem aplicar nenhuma escolha (usuário clicou no "x")
+function _kitFecharPainelVariante(inpId) {
+    const painel = document.getElementById('varPanel_' + inpId);
+    if (painel) painel.remove();
 }
 
 // Aplica a variante escolhida ao campo de texto da linha
@@ -7968,7 +8056,19 @@ function _kitSelecionarVariante(inpId, variante) {
             .replace(/\s*\(Saldo:\s*[\d-]+\)/gi, '')
             .replace(/\s*\([^)]+\)\s*$/, '')
             .trim();
-        inp.value = val + ' (' + variante + ')';
+        const novoNome = val + ' (' + variante + ')';
+        inp.value = novoNome;
+        // Propaga a variante escolhida para o item em _ordemItens — sem isso
+        // a escolha ficava só visível no campo de texto e se perdia ao
+        // confirmar o kit / salvar a Ordem de Serviço (só existe data-idx/
+        // data-ctx nas linhas de Ordem de Serviço; a lista simples de Kit
+        // lê o valor direto do campo ao salvar, então não precisa disso).
+        const idx = parseFloat(inp.dataset.idx);
+        const ctx = inp.dataset.ctx;
+        if (ctx && _ordemItens[ctx]) {
+            const item = _ordemItens[ctx].find(i => i.idx === idx);
+            if (item) item.nome = novoNome;
+        }
     }
     // Painel fixo (usado no fluxo de sub-kits dentro do modal de Kit)
     const fixo = document.getElementById('kitVariantePanel');
@@ -8616,7 +8716,7 @@ function verKit(id) {
     // Dados Técnicos
     const dtLabels = {
         residencia:       { label: 'Residência', map: { monofasico:'Monofásico', bifasico:'Bifásico', trifasico:'Trifásico' } },
-        tipo_telha:       { label: 'Tipo de Telha', map: { pFibrocimento:'Portuguesa de Concreto', portuguesa_ceramica:'Portuguesa de Cerâmica', romana:'Romana', francesa:'Francesa', colonial:'Colonial', metalica:'Metálica', fibrocimento:'Fibrocimento', shingle:'Shingle', laje:'Laje / Terraço', outro:'Outro' } },
+        tipo_telha:       { label: 'Tipo de Telha', map: { portuguesa_concreto:'Portuguesa de Concreto', portuguesa_ceramica:'Portuguesa de Cerâmica', romana:'Romana', francesa:'Francesa', colonial:'Colonial', metalica:'Metálica', fibrocimento:'Fibrocimento', shingle:'Shingle', laje:'Laje / Terraço', outro:'Outro' } },
         tipo_estrutura:   { label: 'Tipo de Estrutura', map: { madeira:'Madeira', metalica:'Metálica', concreto:'Concreto', mista:'Mista' } },
         condicao_telhado: { label: 'Condição do Telhado', map: { bom:'✅ Boas condições', regular:'⚠️ Regular', ruim:'❌ Necessita reparo' } },
         obs_tecnica:      { label: 'Obs. Técnicas', map: {} },
@@ -8968,10 +9068,9 @@ function _autoPreencherDtOS(kit, ctx) {
         <div class="scanner-result" id="scannerResult">Aguardando leitura...</div>
       </div>
       <div id="scannerProdutoInfo" style="margin-top:12px;display:none;background:var(--accent-soft);border:1px solid var(--accent);border-radius:var(--radius);padding:12px 16px"></div>
-      <div id="scannerContinuoLista" style="margin-top:12px;display:none;max-height:180px;overflow-y:auto"></div>
     </div>
     <div class="modal-footer">
-      <button class="btn-ghost" id="btnScannerFechar" onclick="fecharScanner()">Fechar</button>
+      <button class="btn-ghost" onclick="fecharScanner()">Fechar</button>
       <button class="btn-primary" id="btnScannerAcao" style="display:none" onclick="executarAcaoScanner()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><polyline points="20 6 9 17 4 12"/></svg> Confirmar</button>
     </div>
   </div>
@@ -9032,13 +9131,11 @@ function _autoPreencherDtOS(kit, ctx) {
               <select id="kitTipoTelha" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
                 <option value="">— Selecione —</option>
                 <option value="portuguesa_concreto">Fibrocimento/Brasilit</option>
-                <option value="portuguesa_ceramica">Portuguesa de Cerâmica</option>
-                <option value="romana">Romana</option>
-                <option value="francesa">Francesa</option>
-                <option value="colonial">Colonial</option>
+                <option value="portuguesa_ceramica">Fibrocimento/Ondulada</option>
+                <option value="colonial">Colonial/Barro</option>
                 <option value="metalica">Metálica</option>
-                <option value="fibrocimento">Fibrocimento</option>
-                <option value="shingle">Shingle</option>
+                <option value="fibrocimento"></option>
+                <option value="shingle"></option>
                 <option value="laje">Laje / Terraço</option>
                 <option value="outro">Outro</option>
               </select>
