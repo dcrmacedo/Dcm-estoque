@@ -203,6 +203,8 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
 .kit-card-body{padding:14px 18px}
 .kit-item-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border-soft);font-size:0.82rem}
 .kit-item-row:last-child{border-bottom:none}
+.reorder-dragging{opacity:0.88;box-shadow:0 6px 16px rgba(0,0,0,0.18);border-radius:var(--radius);background:var(--surface)}
+.reorder-handle:active{cursor:grabbing}
 .kit-item-nome{color:var(--text);font-weight:500;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-right:8px}
 .kit-item-qtd{color:var(--text-2);font-family:'DM Mono',monospace;font-size:0.78rem;background:var(--surface-2);border:1px solid var(--border);border-radius:6px;padding:2px 8px;white-space:nowrap;flex-shrink:0}
 .kit-card-footer{display:flex;gap:8px;padding:12px 18px;border-top:1px solid var(--border-soft)}
@@ -1463,6 +1465,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
         <div class="form-group full-width" style="grid-column:1/-1"><label>Descrição / Justificativa *</label>
           <textarea id="editOrdemDescricao" rows="2"></textarea>
         </div>
+        <div class="form-group full-width" style="grid-column:1/-1"><label>Equipe <span style="font-weight:400;color:var(--text-3)">(opcional)</span></label><select id="editOrdemEquipe"><option value="">Sem equipe</option></select></div>
       </div>
       <!-- Dados Técnicos da Instalação -->
       <details id="editOrdemDadosTecnicos" style="margin-bottom:16px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden">
@@ -2332,6 +2335,7 @@ function buildSelectProdutos(selectedId, qtd, idx, ctx) {
     const acId = 'ac_' + ctx + '_' + idx;
     const ddId = 'dd_' + ctx + '_' + idx;
     return '<div style="display:flex;gap:8px;align-items:center;margin-bottom:4px" id="itemOrdem_' + ctx + '_' + idx + '">' +
+        _reorderControlsHtml() +
         '<div class="ac-wrap">' +
             '<input class="ac-input" id="' + acId + '" type="text" placeholder="Buscar produto pelo nome..." autocomplete="off"' +
             ' value="' + nomeInicial.replace(/"/g,'') + '"' +
@@ -2464,7 +2468,7 @@ function acSelecionar(prodId, inpId) {
     var idx = parseFloat(inp.dataset.idx);
     var ctx = inp.dataset.ctx;
     var item = _ordemItens[ctx].find(function(i) { return i.idx === idx; });
-    if (item) { item.produto_id = prodId; item.nome = prod.nome; }
+    if (item) item.produto_id = prodId;
     // Se o produto tiver variantes cadastradas (ex: Cabo -> Linha/Carga),
     // mostra o painel de escolha — igual já acontecia na tela de Kits.
     if (typeof _kitVerificarVariante === 'function') _kitVerificarVariante(prodId, inpId);
@@ -2519,8 +2523,19 @@ function _acReposicionar(dd) {
     });
 })();
 
+// Gera um idx único para cada linha de material da OS/Kit. Antes usava
+// "Date.now() + Math.random()", mas quando várias linhas eram criadas no
+// mesmo milissegundo (ex.: recarregar um kit com 9 itens ao clicar em
+// "Editar"), a precisão do Math.random() não bastava para diferenciar os
+// itens e dois acabavam com o mesmo idx — fazendo o sistema confundir as
+// linhas entre si (produto de uma aparecendo na posição de outra).
+let _ordemItemSeq = 0;
+function _novoIdxItem() {
+    return Date.now() * 1000 + (_ordemItemSeq++ % 1000);
+}
+
 function addLinhaOrdem(ctx) {
-    const idx = Date.now() + Math.random();
+    const idx = _novoIdxItem();
     _ordemItens[ctx].push({ idx, produto_id: '', quantidade: 1 });
     renderLinhasOrdem(ctx);
 }
@@ -2543,6 +2558,12 @@ function renderLinhasOrdem(ctx) {
         return;
     }
     container.innerHTML = _ordemItens[ctx].map(i => buildSelectProdutos(i.produto_id, i.quantidade, i.idx, ctx)).join('');
+    habilitarReordenacao(container, '[id^="itemOrdem_' + ctx + '_"]', function(rows) {
+        // Reordena o array em memória para bater com a nova ordem visual —
+        // necessário pois confirmarKit() lê _ordemItens[ctx] (não o DOM).
+        const novaOrdem = rows.map(row => row.id.replace('itemOrdem_' + ctx + '_', ''));
+        _ordemItens[ctx].sort((a, b) => novaOrdem.indexOf(String(a.idx)) - novaOrdem.indexOf(String(b.idx)));
+    });
 }
 
 function confirmarKit(ctx) {
@@ -2613,7 +2634,7 @@ function renderKitsConfirmados(ctx) {
             const p = item.produto || state.produtos.find(x => x.id === item.produto_id);
             const qtd = item.quantidade || item.qtd || 1;
             return '<tr>' +
-                '<td style="padding:6px 10px;font-size:0.84rem;border-bottom:1px solid var(--border-soft)">' + (item.nome || (p ? p.nome : '—')) + '</td>' +
+                '<td style="padding:6px 10px;font-size:0.84rem;border-bottom:1px solid var(--border-soft)">' + nomeExibicaoItem(item, p) + '</td>' +
                 '<td style="padding:6px 10px;font-size:0.84rem;border-bottom:1px solid var(--border-soft);color:var(--text-2)">' + (p ? (p.codigo || '—') : '—') + '</td>' +
                 '<td style="padding:6px 10px;font-size:0.84rem;border-bottom:1px solid var(--border-soft);color:var(--text-2)">' + (p ? (p.localizacao || '—') : '—') + '</td>' +
                 '<td style="padding:6px 10px;font-size:0.84rem;border-bottom:1px solid var(--border-soft);font-weight:600;color:var(--accent);text-align:center">' + qtd + '</td>' +
@@ -2660,7 +2681,7 @@ function editarKitConfirmado(ctx, ki) {
 
     // Recarrega os itens em _ordemItens para o formulario de kit
     _ordemItens[ctx] = kit.itens.map(item => ({
-        idx: Date.now() + Math.random(),
+        idx: _novoIdxItem(),
         produto_id: item.produto_id || (item.produto ? item.produto.id : ''),
         quantidade: item.quantidade,
         nome: item.nome || ''
@@ -4241,11 +4262,28 @@ async function salvarDevolucao() {
 // itens registrados juntos numa mesma submissão do formulário). Registros
 // antigos sem lote_id (antes dessa mudança) viram um grupo de item único,
 // pra não sumir nem se misturar com outras devoluções.
+// Chave usada para agrupar devoluções sem lote_id (registradas item a
+// item): mesmo dia + mesma equipe + mesmo responsável + mesma observação
+// indicam que pertencem ao mesmo evento de devolução.
+function _chaveFallbackDevolucao(d) {
+    const dia = (d.data || d.criado_em || '').substring(0, 10);
+    return dia + '|' + (d.equipe_id||'') + '|' + (d.responsavel||'').trim().toLowerCase() + '|' + (d.observacoes||'').trim().toLowerCase();
+}
+
 function _agruparDevolucoes(list) {
     const grupos = [];
     const idxPorChave = {};
     for (const d of list) {
-        const chave = d.lote_id || ('__individual_' + d.id);
+        let chave;
+        if (d.lote_id) {
+            chave = d.lote_id;
+        } else if (d.equipe_id && (d.observacoes||'').trim()) {
+            // Sem lote_id (banco sem a coluna, ou item salvo sozinho) — agrupa
+            // pelo mesmo dia+equipe+responsável+observação (mesmo evento).
+            chave = '__fallback_' + _chaveFallbackDevolucao(d);
+        } else {
+            chave = '__individual_' + d.id;
+        }
         if (idxPorChave[chave] === undefined) {
             idxPorChave[chave] = grupos.length;
             grupos.push({ chave, itens: [d] });
@@ -4302,7 +4340,9 @@ function renderDevolucoes() {
 // antiga, de item único, salva antes de existir o agrupamento).
 function abrirDetalheDevolucao(chave) {
     let itens;
-    if ((chave || '').startsWith('__individual_')) {
+    if ((chave || '').startsWith('__fallback_')) {
+        itens = state.devolucoes.filter(d => !d.lote_id && d.equipe_id && (d.observacoes||'').trim() && ('__fallback_' + _chaveFallbackDevolucao(d)) === chave);
+    } else if ((chave || '').startsWith('__individual_')) {
         const id = chave.replace('__individual_', '');
         const d = state.devolucoes.find(x => x.id === id);
         itens = d ? [d] : [];
@@ -4754,16 +4794,35 @@ function renderRequisicoes() {
         const eq = state.equipes.find(e => e.id === r0.equipe_id);
         const statusLote = _statusLote(itens);
         const idsCsv = itens.map(x => x.id).join(',');
+        const isAdmin = state.currentUser?.perfil === 'admin';
+        const qtdPendentes = itens.filter(it => it.status === 'pendente').length;
+        // Cada material do grupo mostra sua ação individual (Avaliar, se ainda
+        // pendente, ou o resultado já dado) — permite aprovar/rejeitar só
+        // aquele item, sem afetar o resto do grupo.
         const produtosHtml = itens.map(it => {
             const p = it.produto || state.produtos.find(x => x.id === it.produto_id);
-            return '<div>' + (p ? p.nome : it.produto_nome||'—') + ' <span style="color:var(--text-3)">(Qtd: ' + it.quantidade + ')</span></div>';
+            const nome = p ? p.nome : it.produto_nome||'—';
+            let acaoItem = '';
+            if (it.status === 'pendente' && isAdmin) {
+                acaoItem = '<button type="button" class="tbl-btn" style="padding:1px 7px;font-size:0.7rem;margin-left:8px" onclick="event.stopPropagation();abrirAprovarReq(\'' + it.id + '\')"> Avaliar</button>';
+            } else if (it.status === 'aprovada') {
+                acaoItem = '<span style="font-size:0.72rem;color:var(--green);margin-left:8px"> Aprovado</span>';
+            } else if (it.status === 'rejeitada') {
+                acaoItem = '<span style="font-size:0.72rem;color:var(--red);margin-left:8px"> Rejeitado</span>';
+            }
+            return '<div style="display:flex;align-items:center;justify-content:space-between;gap:4px;padding:1px 0">' +
+                '<span>' + nome + ' <span style="color:var(--text-3)">(Qtd: ' + it.quantidade + ')</span></span>' + acaoItem +
+                '</div>';
         }).join('');
-        const acoes = statusLote === 'pendente' && state.currentUser?.perfil === 'admin'
-            ? '<button class="tbl-btn success" onclick="avaliarLoteRequisicoes(\'' + g.lote_id + '\',\'aprovada\')"> Aprovar tudo</button>' +
-              '<button class="tbl-btn danger" style="margin-left:4px" onclick="avaliarLoteRequisicoes(\'' + g.lote_id + '\',\'rejeitada\')"> Rejeitar tudo</button>'
+        // Botões de lote ("tudo") continuam disponíveis enquanto houver algum
+        // item pendente no grupo — mesmo que outros já tenham sido avaliados
+        // individualmente (status "parcial").
+        const acoes = qtdPendentes > 0 && isAdmin
+            ? '<button class="tbl-btn success" onclick="avaliarLoteRequisicoes(\'' + g.lote_id + '\',\'aprovada\')"> Aprovar ' + (qtdPendentes < itens.length ? 'restantes' : 'tudo') + '</button>' +
+              '<button class="tbl-btn danger" style="margin-left:4px" onclick="avaliarLoteRequisicoes(\'' + g.lote_id + '\',\'rejeitada\')"> Rejeitar ' + (qtdPendentes < itens.length ? 'restantes' : 'tudo') + '</button>'
             : statusLote === 'aprovada' ? '<span style="font-size:0.78rem;color:var(--green)">Por ' + (r0.respondido_por||'—') + '</span>'
             : statusLote === 'rejeitada' ? '<span style="font-size:0.78rem;color:var(--red)">Rejeitada</span>'
-            : '—';
+            : '<span style="font-size:0.78rem;color:var(--text-3)">Concluída</span>';
         return '<tr style="background:var(--surface-2)">' +
             '<td><input type="checkbox" class="chk-requisicao" data-ids="' + idsCsv + '" onchange="atualizarContadorRequisicoes()" style="cursor:pointer;width:15px;height:15px"/></td>' +
             '<td style="font-family:monospace;font-size:0.78rem">#' + String(i+1).padStart(3,'0') + '</td>' +
@@ -6089,22 +6148,21 @@ function printOrdem(id) {
             // Prioriza o saldo ATUAL do produto (state.produtos); só usa o snapshot
             // salvo na ordem (item.produto) se o produto não existir mais (excluído)
             const p = state.produtos.find(x => x.id === item.produto_id) || item.produto;
-            // Usa item.nome (pode conter variante ex: "Cabo 16mm (Linha)") ou cai em p.nome
-            const nomeDisplay = item.nome || (p ? p.nome : '—');
+            // Nome sempre vem do produto atual; item.nome só contribui um sufixo de variante salvo
+            const nomeDisplay = nomeExibicaoItem(item, p);
             return '<tr>' +
                 '<td>' + nomeDisplay + '</td>' +
                 '<td>' + (p ? (p.codigo || '—') : '—') + '</td>' +
                 '<td>' + (p ? (p.categoria || '—') : '—') + '</td>' +
                 '<td>' + (p ? (p.localizacao || '—') : '—') + '</td>' +
                 '<td style="text-align:center;font-weight:700;color:#3B82F6">' + item.quantidade + '</td>' +
-                '<td style="text-align:center;color:#059669">' + (p ? (p.saldo_atual || 0) : '—') + '</td>' +
                 '</tr>';
         }).join('');
         return '<div class="kit-block">' +
             '<div class="kit-header">' + kit.label + '</div>' +
             '<table><thead><tr>' +
             '<th>Produto</th><th>Código</th><th>Categoria</th><th>Localização</th>' +
-            '<th style="text-align:center">Qtd</th><th style="text-align:center">Saldo</th>' +
+            '<th style="text-align:center">Qtd</th>' +
             '</tr></thead><tbody>' + rows + '</tbody></table>' +
             '</div>';
     }).join('');
@@ -6236,6 +6294,8 @@ async function editarOrdem(id) {
     document.getElementById('editOrdemPrioridade').value = o.prioridade || 'media';
     document.getElementById('editOrdemData').value = o.data_necessaria ? o.data_necessaria.split('T')[0] : '';
     document.getElementById('editOrdemDescricao').value = (o.descricao || '').replace(/^\[.*?\]\s*/, '');
+    populateEquipeSelect('editOrdemEquipe');
+    document.getElementById('editOrdemEquipe').value = o.equipe_id || '';
     ['editOrdemResidencia','editOrdemTipoTelha','editOrdemTipoEstrutura','editOrdemCondicaoTelhado','editOrdemObsTecnica'].forEach(id => {
         const el = document.getElementById(id); if (el) el.value = '';
     });
@@ -6341,6 +6401,7 @@ async function salvarEdicaoOrdem() {
             ? document.getElementById('editOrdemData').value
             : null,
         descricao: '[' + kitLabel + '] ' + desc,
+        equipe_id: document.getElementById('editOrdemEquipe').value || null,
         itens_json: JSON.stringify(kits)
     };
 
@@ -6498,8 +6559,8 @@ function verOrdem(id) {
             const qtd = item.quantidade || item.qtd || 1;
             const saldo = p ? (p.saldo_atual || 0) : 0;
             const ok = saldo >= qtd;
-            // Usa item.nome (preserva variante como "(Linha)") ou cai em prod.nome
-            const nome = item.nome || (p ? p.nome : '—');
+            // Nome sempre vem do produto atual; item.nome só contribui um sufixo de variante salvo
+            const nome = nomeExibicaoItem(item, p);
             const badge = ok
                 ? '<span class="tag tag-green" style="font-size:0.68rem">OK (' + saldo + ')</span>'
                 : '<span class="tag tag-red" style="font-size:0.68rem">Insuf. (' + saldo + ')</span>';
@@ -7865,6 +7926,98 @@ function _lightboxKeyHandler(e) { if (e.key === 'Escape') fecharLightbox(); }
 // ============================================
 
 // Controla linhas do modal de kit
+// ============================================
+// REORDENAÇÃO DE ITENS (setas no PC, arrastar no celular)
+// ============================================
+// Módulo genérico: adiciona uma alça de arraste (funciona com o dedo no
+// celular) e duas setas (subir/descer, para clique preciso no PC) em cada
+// linha de uma lista de materiais. Reaproveitado em: Materiais do Kit,
+// Sub-Kits do Kit Inversor e a lista de materiais da Ordem de Serviço.
+const _reorderCallbacks = new WeakMap();
+
+function _reorderControlsHtml() {
+    return '<div class="reorder-controls" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;flex-shrink:0">' +
+        '<button type="button" class="reorder-up" title="Mover para cima" style="background:none;border:none;cursor:pointer;color:var(--text-3);padding:1px;line-height:0"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></button>' +
+        '<span class="reorder-handle" title="Arrastar para reordenar" style="cursor:grab;color:var(--text-3);line-height:0;touch-action:none;padding:2px 0"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><circle cx="8" cy="5" r="1.5"/><circle cx="16" cy="5" r="1.5"/><circle cx="8" cy="12" r="1.5"/><circle cx="16" cy="12" r="1.5"/><circle cx="8" cy="19" r="1.5"/><circle cx="16" cy="19" r="1.5"/></svg></span>' +
+        '<button type="button" class="reorder-down" title="Mover para baixo" style="background:none;border:none;cursor:pointer;color:var(--text-3);padding:1px;line-height:0"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></button>' +
+        '</div>';
+}
+
+// containerEl: elemento pai que guarda as linhas
+// rowSelector: seletor CSS das linhas dentro dele (ex.: '.kit-modal-item-row')
+// onReorder: opcional — chamado com o array de linhas (na nova ordem) depois
+//            de qualquer reordenação, para sincronizar estado em memória
+//            (necessário só quando a ordem de salvamento não é lida direto do DOM)
+function habilitarReordenacao(containerEl, rowSelector, onReorder) {
+    if (!containerEl) return;
+    if (onReorder) _reorderCallbacks.set(containerEl, onReorder);
+    if (containerEl.dataset.reorderable === '1') return;
+    containerEl.dataset.reorderable = '1';
+
+    let draggingRow = null;
+
+    function getRows() { return Array.from(containerEl.querySelectorAll(rowSelector)); }
+    function dispararReorder() {
+        const cb = _reorderCallbacks.get(containerEl);
+        if (typeof cb === 'function') cb(getRows());
+    }
+
+    function onPointerMove(e) {
+        if (!draggingRow) return;
+        const rows = getRows();
+        const y = e.clientY;
+        for (let i = 0; i < rows.length; i++) {
+            const row = rows[i];
+            if (row === draggingRow) continue;
+            const rect = row.getBoundingClientRect();
+            const mid = rect.top + rect.height / 2;
+            if (y < mid) {
+                if (row.previousElementSibling !== draggingRow) containerEl.insertBefore(draggingRow, row);
+                return;
+            } else if (i === rows.length - 1) {
+                if (row.nextElementSibling !== draggingRow) containerEl.appendChild(draggingRow);
+                return;
+            }
+        }
+    }
+    function onPointerUp() {
+        if (!draggingRow) return;
+        draggingRow.classList.remove('reorder-dragging');
+        draggingRow.style.zIndex = '';
+        draggingRow = null;
+        document.removeEventListener('pointermove', onPointerMove);
+        document.removeEventListener('pointerup', onPointerUp);
+        dispararReorder();
+    }
+    containerEl.addEventListener('pointerdown', function(e) {
+        const handle = e.target.closest('.reorder-handle');
+        if (!handle || !containerEl.contains(handle)) return;
+        const row = handle.closest(rowSelector);
+        if (!row) return;
+        e.preventDefault();
+        draggingRow = row;
+        row.style.zIndex = '30';
+        row.classList.add('reorder-dragging');
+        document.addEventListener('pointermove', onPointerMove);
+        document.addEventListener('pointerup', onPointerUp);
+    });
+    // Setas (subir/descer) — clique preciso, também funciona por toque
+    containerEl.addEventListener('click', function(e) {
+        const btn = e.target.closest('.reorder-up,.reorder-down');
+        if (!btn || !containerEl.contains(btn)) return;
+        const row = btn.closest(rowSelector);
+        if (!row) return;
+        if (btn.classList.contains('reorder-up')) {
+            const prev = row.previousElementSibling;
+            if (prev) containerEl.insertBefore(row, prev);
+        } else {
+            const next = row.nextElementSibling;
+            if (next) containerEl.insertBefore(next, row);
+        }
+        dispararReorder();
+    });
+}
+
 let _kitLinhasCount = 0;
 
 function switchProdutosTab(tab, btn) {
@@ -7909,7 +8062,7 @@ function renderKits(filter) {
         const totalItens = itens.length;
         const itensHtml = itens.slice(0, 5).map(item => {
             const prod = state.produtos.find(p => p.id === item.produto_id);
-            const nome = item.nome || (prod ? prod.nome : '—');
+            const nome = nomeExibicaoItem(item, prod);
             const qtd  = item.quantidade || item.qtd || 1;
             return '<div class="kit-item-row"><span class="kit-item-nome" title="' + nome + '">' + nome + '</span><span class="kit-item-qtd">' + qtd + ' un</span></div>';
         }).join('');
@@ -7972,13 +8125,41 @@ function renderKits(filter) {
 
 // ── Mapa de variantes por palavra-chave no nome do produto ──────────────────
 // Adicione mais palavras-chave e suas variantes conforme necessário.
+// "restritoATipo" limita em qual tipo de sub-kit da OS o painel de variante
+// aparece — hoje só o cabo Linha/Carga tem essa restrição (só faz sentido em
+// "Padrão de Entrada"). Os demais (disjuntor, fio, condutor, tomada) não têm
+// essa chave e por isso o painel aparece em qualquer tipo de kit.
 const KIT_VARIANTES = [
-    { regex: /\bcabo\b/i,        variantes: ['Linha', 'Carga'] },
+    { regex: /\bcabo\b/i,        variantes: ['Linha', 'Carga'], restritoATipo: 'padrao_entrada' },
     { regex: /\bdisjuntor\b/i,   variantes: ['Monofásico', 'Bifásico', 'Trifásico'] },
     { regex: /\bfio\b/i,         variantes: ['Fase', 'Neutro', 'Terra'] },
     { regex: /\bcondutor\b/i,    variantes: ['Fase', 'Neutro', 'Terra'] },
     { regex: /\btomada\b/i,      variantes: ['2P', '2P+T', 'Schuko'] },
 ];
+
+// Nome a ser exibido para um item de kit/OS. Antes o sistema usava
+// "item.nome || p.nome" em vários pontos, ou seja: se o item tivesse
+// QUALQUER texto salvo em .nome (mesmo desatualizado ou errado — ex:
+// texto capturado do campo de busca no momento de salvar um Kit, que
+// pode ficar dessincronizado do produto realmente selecionado, ou o
+// nome de um produto que foi renomeado depois que o kit foi cadastrado),
+// esse texto ganhava prioridade sobre o nome ATUAL e correto do produto
+// (p.nome), causando nomes trocados/errados ao reabrir ou reconfirmar
+// um kit — mesmo com o produto_id e o saldo corretos por trás.
+// Agora o nome exibido vem SEMPRE do produto atual (p.nome); o único
+// uso de item.nome é reaproveitar um sufixo de variante reconhecido
+// (ex: "(Linha)", "(Carga)") que porventura esteja salvo nele.
+function nomeExibicaoItem(item, p) {
+    if (!p) return (item && item.nome) || '—';
+    if (item && item.nome) {
+        const m = /\(([^)]+)\)\s*$/.exec(item.nome);
+        if (m) {
+            const todasVariantes = KIT_VARIANTES.reduce((acc, v) => acc.concat(v.variantes), []);
+            if (todasVariantes.includes(m[1])) return p.nome + ' (' + m[1] + ')';
+        }
+    }
+    return p.nome;
+}
 
 // Chamado quando o autocomplete seleciona um produto na linha de kit (ou de
 // item de Ordem de Serviço). Verifica se o produto tem variantes e, se sim,
@@ -8008,12 +8189,14 @@ function _kitVerificarVariante(prodId, inpId) {
     const entrada = KIT_VARIANTES.find(v => v.regex.test(prod.nome));
     if (!entrada) return;   // sem variantes para esse produto
 
-    // A escolha de variante (Linha/Carga) só faz sentido no sub-kit
-    // "Padrão de Entrada" — não mostrar esse painel em Inversor (ou em
-    // telas sem esse select, como a linha do modal "Novo Kit", que segue
-    // o comportamento anterior sem essa restrição).
-    const tipoAtual = _kitTipoAtualPorInput(inpId);
-    if (tipoAtual !== null && tipoAtual !== 'padrao_entrada') return;
+    // A escolha de variante só tem restrição de tipo de kit quando a própria
+    // entrada em KIT_VARIANTES define isso (hoje: só o cabo Linha/Carga, que
+    // só faz sentido em "Padrão de Entrada"). Disjuntor e os demais aparecem
+    // em qualquer tipo de kit.
+    if (entrada.restritoATipo) {
+        const tipoAtual = _kitTipoAtualPorInput(inpId);
+        if (tipoAtual !== null && tipoAtual !== entrada.restritoATipo) return;
+    }
 
     const inp = document.getElementById(inpId);
     if (!inp) return;
@@ -8056,19 +8239,7 @@ function _kitSelecionarVariante(inpId, variante) {
             .replace(/\s*\(Saldo:\s*[\d-]+\)/gi, '')
             .replace(/\s*\([^)]+\)\s*$/, '')
             .trim();
-        const novoNome = val + ' (' + variante + ')';
-        inp.value = novoNome;
-        // Propaga a variante escolhida para o item em _ordemItens — sem isso
-        // a escolha ficava só visível no campo de texto e se perdia ao
-        // confirmar o kit / salvar a Ordem de Serviço (só existe data-idx/
-        // data-ctx nas linhas de Ordem de Serviço; a lista simples de Kit
-        // lê o valor direto do campo ao salvar, então não precisa disso).
-        const idx = parseFloat(inp.dataset.idx);
-        const ctx = inp.dataset.ctx;
-        if (ctx && _ordemItens[ctx]) {
-            const item = _ordemItens[ctx].find(i => i.idx === idx);
-            if (item) item.nome = novoNome;
-        }
+        inp.value = val + ' (' + variante + ')';
     }
     // Painel fixo (usado no fluxo de sub-kits dentro do modal de Kit)
     const fixo = document.getElementById('kitVariantePanel');
@@ -8095,6 +8266,7 @@ function addKitItemLinha() {
     row.className = 'kit-modal-item-row';
     row.id = 'kitRow_' + idx;
     row.innerHTML =
+        _reorderControlsHtml() +
         '<div class="ac-wrap">' +
             '<input class="ac-input" id="' + inputId + '" type="text" placeholder="Buscar produto..." autocomplete="off"' +
             ' oninput="acFiltrarSimples(this,\'' + hidId + '\')"' +
@@ -8111,6 +8283,7 @@ function addKitItemLinha() {
         '<button type="button" class="btn-icon-danger" onclick="removeKitRow(\'kitRow_' + idx + '\')" title="Remover">×</button>';
 
     container.appendChild(row);
+    habilitarReordenacao(container, '.kit-modal-item-row');
     document.getElementById(inputId).focus();
     atualizarResumoKit();
 }
@@ -8309,6 +8482,7 @@ function adicionarLinhaSubKit(skId) {
     const hidId = 'skHid_' + lid;
 
     div.innerHTML =
+        _reorderControlsHtml() +
         '<input type="hidden" id="' + hidId + '"/>' +
         '<div class="ac-wrap" style="flex:1">' +
           '<input class="ac-input" id="' + inpId + '" type="text" placeholder="Buscar produto..." autocomplete="off"' +
@@ -8324,6 +8498,7 @@ function adicionarLinhaSubKit(skId) {
         '</button>';
 
     container.appendChild(div);
+    habilitarReordenacao(container, '[id^="skLinha_"]');
 }
 
 function acFiltrarSubKit(inp) {
@@ -8474,7 +8649,7 @@ function _renderSubKitsEdicao(subkits) {
             if (hidEl) hidEl.value = item.produto_id || '';
             if (inpEl) {
                 const prod = state.produtos.find(p => p.id === item.produto_id);
-                inpEl.value = item.nome || (prod ? prod.nome : '');
+                inpEl.value = nomeExibicaoItem(item, prod);
             }
             if (qtyEl) qtyEl.value = item.quantidade || 1;
         });
@@ -8645,10 +8820,9 @@ function editKit(id) {
         const txtEl = document.getElementById('kitProdInput_' + idx);
         const qtyEl = document.getElementById('kitQty_' + idx);
         if (hidEl) hidEl.value = item.produto_id || '';
-        // Prefere item.nome (preserva variante ex: "Cabo 16mm (Linha)")
-        // só cai no prod.nome se item.nome não estiver salvo
+        // Nome sempre vem do produto atual; item.nome só contribui um sufixo de variante salvo
         const prod = state.produtos.find(p => p.id === item.produto_id);
-        if (txtEl) txtEl.value = item.nome || (prod ? prod.nome : '');
+        if (txtEl) txtEl.value = nomeExibicaoItem(item, prod);
         if (qtyEl) qtyEl.value = item.quantidade || 1;
     });
     atualizarResumoKit();
@@ -8666,7 +8840,7 @@ function verKit(id) {
         let temEstoque = true;
         const html = itens.map(item => {
             const prod = state.produtos.find(p => p.id === item.produto_id) || item.produto;
-            const nome = item.nome || (prod ? prod.nome : '—');
+            const nome = nomeExibicaoItem(item, prod);
             const qtd  = item.quantidade || item.qtd || 1;
             const saldoFisico = prod ? (prod.saldo_atual || 0) : 0;
             const reserva = prod ? calcularReservaProduto(prod.id) : 0;
@@ -8837,7 +9011,7 @@ function _preencherFormularioKitImportado(dados) {
             const qtyEl = document.getElementById('kitQty_' + idx);
             if (hidEl) hidEl.value = item.produto_id || '';
             const prod = state.produtos.find(p => p.id === item.produto_id);
-            if (txtEl) txtEl.value = item.nome || (prod ? prod.nome : '');
+            if (txtEl) txtEl.value = nomeExibicaoItem(item, prod);
             if (qtyEl) qtyEl.value = item.quantidade || 1;
         });
     }
@@ -8945,7 +9119,7 @@ function selecionarKitParaOS(kitId) {
         subKits.forEach(sk => {
             const itensCompletos = (sk.itens || []).map(item => {
                 const prod = state.produtos.find(p => p.id === item.produto_id);
-                return { ...item, nome: item.nome || (prod ? prod.nome : ''), quantidade: item.quantidade || 1, idx: Date.now() + Math.random(), produto: prod };
+                return { ...item, nome: item.nome || (prod ? prod.nome : ''), quantidade: item.quantidade || 1, idx: _novoIdxItem(), produto: prod };
             });
             if (!itensCompletos.length) return;
             const tipoMap = { 'Inversor': 'inversor', 'Padrão de Entrada': 'padrao_entrada', 'Padrão de Entrada (Porte Auxiliar)': 'padrao_entrada_auxiliar' };
@@ -8974,7 +9148,7 @@ function selecionarKitParaOS(kitId) {
     if (tipoSel) tipoSel.value = 'personalizado';
 
     _ordemItens[ctx] = itens.map(item => ({
-        idx: Date.now() + Math.random(),
+        idx: _novoIdxItem(),
         produto_id: item.produto_id || '',
         nome: item.nome || '',
         quantidade: item.quantidade || 1
