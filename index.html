@@ -7494,12 +7494,19 @@ function imprimirEtiqueta() {
 function _prepararScanner(titulo, instrucao, btnTexto, modo) {
     _scannerMode = modo;
     _ultimoCodigoEscaneado = null;
+    _scannerSessaoItens = [];
     document.getElementById('modalScannerTitle').innerHTML = titulo;
     document.getElementById('scannerInstrucao').textContent = instrucao;
     document.getElementById('btnScannerAcao').innerHTML = btnTexto;
     document.getElementById('btnScannerAcao').style.display = 'none';
     document.getElementById('scannerResult').textContent = 'Solicitando acesso à câmera...';
     document.getElementById('scannerProdutoInfo').style.display = 'none';
+    document.getElementById('scannerProdutoInfo').style.background = '';
+    document.getElementById('scannerProdutoInfo').style.borderColor = '';
+    const listaEl = document.getElementById('scannerListaAdicionados');
+    listaEl.style.display = 'none';
+    listaEl.innerHTML = '';
+    document.getElementById('btnScannerFechar').textContent = (modo === 'entrada' || modo === 'saida') ? 'Concluir escaneamento' : 'Fechar';
     // Reconstroi o video element
     const box = document.getElementById('scannerBox');
     box.innerHTML = '<video id="scannerVideo" autoplay muted playsinline style="width:100%;display:block"></video><div class="scan-line"></div>';
@@ -7591,6 +7598,7 @@ async function iniciarScanner() {
 }
 
 let _ultimoCodigoEscaneado = null;
+let _scannerSessaoItens = []; // [{produtoId, nome, qtd, idxLinha}] — itens já escaneados nesta sessão do scanner (modo entrada/saída)
 
 function processarCodigoEscaneado(codigo) {
     if (codigo === _ultimoCodigoEscaneado) return;
@@ -7607,34 +7615,42 @@ function processarCodigoEscaneado(codigo) {
     const btnAcao = document.getElementById('btnScannerAcao');
 
     if (p) {
-        const low = p.estoque_minimo > 0 && p.saldo_atual <= p.estoque_minimo;
-        infoBox.style.display = 'block';
-        infoBox.innerHTML =
-            '<div style="display:flex;align-items:center;gap:12px">' +
-            '<div style="font-size:2rem"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div>' +
-            '<div><div style="font-weight:700;font-size:0.95rem;color:var(--text)">' + p.nome + '</div>' +
-            '<div style="font-size:0.8rem;color:var(--text-2)">Cód: ' + (p.codigo||'—') + ' · Saldo: <strong style="color:' + (low ? 'var(--red)' : 'var(--green)') + '">' + (p.saldo_atual||0) + '</strong></div>' +
-            '</div></div>';
         if (_scannerMode === 'entrada' || _scannerMode === 'saida') {
-            // Adiciona automaticamente como uma nova linha na lista — sem
+            // Adiciona automaticamente (ou soma quantidade) na lista — sem
             // fechar o scanner, pra dar pra escanear o próximo em seguida.
+            // _scannerAutoAdicionarItem já cuida de mostrar o card verde.
             btnAcao.style.display = 'none';
             _scannerAutoAdicionarItem(p);
         } else {
+            const low = p.estoque_minimo > 0 && p.saldo_atual <= p.estoque_minimo;
+            infoBox.style.background = '';
+            infoBox.style.borderColor = '';
+            infoBox.style.display = 'block';
+            infoBox.innerHTML =
+                '<div style="display:flex;align-items:center;gap:12px">' +
+                '<div style="font-size:2rem"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div>' +
+                '<div><div style="font-weight:700;font-size:0.95rem;color:var(--text)">' + p.nome + '</div>' +
+                '<div style="font-size:0.8rem;color:var(--text-2)">Cód: ' + (p.codigo||'—') + ' · Saldo: <strong style="color:' + (low ? 'var(--red)' : 'var(--green)') + '">' + (p.saldo_atual||0) + '</strong></div>' +
+                '</div></div>';
             btnAcao.style.display = 'inline-flex';
             btnAcao.dataset.prodId = p.id;
         }
     } else {
+        infoBox.style.background = '';
+        infoBox.style.borderColor = '';
         infoBox.style.display = 'block';
         infoBox.innerHTML = '<span style="color:var(--amber);font-size:0.85rem"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;color:var(--amber)"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Produto com código "' + codigo + '" não encontrado no sistema.</span>';
         btnAcao.style.display = 'none';
     }
 }
 
-// Adiciona o produto escaneado como uma nova linha na lista dinâmica de
-// Entrada ou Saída, reaproveitando a modal já aberta (sem resetar a lista
-// se ela já tiver itens) e sem exigir clique de confirmação — permite
-// escanear vários produtos em sequência sem fechar a câmera.
+// Adiciona o produto escaneado à lista dinâmica de Entrada ou Saída,
+// reaproveitando a modal já aberta (sem resetar a lista se ela já tiver
+// itens). Se o mesmo produto já foi escaneado nesta sessão, só soma a
+// quantidade em vez de criar outra linha. Mostra confirmação visual
+// (card verde) e a lista corrente diretamente dentro do próprio scanner —
+// não exige clique nenhum, permitindo escanear vários produtos seguidos
+// sem fechar a câmera.
 function _scannerAutoAdicionarItem(p) {
     const isEntrada = _scannerMode === 'entrada';
     const modalId = isEntrada ? 'modalEntrada' : 'modalSaida';
@@ -7648,27 +7664,70 @@ function _scannerAutoAdicionarItem(p) {
     const list = document.getElementById(listId);
     if (!list) return;
 
-    // Reaproveita uma linha vazia (sem produto ainda) se existir, senão cria uma nova
-    let idx = null;
-    Array.from(list.children).forEach(row => {
-        if (idx !== null) return;
-        const hid = row.querySelector('input[type="hidden"]');
-        if (hid && !hid.value) idx = row.id.split('_').pop();
-    });
-    if (idx === null) {
-        if (isEntrada) entradaAddItem(); else saidaAddItem();
-        const rows = list.children;
-        idx = rows[rows.length - 1].id.split('_').pop();
+    // Já escaneado nesta sessão? Só soma 1 na quantidade da linha existente.
+    let sessaoItem = _scannerSessaoItens.find(i => i.produtoId === p.id);
+    if (sessaoItem) {
+        sessaoItem.qtd += 1;
+        const qtdEl = document.getElementById(prefix + 'Qtd_' + sessaoItem.idxLinha);
+        if (qtdEl) qtdEl.value = sessaoItem.qtd;
+    } else {
+        // Reaproveita uma linha vazia (sem produto ainda) se existir, senão cria uma nova
+        let idx = null;
+        Array.from(list.children).forEach(row => {
+            if (idx !== null) return;
+            const hid = row.querySelector('input[type="hidden"]');
+            if (hid && !hid.value) idx = row.id.split('_').pop();
+        });
+        if (idx === null) {
+            if (isEntrada) entradaAddItem(); else saidaAddItem();
+            const rows = list.children;
+            idx = rows[rows.length - 1].id.split('_').pop();
+        }
+
+        const inpEl = document.getElementById(prefix + 'ProdutoInput_' + idx);
+        const hidEl = document.getElementById(prefix + 'ProdutoId_' + idx);
+        const qtdEl = document.getElementById(prefix + 'Qtd_' + idx);
+        if (inpEl) inpEl.value = p.nome;
+        if (hidEl) hidEl.value = p.id;
+        if (qtdEl) qtdEl.value = 1;
+
+        sessaoItem = { produtoId: p.id, nome: p.nome, qtd: 1, idxLinha: idx };
+        _scannerSessaoItens.push(sessaoItem);
     }
 
-    const inpEl = document.getElementById(prefix + 'ProdutoInput_' + idx);
-    const hidEl = document.getElementById(prefix + 'ProdutoId_' + idx);
-    const qtdEl = document.getElementById(prefix + 'Qtd_' + idx);
-    if (inpEl) inpEl.value = p.nome;
-    if (hidEl) hidEl.value = p.id;
-    if (qtdEl && !qtdEl.value) qtdEl.value = 1;
+    _renderScannerConfirmacao(p, sessaoItem.qtd);
+    _renderScannerLista();
+}
 
-    if (typeof showToast === 'function') showToast('Adicionado: ' + p.nome, 'success');
+// Card verde de confirmação (mostrado no lugar da caixa de info do produto)
+function _renderScannerConfirmacao(p, qtd) {
+    const infoBox = document.getElementById('scannerProdutoInfo');
+    infoBox.style.display = 'block';
+    infoBox.style.background = '#ECFDF5';
+    infoBox.style.borderColor = 'var(--green)';
+    infoBox.innerHTML =
+        '<div style="display:flex;align-items:center;gap:12px">' +
+        '<div style="color:var(--green);flex-shrink:0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>' +
+        '<div><div style="font-weight:700;font-size:0.92rem;color:var(--text)">' + p.nome + '</div>' +
+        '<div style="font-size:0.78rem;color:var(--text-2)">Adicionado à lista · Qtd nesta OS: ' + qtd + '</div>' +
+        '</div></div>';
+}
+
+// Lista corrente "MATERIAIS NA LISTA (N)" dentro do próprio scanner
+function _renderScannerLista() {
+    const el = document.getElementById('scannerListaAdicionados');
+    if (!_scannerSessaoItens.length) { el.style.display = 'none'; el.innerHTML = ''; return; }
+    el.style.display = 'block';
+    el.innerHTML =
+        '<label style="font-size:0.75rem;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-2)">Materiais na lista (' + _scannerSessaoItens.length + ')</label>' +
+        '<div style="margin-top:6px;display:flex;flex-direction:column;gap:1px;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden">' +
+        _scannerSessaoItens.map(i =>
+            '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--surface);font-size:0.84rem">' +
+            '<span style="color:var(--text)">' + i.nome + '</span>' +
+            '<span style="color:var(--text-2);flex-shrink:0;margin-left:10px">×' + i.qtd + '</span>' +
+            '</div>'
+        ).join('') +
+        '</div>';
 }
 
 function executarAcaoScanner() {
@@ -9289,9 +9348,10 @@ function _autoPreencherDtOS(kit, ctx) {
         <div class="scanner-result" id="scannerResult">Aguardando leitura...</div>
       </div>
       <div id="scannerProdutoInfo" style="margin-top:12px;display:none;background:var(--accent-soft);border:1px solid var(--accent);border-radius:var(--radius);padding:12px 16px"></div>
+      <div id="scannerListaAdicionados" style="margin-top:16px;display:none"></div>
     </div>
     <div class="modal-footer">
-      <button class="btn-ghost" onclick="fecharScanner()">Fechar</button>
+      <button class="btn-ghost" id="btnScannerFechar" onclick="fecharScanner()">Fechar</button>
       <button class="btn-primary" id="btnScannerAcao" style="display:none" onclick="executarAcaoScanner()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><polyline points="20 6 9 17 4 12"/></svg> Confirmar</button>
     </div>
   </div>
