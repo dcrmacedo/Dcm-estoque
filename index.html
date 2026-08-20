@@ -7513,11 +7513,11 @@ function abrirScannerBusca() {
 }
 
 function abrirScannerEntrada() {
-    _prepararScanner('<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Scanner — Registrar Entrada', 'Escaneie o QR Code do produto para pré-preencher a entrada.', '+ Abrir Entrada', 'entrada');
+    _prepararScanner('<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Scanner — Registrar Entrada', 'Escaneie os produtos em sequência — cada um é adicionado automaticamente à lista. Feche o scanner quando terminar.', '', 'entrada');
 }
 
 function abrirScannerSaida() {
-    _prepararScanner('<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Scanner — Registrar Saída', 'Escaneie o QR Code do produto para pré-preencher a saída.', '- Abrir Saída', 'saida');
+    _prepararScanner('<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Scanner — Registrar Saída', 'Escaneie os produtos em sequência — cada um é adicionado automaticamente à lista. Feche o scanner quando terminar.', '', 'saida');
 }
 
 async function iniciarScanner() {
@@ -7566,7 +7566,7 @@ async function iniciarScanner() {
             try {
                 if (video.readyState >= 2) {
                     const codes = await detector.detect(video);
-                    if (codes.length > 0) { processarCodigoEscaneado(codes[0].rawValue); return; }
+                    if (codes.length > 0) processarCodigoEscaneado(codes[0].rawValue);
                 }
             } catch(e) {}
             _scannerInterval = setTimeout(scan, 250);
@@ -7615,13 +7615,60 @@ function processarCodigoEscaneado(codigo) {
             '<div><div style="font-weight:700;font-size:0.95rem;color:var(--text)">' + p.nome + '</div>' +
             '<div style="font-size:0.8rem;color:var(--text-2)">Cód: ' + (p.codigo||'—') + ' · Saldo: <strong style="color:' + (low ? 'var(--red)' : 'var(--green)') + '">' + (p.saldo_atual||0) + '</strong></div>' +
             '</div></div>';
-        btnAcao.style.display = 'inline-flex';
-        btnAcao.dataset.prodId = p.id;
+        if (_scannerMode === 'entrada' || _scannerMode === 'saida') {
+            // Adiciona automaticamente como uma nova linha na lista — sem
+            // fechar o scanner, pra dar pra escanear o próximo em seguida.
+            btnAcao.style.display = 'none';
+            _scannerAutoAdicionarItem(p);
+        } else {
+            btnAcao.style.display = 'inline-flex';
+            btnAcao.dataset.prodId = p.id;
+        }
     } else {
         infoBox.style.display = 'block';
         infoBox.innerHTML = '<span style="color:var(--amber);font-size:0.85rem"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;color:var(--amber)"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Produto com código "' + codigo + '" não encontrado no sistema.</span>';
         btnAcao.style.display = 'none';
     }
+}
+
+// Adiciona o produto escaneado como uma nova linha na lista dinâmica de
+// Entrada ou Saída, reaproveitando a modal já aberta (sem resetar a lista
+// se ela já tiver itens) e sem exigir clique de confirmação — permite
+// escanear vários produtos em sequência sem fechar a câmera.
+function _scannerAutoAdicionarItem(p) {
+    const isEntrada = _scannerMode === 'entrada';
+    const modalId = isEntrada ? 'modalEntrada' : 'modalSaida';
+    const listId  = isEntrada ? 'entradaItensList' : 'saidaItensList';
+    const prefix  = isEntrada ? 'entrada' : 'saida';
+
+    const modalEl = document.getElementById(modalId);
+    const jaAberto = modalEl && !modalEl.classList.contains('hidden');
+    if (!jaAberto) openModal(modalId); // abre e já cria a 1ª linha vazia
+
+    const list = document.getElementById(listId);
+    if (!list) return;
+
+    // Reaproveita uma linha vazia (sem produto ainda) se existir, senão cria uma nova
+    let idx = null;
+    Array.from(list.children).forEach(row => {
+        if (idx !== null) return;
+        const hid = row.querySelector('input[type="hidden"]');
+        if (hid && !hid.value) idx = row.id.split('_').pop();
+    });
+    if (idx === null) {
+        if (isEntrada) entradaAddItem(); else saidaAddItem();
+        const rows = list.children;
+        idx = rows[rows.length - 1].id.split('_').pop();
+    }
+
+    const inpEl = document.getElementById(prefix + 'ProdutoInput_' + idx);
+    const hidEl = document.getElementById(prefix + 'ProdutoId_' + idx);
+    const qtdEl = document.getElementById(prefix + 'Qtd_' + idx);
+    if (inpEl) inpEl.value = p.nome;
+    if (hidEl) hidEl.value = p.id;
+    if (qtdEl && !qtdEl.value) qtdEl.value = 1;
+
+    if (typeof showToast === 'function') showToast('Adicionado: ' + p.nome, 'success');
 }
 
 function executarAcaoScanner() {
