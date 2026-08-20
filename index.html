@@ -3117,7 +3117,7 @@ function verReservasProduto(produtoId) {
                 + '<div style="font-size:0.78rem;color:var(--text-2);margin-top:2px">Qtd reservada: <strong>' + g.quantidade + '</strong></div>'
                 + '</div>'
                 + '<div style="display:flex;gap:8px;flex-shrink:0">'
-                + '<button class="tbl-btn" title="Ver OS" onclick="closeModal(\'modalReservasProduto\');abrirOrdemDetalhe(\'' + o.id + '\')">Ver OS</button>'
+                + '<button class="tbl-btn" title="Ver OS" onclick="closeModal(\'modalReservasProduto\');verOrdem(\'' + o.id + '\')">Ver OS</button>'
                 + '<button class="tbl-btn danger" title="Liberar reserva" onclick="liberarItensReserva(\'' + o.id + '\',\'' + g.idxs.join(',') + '\',\'' + produtoId + '\')" style="white-space:nowrap">Liberar</button>'
                 + '</div>'
                 + '</div>';
