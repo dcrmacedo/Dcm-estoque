@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -1332,7 +1333,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
       <!-- Dados Técnicos da Instalação -->
       <details id="modalOrdemDadosTecnicos" style="margin-bottom:16px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden">
         <summary style="padding:10px 14px;cursor:pointer;font-size:0.78rem;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-2);list-style:none;display:flex;align-items:center;gap:8px;user-select:none">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points=""/></svg>
           Dados Técnicos da Instalação
           <span style="margin-left:auto;font-size:0.7rem;font-weight:400;color:var(--text-3)">(opcional)</span>
         </summary>
@@ -1351,14 +1352,14 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
               <label>Tipo de Telha</label>
               <select id="modalOrdemTipoTelha" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
                 <option value="">— Selecione —</option>
-                <option value="portuguesa_concreto">Portuguesa de Concreto</option>
-                <option value="portuguesa_ceramica">Portuguesa de Cerâmica</option>
-                <option value="romana">Romana</option>
-                <option value="francesa">Francesa</option>
-                <option value="colonial">Colonial</option>
+                <option value="portuguesa_concreto">Fibrocimento/Brasilit</option>
+                <option value="portuguesa_ceramica">Fibrocimento/Ondulada</option>
+                <option value="romana">Colonial</option>
+                <option value="francesa"></option>
+                <option value="colonial"></option>
                 <option value="metalica">Metálica</option>
-                <option value="fibrocimento">Fibrocimento</option>
-                <option value="shingle">Shingle</option>
+                <option value="fibrocimento"></option>
+                <option value="shingle"></option>
                 <option value="laje">Laje / Terraço</option>
                 <option value="outro">Outro</option>
               </select>
@@ -1489,14 +1490,14 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
               <label>Tipo de Telha</label>
               <select id="editOrdemTipoTelha" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
                 <option value="">— Selecione —</option>
-                <option value="portuguesa_concreto">Portuguesa de Concreto</option>
-                <option value="portuguesa_ceramica">Portuguesa de Cerâmica</option>
-                <option value="romana">Romana</option>
-                <option value="francesa">Francesa</option>
-                <option value="colonial">Colonial</option>
+                <option value="portuguesa_concreto">Fibrocimento/Brasilit</option>
+                <option value="portuguesa_ceramica">Fibrocimento/Ondulada</option>
+                <option value="romana">Colonial</option>
+                <option value="francesa"></option>
+                <option value="colonial"></option>
                 <option value="metalica">Metálica</option>
-                <option value="fibrocimento">Fibrocimento</option>
-                <option value="shingle">Shingle</option>
+                <option value="fibrocimento"></option>
+                <option value="shingle"></option>
                 <option value="laje">Laje / Terraço</option>
                 <option value="outro">Outro</option>
               </select>
@@ -1631,6 +1632,23 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
     </div>
     <div class="modal-footer">
       <button class="btn-ghost" onclick="closeModal('modalDevolucaoDetalhe')">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<div id="modalRequisicaoDetalhe" class="modal-overlay hidden">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-header"><h3 id="reqDetalheTitulo">Requisição</h3><button class="modal-close" onclick="closeModal('modalRequisicaoDetalhe')">×</button></div>
+    <div class="modal-body">
+      <div id="reqDetalheInfo" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;font-size:0.875rem"></div>
+      <table class="table">
+        <thead><tr><th>Produto</th><th>Qtd.</th><th>Status</th></tr></thead>
+        <tbody id="reqDetalheLista"></tbody>
+      </table>
+    </div>
+    <div class="modal-footer">
+      <div id="reqDetalheAcoesLote" style="margin-right:auto"></div>
+      <button class="btn-ghost" onclick="closeModal('modalRequisicaoDetalhe')">Fechar</button>
     </div>
   </div>
 </div>
@@ -4788,53 +4806,71 @@ function renderRequisicoes() {
                 '</tr>';
         }
 
-        // Grupo — lista de materiais enviada junto numa única requisição
+        // Grupo — lista de materiais enviada junto numa única requisição.
+        // Linha compacta (mesmo padrão da aba Devoluções): mostra a
+        // contagem + prévia dos nomes, e abre um modal com a lista
+        // completa ao clicar — em vez de listar tudo direto na tabela.
         const itens = g.itens;
         const r0 = itens[0];
         const eq = state.equipes.find(e => e.id === r0.equipe_id);
         const statusLote = _statusLote(itens);
         const idsCsv = itens.map(x => x.id).join(',');
-        const isAdmin = state.currentUser?.perfil === 'admin';
-        const qtdPendentes = itens.filter(it => it.status === 'pendente').length;
-        // Cada material do grupo mostra sua ação individual (Avaliar, se ainda
-        // pendente, ou o resultado já dado) — permite aprovar/rejeitar só
-        // aquele item, sem afetar o resto do grupo.
-        const produtosHtml = itens.map(it => {
+        const nomesPreview = itens.slice(0, 2).map(it => {
             const p = it.produto || state.produtos.find(x => x.id === it.produto_id);
-            const nome = p ? p.nome : it.produto_nome||'—';
-            let acaoItem = '';
-            if (it.status === 'pendente' && isAdmin) {
-                acaoItem = '<button type="button" class="tbl-btn" style="padding:1px 7px;font-size:0.7rem;margin-left:8px" onclick="event.stopPropagation();abrirAprovarReq(\'' + it.id + '\')"> Avaliar</button>';
-            } else if (it.status === 'aprovada') {
-                acaoItem = '<span style="font-size:0.72rem;color:var(--green);margin-left:8px"> Aprovado</span>';
-            } else if (it.status === 'rejeitada') {
-                acaoItem = '<span style="font-size:0.72rem;color:var(--red);margin-left:8px"> Rejeitado</span>';
-            }
-            return '<div style="display:flex;align-items:center;justify-content:space-between;gap:4px;padding:1px 0">' +
-                '<span>' + nome + ' <span style="color:var(--text-3)">(Qtd: ' + it.quantidade + ')</span></span>' + acaoItem +
-                '</div>';
-        }).join('');
-        // Botões de lote ("tudo") continuam disponíveis enquanto houver algum
-        // item pendente no grupo — mesmo que outros já tenham sido avaliados
-        // individualmente (status "parcial").
-        const acoes = qtdPendentes > 0 && isAdmin
-            ? '<button class="tbl-btn success" onclick="avaliarLoteRequisicoes(\'' + g.lote_id + '\',\'aprovada\')"> Aprovar ' + (qtdPendentes < itens.length ? 'restantes' : 'tudo') + '</button>' +
-              '<button class="tbl-btn danger" style="margin-left:4px" onclick="avaliarLoteRequisicoes(\'' + g.lote_id + '\',\'rejeitada\')"> Rejeitar ' + (qtdPendentes < itens.length ? 'restantes' : 'tudo') + '</button>'
-            : statusLote === 'aprovada' ? '<span style="font-size:0.78rem;color:var(--green)">Por ' + (r0.respondido_por||'—') + '</span>'
-            : statusLote === 'rejeitada' ? '<span style="font-size:0.78rem;color:var(--red)">Rejeitada</span>'
-            : '<span style="font-size:0.78rem;color:var(--text-3)">Concluída</span>';
-        return '<tr style="background:var(--surface-2)">' +
-            '<td><input type="checkbox" class="chk-requisicao" data-ids="' + idsCsv + '" onchange="atualizarContadorRequisicoes()" style="cursor:pointer;width:15px;height:15px"/></td>' +
+            return p ? p.nome : it.produto_nome||'—';
+        }).join(', ') + (itens.length > 2 ? '...' : '');
+        return '<tr style="background:var(--surface-2);cursor:pointer" onclick="abrirDetalheRequisicao(\'' + g.lote_id + '\')">' +
+            '<td onclick="event.stopPropagation()"><input type="checkbox" class="chk-requisicao" data-ids="' + idsCsv + '" onchange="atualizarContadorRequisicoes()" style="cursor:pointer;width:15px;height:15px"/></td>' +
             '<td style="font-family:monospace;font-size:0.78rem">#' + String(i+1).padStart(3,'0') + '</td>' +
             '<td>' + (r0.solicitante_nome||'—') + '</td>' +
-            '<td><div style="font-weight:600;font-size:0.78rem;color:var(--accent);margin-bottom:3px"> Lista de Materiais (' + itens.length + ' itens)</div>' + produtosHtml + '</td>' +
+            '<td><strong>' + itens.length + ' materia' + (itens.length > 1 ? 'is' : 'l') + '</strong><br><small style="color:var(--text-3)">' + nomesPreview + '</small></td>' +
             '<td>' + (eq ? eq.nome : '—') + '</td>' +
             '<td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:0.82rem;color:var(--text-2)">' + (r0.motivo||'—') + '</td>' +
             '<td>' + (STR[statusLote] || statusLote) + '</td>' +
             '<td>' + formatDate(r0.criado_em) + '</td>' +
-            '<td><div class="tbl-actions" style="flex-wrap:wrap">' + acoes + '</div></td>' +
+            '<td><button type="button" class="tbl-btn" onclick="event.stopPropagation();abrirDetalheRequisicao(\'' + g.lote_id + '\')">Ver materiais</button></td>' +
             '</tr>';
     }).join('');
+}
+
+// Abre o modal com a lista completa de materiais de uma requisição em
+// lote (lote_id). Cada item mostra sua própria ação (Avaliar/resultado);
+// o rodapé mantém "Aprovar tudo/Rejeitar tudo" pros itens ainda pendentes.
+function abrirDetalheRequisicao(loteId) {
+    const itens = state.requisicoes.filter(r => r.lote_id === loteId);
+    if (!itens.length) return;
+
+    const STR = {
+        pendente: '<span class="tag tag-amber"> Pendente</span>',
+        aprovada: '<span class="tag tag-green"> Aprovada</span>',
+        rejeitada: '<span class="tag tag-red"> Rejeitada</span>'
+    };
+    const r0 = itens[0];
+    const eq = state.equipes.find(e => e.id === r0.equipe_id);
+    const isAdmin = state.currentUser?.perfil === 'admin';
+    const qtdPendentes = itens.filter(it => it.status === 'pendente').length;
+
+    document.getElementById('reqDetalheTitulo').textContent = 'Requisição — ' + formatDate(r0.criado_em);
+    document.getElementById('reqDetalheInfo').innerHTML =
+        '<div><div style="font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-3);margin-bottom:3px">Solicitante</div><div>' + (r0.solicitante_nome||'—') + '</div></div>' +
+        '<div><div style="font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-3);margin-bottom:3px">Equipe</div><div>' + (eq ? eq.nome : '—') + '</div></div>' +
+        '<div style="grid-column:1/-1"><div style="font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-3);margin-bottom:3px">Motivo</div><div>' + (r0.motivo||'—') + '</div></div>';
+    document.getElementById('reqDetalheLista').innerHTML = itens.map(it => {
+        const p = it.produto || state.produtos.find(x => x.id === it.produto_id);
+        const nome = p ? p.nome : it.produto_nome||'—';
+        const acao = it.status === 'pendente' && isAdmin
+            ? '<button type="button" class="tbl-btn" style="padding:1px 7px;font-size:0.7rem" onclick="closeModal(\'modalRequisicaoDetalhe\');abrirAprovarReq(\'' + it.id + '\')"> Avaliar</button>'
+            : (STR[it.status] || it.status || '—');
+        return '<tr><td>' + nome + '</td><td>' + (it.quantidade||0) + '</td><td>' + acao + '</td></tr>';
+    }).join('');
+
+    const acoesLote = document.getElementById('reqDetalheAcoesLote');
+    acoesLote.innerHTML = qtdPendentes > 0 && isAdmin
+        ? '<button class="tbl-btn success" onclick="closeModal(\'modalRequisicaoDetalhe\');avaliarLoteRequisicoes(\'' + loteId + '\',\'aprovada\')"> Aprovar ' + (qtdPendentes < itens.length ? 'restantes' : 'tudo') + '</button>' +
+          '<button class="tbl-btn danger" style="margin-left:4px" onclick="closeModal(\'modalRequisicaoDetalhe\');avaliarLoteRequisicoes(\'' + loteId + '\',\'rejeitada\')"> Rejeitar ' + (qtdPendentes < itens.length ? 'restantes' : 'tudo') + '</button>'
+        : '';
+
+    openModal('modalRequisicaoDetalhe');
 }
 
 function filterRequisicoes() { pgReset('requisicoes'); renderRequisicoes(); }
@@ -8278,11 +8314,26 @@ function nomeExibicaoItem(item, p) {
 // determinar (ex: linha do modal "Novo Kit", que não tem esse select).
 function _kitTipoAtualPorInput(inpId) {
     const m = /^ac_(modal|page|edit)_/.exec(inpId || '');
-    if (!m) return null;
-    const ctx = m[1];
-    const tipoId = ctx === 'modal' ? 'modalOrdemTipo' : ctx === 'edit' ? 'editOrdemTipo' : 'ordemTipo';
-    const sel = document.getElementById(tipoId);
-    return sel ? sel.value : null;
+    if (m) {
+        const ctx = m[1];
+        const tipoId = ctx === 'modal' ? 'modalOrdemTipo' : ctx === 'edit' ? 'editOrdemTipo' : 'ordemTipo';
+        const sel = document.getElementById(tipoId);
+        return sel ? sel.value : null;
+    }
+    // Linha de sub-kit no cadastro de Kit (Novo Kit / Editar Kit): o "tipo"
+    // vem do nome do sub-kit (select "Inversor" / "Padrão de Entrada" /
+    // "Padrão de Entrada (Porte Auxiliar)"), não de um select de tipo de OS.
+    // Tanto "Padrão de Entrada" quanto "Padrão de Entrada (Porte Auxiliar)"
+    // contam como 'padrao_entrada' pra essa checagem.
+    const m2 = /^skInp_sk_(\d+)_/.exec(inpId || '');
+    if (m2) {
+        const nomeSel = document.getElementById('subkitNome_' + m2[1]);
+        const nome = nomeSel ? nomeSel.value : '';
+        if (/^Padrão de Entrada/.test(nome)) return 'padrao_entrada';
+        if (nome === 'Inversor') return 'inversor';
+        return null; // nome de sub-kit customizado/legado — não restringe
+    }
+    return null;
 }
 
 function _kitVerificarVariante(prodId, inpId) {
@@ -8308,7 +8359,7 @@ function _kitVerificarVariante(prodId, inpId) {
     if (!inp) return;
     // Âncora: a linha inteira do item (funciona tanto na Ordem de Serviço
     // quanto na criação de Kit), com fallback pro wrapper do autocomplete.
-    const row = inp.closest('[id^="itemOrdem_"]') || inp.closest('.kit-modal-item-row') || inp.closest('.ac-wrap') || inp.parentElement;
+    const row = inp.closest('[id^="itemOrdem_"]') || inp.closest('[id^="skLinha_"]') || inp.closest('.kit-modal-item-row') || inp.closest('.ac-wrap') || inp.parentElement;
     if (!row) return;
 
     const panel = document.createElement('div');
@@ -8646,19 +8697,11 @@ function acSelecionarSubKit(prodId, inpId, hidId, ddId) {
     // Fechar dropdown
     const dd = document.getElementById(ddId);
     if (dd) { dd.classList.remove('open'); dd.innerHTML = ''; }
-    // Verificar variante
-    const entrada = KIT_VARIANTES.find(v => v.regex.test(prod.nome));
-    if (entrada && inp) {
-        const panel  = document.getElementById('kitVariantePanel');
-        const titulo = document.getElementById('kitVarianteNomeProd');
-        const bots   = document.getElementById('kitVarianteBotoes');
-        if (titulo) titulo.textContent = prod.nome;
-        if (bots) bots.innerHTML = entrada.variantes.map(v =>
-            `<button type="button" class="btn-outline" style="padding:5px 16px;font-size:0.82rem"
-                onclick="_kitSelecionarVariante('${inpId}','${v}')">${v}</button>`
-        ).join('');
-        if (panel) { panel.style.display = 'block'; panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
-    }
+    // Verificar variante — mesma lógica usada na Ordem de Serviço: só mostra
+    // o painel se o produto tiver variantes e (quando restrito a um tipo) o
+    // sub-kit atual for do tipo certo. Painel dinâmico com "x" pra fechar,
+    // ancorado logo abaixo da própria linha.
+    if (typeof _kitVerificarVariante === 'function') _kitVerificarVariante(prodId, inpId);
 }
 
 function coletarSubKits() {
@@ -9411,9 +9454,9 @@ function _autoPreencherDtOS(kit, ctx) {
               <label>Tipo de Telha</label>
               <select id="kitTipoTelha" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
                 <option value="">— Selecione —</option>
-                <option value="portuguesa_concreto">Fibrocimento/Brasilit</option>
+                <option value="portuguesa_concreto">Fibrocimento/Brasilit/option>
                 <option value="portuguesa_ceramica">Fibrocimento/Ondulada</option>
-                <option value="colonial">Colonial/Barro</option>
+                <option value="colonial">Colonial</option>
                 <option value="metalica">Metálica</option>
                 <option value="fibrocimento"></option>
                 <option value="shingle"></option>
