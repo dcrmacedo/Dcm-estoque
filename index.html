@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -1333,7 +1332,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
       <!-- Dados Técnicos da Instalação -->
       <details id="modalOrdemDadosTecnicos" style="margin-bottom:16px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden">
         <summary style="padding:10px 14px;cursor:pointer;font-size:0.78rem;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-2);list-style:none;display:flex;align-items:center;gap:8px;user-select:none">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points=""/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
           Dados Técnicos da Instalação
           <span style="margin-left:auto;font-size:0.7rem;font-weight:400;color:var(--text-3)">(opcional)</span>
         </summary>
@@ -1352,14 +1351,14 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
               <label>Tipo de Telha</label>
               <select id="modalOrdemTipoTelha" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
                 <option value="">— Selecione —</option>
-                <option value="portuguesa_concreto">Fibrocimento/Brasilit</option>
-                <option value="portuguesa_ceramica">Fibrocimento/Ondulada</option>
-                <option value="romana">Colonial</option>
-                <option value="francesa"></option>
-                <option value="colonial"></option>
+                <option value="portuguesa_concreto">Portuguesa de Concreto</option>
+                <option value="portuguesa_ceramica">Portuguesa de Cerâmica</option>
+                <option value="romana">Romana</option>
+                <option value="francesa">Francesa</option>
+                <option value="colonial">Colonial</option>
                 <option value="metalica">Metálica</option>
-                <option value="fibrocimento"></option>
-                <option value="shingle"></option>
+                <option value="fibrocimento">Fibrocimento</option>
+                <option value="shingle">Shingle</option>
                 <option value="laje">Laje / Terraço</option>
                 <option value="outro">Outro</option>
               </select>
@@ -1490,14 +1489,14 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
               <label>Tipo de Telha</label>
               <select id="editOrdemTipoTelha" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
                 <option value="">— Selecione —</option>
-                <option value="portuguesa_concreto">Fibrocimento/Brasilit</option>
-                <option value="portuguesa_ceramica">Fibrocimento/Ondulada</option>
-                <option value="romana">Colonial</option>
-                <option value="francesa"></option>
-                <option value="colonial"></option>
+                <option value="portuguesa_concreto">Portuguesa de Concreto</option>
+                <option value="portuguesa_ceramica">Portuguesa de Cerâmica</option>
+                <option value="romana">Romana</option>
+                <option value="francesa">Francesa</option>
+                <option value="colonial">Colonial</option>
                 <option value="metalica">Metálica</option>
-                <option value="fibrocimento"></option>
-                <option value="shingle"></option>
+                <option value="fibrocimento">Fibrocimento</option>
+                <option value="shingle">Shingle</option>
                 <option value="laje">Laje / Terraço</option>
                 <option value="outro">Outro</option>
               </select>
@@ -1649,6 +1648,22 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
     <div class="modal-footer">
       <div id="reqDetalheAcoesLote" style="margin-right:auto"></div>
       <button class="btn-ghost" onclick="closeModal('modalRequisicaoDetalhe')">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<div id="modalMovSaidaDetalhe" class="modal-overlay hidden">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-header"><h3 id="movSaidaDetalheTitulo">Saída</h3><button class="modal-close" onclick="closeModal('modalMovSaidaDetalhe')">×</button></div>
+    <div class="modal-body">
+      <div id="movSaidaDetalheInfo" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;font-size:0.875rem"></div>
+      <table class="table">
+        <thead><tr><th>Produto</th><th>Qtd.</th></tr></thead>
+        <tbody id="movSaidaDetalheLista"></tbody>
+      </table>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeModal('modalMovSaidaDetalhe')">Fechar</button>
     </div>
   </div>
 </div>
@@ -6780,6 +6795,8 @@ function renderRelEstoque() {    popularFiltrosEstoque();
     }).join('');
 }
 
+let _relMovGrupoAtual = {}; // key -> itens[] do grupo de saída atualmente renderizado (pro modal de detalhe)
+
 function renderRelMovimentacoes() {
     var q     = (document.getElementById('relMovProduto')?.value || '').trim().toLowerCase();
     var tipo  = document.getElementById('relMovTipo').value;
@@ -6795,13 +6812,41 @@ function renderRelMovimentacoes() {
             quantidade: s.quantidade, responsavel: s.responsavel, extra: s.motivo || '—' };
     }) : [];
 
-    var list = entradas.concat(saidas).filter(function(m) {
+    function passaFiltro(m) {
         if (q && !((m.produto && m.produto.nome ? m.produto.nome : '').toLowerCase().includes(q))) return false;
         var d = new Date(m.data);
         if (di && d < new Date(di)) return false;
         if (df && d > new Date(df + 'T23:59:59')) return false;
         return true;
-    }).sort(function(a, b) { return new Date(b.data) - new Date(a.data); });
+    }
+    entradas = entradas.filter(passaFiltro);
+    saidas = saidas.filter(passaFiltro);
+
+    // Agrupa saídas que compartilham o mesmo motivo (mesma OS concluída,
+    // ou mesma submissão em lote de "Registrar Saída") no mesmo dia — em
+    // vez de uma linha por produto, vira um grupo compacto com "Ver
+    // materiais" (mesmo padrão usado em Devoluções/Requisições).
+    _relMovGrupoAtual = {};
+    var gruposMap = {};
+    var ordemChaves = [];
+    saidas.forEach(function(m) {
+        var dia = (m.data || '').slice(0, 10);
+        var chave = (m.extra || '') + '|' + dia;
+        if (!gruposMap[chave]) { gruposMap[chave] = []; ordemChaves.push(chave); }
+        gruposMap[chave].push(m);
+    });
+    var list = entradas.slice();
+    ordemChaves.forEach(function(chave) {
+        var itensGrupo = gruposMap[chave];
+        if (itensGrupo.length === 1) {
+            list.push(itensGrupo[0]);
+        } else {
+            _relMovGrupoAtual[chave] = itensGrupo;
+            list.push({ tipo: 'Saída', grupo: true, grupoKey: chave, data: itensGrupo[0].data, responsavel: itensGrupo[0].responsavel, extra: itensGrupo[0].extra, itens: itensGrupo });
+        }
+    });
+
+    list.sort(function(a, b) { return new Date(b.data) - new Date(a.data); });
 
     var count = document.getElementById('relMovCount');
     if (count) count.textContent = list.length + ' movimentação(ões)';
@@ -6811,6 +6856,18 @@ function renderRelMovimentacoes() {
     var page = pgApply('relMov', list, 'pgCardRelMov');
     tb.innerHTML = page.map(function(m) {
         var isEntrada = m.tipo === 'Entrada';
+        if (m.grupo) {
+            var qtdTotal = m.itens.reduce(function(s, it) { return s + (it.quantidade || 0); }, 0);
+            var nomesPreview = m.itens.slice(0, 2).map(function(it) { return it.produto ? it.produto.nome : '—'; }).join(', ') + (m.itens.length > 2 ? '...' : '');
+            return '<tr style="background:var(--surface-2);cursor:pointer" onclick="abrirDetalheMovimentacaoSaida(\'' + m.grupoKey.replace(/'/g, "\\'") + '\')">' +
+                '<td>' + formatDate(m.data) + '</td>' +
+                '<td><span class="tag tag-red">Saída</span></td>' +
+                '<td><strong>' + m.itens.length + ' materiais</strong><br><small style="color:var(--text-3)">' + nomesPreview + '</small></td>' +
+                '<td style="text-align:center;font-weight:600;color:var(--red)">-' + qtdTotal + '</td>' +
+                '<td>' + (m.responsavel || '—') + '</td>' +
+                '<td>' + m.extra + ' <button type="button" class="tbl-btn" style="margin-left:6px" onclick="event.stopPropagation();abrirDetalheMovimentacaoSaida(\'' + m.grupoKey.replace(/'/g, "\\'") + '\')">Ver materiais</button></td>' +
+                '</tr>';
+        }
         return '<tr>' +
             '<td>' + formatDate(m.data) + '</td>' +
             '<td><span class="tag ' + (isEntrada ? 'tag-green' : 'tag-red') + '">' + m.tipo + '</span></td>' +
@@ -6820,6 +6877,21 @@ function renderRelMovimentacoes() {
             '<td>' + m.extra + '</td>' +
             '</tr>';
     }).join('');
+}
+
+// Abre o modal com a lista completa de produtos de um grupo de saída
+// (mesma OS ou mesma submissão em lote) montado em renderRelMovimentacoes.
+function abrirDetalheMovimentacaoSaida(chave) {
+    var itens = _relMovGrupoAtual[chave];
+    if (!itens || !itens.length) return;
+    document.getElementById('movSaidaDetalheTitulo').textContent = 'Saída — ' + formatDate(itens[0].data);
+    document.getElementById('movSaidaDetalheInfo').innerHTML =
+        '<div><div style="font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-3);margin-bottom:3px">Responsável</div><div>' + (itens[0].responsavel||'—') + '</div></div>' +
+        '<div style="grid-column:1/-1"><div style="font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-3);margin-bottom:3px">Motivo</div><div>' + (itens[0].extra||'—') + '</div></div>';
+    document.getElementById('movSaidaDetalheLista').innerHTML = itens.map(function(it) {
+        return '<tr><td>' + (it.produto ? it.produto.nome : '—') + '</td><td style="color:var(--red);font-weight:600">-' + (it.quantidade||0) + '</td></tr>';
+    }).join('');
+    openModal('modalMovSaidaDetalhe');
 }
 
 function limparFiltrosMov() {
@@ -9454,9 +9526,9 @@ function _autoPreencherDtOS(kit, ctx) {
               <label>Tipo de Telha</label>
               <select id="kitTipoTelha" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
                 <option value="">— Selecione —</option>
-                <option value="portuguesa_concreto">Fibrocimento/Brasilit/option>
+                <option value="portuguesa_concreto">Fibrocimento/Brasilit</option>
                 <option value="portuguesa_ceramica">Fibrocimento/Ondulada</option>
-                <option value="colonial">Colonial</option>
+                <option value="colonial">Colonial/Barro</option>
                 <option value="metalica">Metálica</option>
                 <option value="fibrocimento"></option>
                 <option value="shingle"></option>
