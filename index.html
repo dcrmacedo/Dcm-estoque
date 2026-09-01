@@ -476,6 +476,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
 
       <!-- Alertas no topo -->
       <div id="alertaOSAtrasada" style="display:none;background:#FFF7ED;border:1px solid #FED7AA;border-left:4px solid #F97316;border-radius:var(--radius);padding:12px 16px;margin-bottom:12px;align-items:center;gap:10px"></div>
+      <div id="alertaSaldoNegativo" style="display:none;background:#FEE2E2;border:2px solid #EF4444;border-left:4px solid #B91C1C;border-radius:var(--radius);padding:12px 16px;margin-bottom:12px;align-items:center;gap:10px"></div>
       <div id="alertaCritico" style="display:none;background:#FEF2F2;border:1px solid #FECACA;border-left:4px solid var(--red);border-radius:var(--radius);padding:12px 16px;margin-bottom:16px;align-items:center;gap:10px"></div>
 
       <!-- Cards stats -->
@@ -484,6 +485,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
         <div class="stat-card"><div class="stat-icon green"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 19V5M5 12l7-7 7 7"/></svg></div><div><div class="stat-value" id="statEntradas">0</div><div class="stat-label">Entradas (mês)</div></div></div>
         <div class="stat-card"><div class="stat-icon amber"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12l7 7 7-7"/></svg></div><div><div class="stat-value" id="statSaidas">0</div><div class="stat-label">Saídas (mês)</div></div></div>
         <div class="stat-card"><div class="stat-icon red"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div><div><div class="stat-value" id="statEstoqueBaixo">0</div><div class="stat-label">Estoque Crítico</div></div></div>
+        <div class="stat-card" id="cardSaldoNegativo" style="display:none;cursor:pointer" onclick="showPage('inventario')"><div class="stat-icon red" style="background:#FEE2E2;color:#B91C1C"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div><div><div class="stat-value" id="statSaldoNegativo" style="color:#B91C1C">0</div><div class="stat-label">Saldo Negativo</div></div></div>
         <div class="stat-card"><div class="stat-icon purple"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div><div><div class="stat-value" id="statOrdens">0</div><div class="stat-label">Ordens Pendentes</div></div></div>
         <div class="stat-card"><div class="stat-icon green" style="background:#DCFCE7;color:#16A34A"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div><div class="stat-value" id="statValorEstoque" style="font-size:1rem">R$ 0</div><div class="stat-label">Valor em Estoque</div></div></div>
         <div class="stat-card" style="cursor:pointer" onclick="showPage('relatorios');setTimeout(()=>switchRelatorio('planejamento',document.getElementById('relTab-planejamento')),200)"><div class="stat-icon amber"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div><div class="stat-value" id="statEntregaDemorada">0</div><div class="stat-label">Entrega Demorada (&gt;30d)</div></div></div>
@@ -1045,19 +1047,9 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
                     </select>
                   </div>
                   <div class="form-group" style="margin:0">
-                    <label>Tipo de Telha</label>
+                    <label style="display:flex;align-items:center;justify-content:space-between">Tipo de Telha <a href="#" onclick="abrirConfigTiposTelha();return false" style="font-weight:400;font-size:0.75rem;color:var(--primary,#3b82f6);text-transform:none;letter-spacing:normal">⚙️ editar</a></label>
                     <select id="pageOrdemTipoTelha" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
                       <option value="">— Selecione —</option>
-                      <option value="portuguesa_concreto">Fibrocimento/Brasilit</option>
-                      <option value="portuguesa_ceramica">Fibrocimento/Ondulada</option>
-                      <option value="romana"></option>
-                      <option value="francesa"></option>
-                      <option value="colonial">Colonial</option>
-                      <option value="metalica">Metálica</option>
-                      <option value="fibrocimento"></option>
-                      <option value="shingle"></option>
-                      <option value="laje">Laje / Terraço</option>
-                      <option value="outro">Outro</option>
                     </select>
                   </div>
                   <div class="form-group" style="margin:0">
@@ -1122,7 +1114,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
     </div>
 
     <div id="page-minhasOrdens" class="page">
-      <div class="card"><div class="card-header"><h3>Minhas Ordens de Serviço</h3></div><div class="card-body no-pad"><table class="table"><thead><tr><th>#</th><th>Produto</th><th>Qtd</th><th class="col-hide-mobile">Prioridade</th><th>Status</th><th>Data</th><th>Ações</th></tr></thead><tbody id="tbodyMinhasOrdens"><tr><td colspan="7" class="empty">Você não possui ordens abertas</td></tr></tbody></table></div></div>
+      <div class="card"><div class="card-header"><h3>Minhas Ordens de Serviço</h3></div><div class="card-body no-pad"><table class="table"><thead><tr><th>#</th><th>Produto</th><th>Qtd</th><th class="col-hide-mobile">Prioridade</th><th>Status</th><th>Recebimento</th><th>Data</th><th>Ações</th></tr></thead><tbody id="tbodyMinhasOrdens"><tr><td colspan="8" class="empty">Você não possui ordens abertas</td></tr></tbody></table></div></div>
     </div>
 
 
@@ -1177,6 +1169,21 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
       </div>
     </div>
     <div class="modal-footer"><button class="btn-ghost" onclick="closeModal('modalFornecedor')">Cancelar</button><button class="btn-primary" onclick="salvarFornecedor()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Salvar</button></div>
+  </div>
+</div>
+
+<div id="modalConfigTiposTelha" class="modal-overlay hidden" style="z-index:600">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-header"><h3>Tipos de Telha</h3><button class="modal-close" onclick="closeModal('modalConfigTiposTelha')">×</button></div>
+    <div class="modal-body">
+      <div style="font-size:0.8rem;color:var(--text-2);margin-bottom:12px">Esta lista é compartilhada pelo Kit e pela Ordem de Serviço — editar aqui atualiza as duas abas.</div>
+      <div id="configTiposTelhaList" style="margin-bottom:12px"></div>
+      <div style="display:flex;gap:8px">
+        <input type="text" id="configTiposTelhaNovo" placeholder="Novo tipo de telha..." style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px;color:var(--text);font-family:inherit;font-size:0.875rem" onkeydown="if(event.key==='Enter'){event.preventDefault();configTelhaAdicionar();}"/>
+        <button type="button" class="btn-outline" style="padding:7px 12px;font-size:0.8rem" onclick="configTelhaAdicionar()">+ Adicionar</button>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn-ghost" onclick="closeModal('modalConfigTiposTelha')">Cancelar</button><button class="btn-primary" onclick="salvarConfigTiposTelha()">Salvar</button></div>
   </div>
 </div>
 
@@ -1332,7 +1339,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
       <!-- Dados Técnicos da Instalação -->
       <details id="modalOrdemDadosTecnicos" style="margin-bottom:16px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden">
         <summary style="padding:10px 14px;cursor:pointer;font-size:0.78rem;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-2);list-style:none;display:flex;align-items:center;gap:8px;user-select:none">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points=""/></svg>
           Dados Técnicos da Instalação
           <span style="margin-left:auto;font-size:0.7rem;font-weight:400;color:var(--text-3)">(opcional)</span>
         </summary>
@@ -1348,19 +1355,9 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
               </select>
             </div>
             <div class="form-group" style="margin:0">
-              <label>Tipo de Telha</label>
+              <label style="display:flex;align-items:center;justify-content:space-between">Tipo de Telha <a href="#" onclick="abrirConfigTiposTelha();return false" style="font-weight:400;font-size:0.75rem;color:var(--primary,#3b82f6);text-transform:none;letter-spacing:normal">⚙️ editar</a></label>
               <select id="modalOrdemTipoTelha" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
                 <option value="">— Selecione —</option>
-                <option value="portuguesa_concreto">Portuguesa de Concreto</option>
-                <option value="portuguesa_ceramica">Portuguesa de Cerâmica</option>
-                <option value="romana">Romana</option>
-                <option value="francesa">Francesa</option>
-                <option value="colonial">Colonial</option>
-                <option value="metalica">Metálica</option>
-                <option value="fibrocimento">Fibrocimento</option>
-                <option value="shingle">Shingle</option>
-                <option value="laje">Laje / Terraço</option>
-                <option value="outro">Outro</option>
               </select>
             </div>
             <div class="form-group" style="margin:0">
@@ -1435,10 +1432,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
       <div style="background:var(--red-soft);border:1px solid #FECACA;border-radius:var(--radius);padding:12px 14px;margin-bottom:14px;font-size:0.82rem;color:#991B1B;line-height:1.5">
         A ordem foi criada, mas os materiais abaixo estão com <strong>estoque insuficiente</strong> para atender a quantidade solicitada. A diferença precisa ser providenciada antes da conclusão desta OS.
       </div>
-      <table class="table">
-        <thead><tr><th>Produto</th><th>Código</th><th style="text-align:center">Qtd. Faltante</th></tr></thead>
-        <tbody id="matPendenteLista"></tbody>
-      </table>
+      <div id="matPendenteLista"></div>
     </div>
     <div class="modal-footer">
       <button class="btn-ghost" onclick="closeModal('modalMaterialPendente')">Fechar</button>
@@ -1486,19 +1480,9 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
               </select>
             </div>
             <div class="form-group" style="margin:0">
-              <label>Tipo de Telha</label>
+              <label style="display:flex;align-items:center;justify-content:space-between">Tipo de Telha <a href="#" onclick="abrirConfigTiposTelha();return false" style="font-weight:400;font-size:0.75rem;color:var(--primary,#3b82f6);text-transform:none;letter-spacing:normal">⚙️ editar</a></label>
               <select id="editOrdemTipoTelha" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
                 <option value="">— Selecione —</option>
-                <option value="portuguesa_concreto">Portuguesa de Concreto</option>
-                <option value="portuguesa_ceramica">Portuguesa de Cerâmica</option>
-                <option value="romana">Romana</option>
-                <option value="francesa">Francesa</option>
-                <option value="colonial">Colonial</option>
-                <option value="metalica">Metálica</option>
-                <option value="fibrocimento">Fibrocimento</option>
-                <option value="shingle">Shingle</option>
-                <option value="laje">Laje / Terraço</option>
-                <option value="outro">Outro</option>
               </select>
             </div>
             <div class="form-group" style="margin:0">
@@ -1594,6 +1578,29 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
   </div>
 </div>
 
+<div id="modalConfirmarRecebimento" class="modal-overlay hidden">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-header">
+      <h3><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Confirmar Recebimento — OS <span id="confRecebOSNumero"></span></h3>
+      <button class="modal-close" onclick="closeModal('modalConfirmarRecebimento')">×</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:0.82rem;color:var(--text-2);margin:0 0 10px">Confira se o material abaixo bate com o que você recebeu:</p>
+      <ul id="confRecebMateriais" style="margin:0 0 16px;padding-left:18px;font-size:0.85rem"></ul>
+
+      <div id="confRecebBotoes" style="display:flex;gap:10px">
+        <button class="btn-primary" style="flex:1;background:#10B981" onclick="confirmarRecebimento('completo')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><polyline points="20 6 9 17 4 12"/></svg> Recebi tudo</button>
+        <button class="btn-outline" style="flex:1;color:var(--red);border-color:#FECACA" onclick="confRecebMostrarParcial()">⚠ Recebi parcial / errado</button>
+      </div>
+
+      <div id="confRecebParcialBox" class="hidden" style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
+        <div class="form-group full-width" style="margin-bottom:10px"><label>O que faltou ou veio diferente? *</label><textarea id="confRecebObs" rows="3" placeholder="Ex: faltaram 20 metros de cabo 4mm"></textarea></div>
+        <button class="btn-primary" style="width:100%;background:var(--red)" onclick="confirmarRecebimento('parcial')">Salvar divergência</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="modalDevolucao" class="modal-overlay hidden">
   <div class="modal" style="max-width:680px">
     <div class="modal-header"><h3>↩ Registrar Devolução</h3><button class="modal-close" onclick="closeModal('modalDevolucao')">×</button></div>
@@ -1667,6 +1674,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
     </div>
   </div>
 </div>
+
 
 
 <div id="modalNovaRequisicao" class="modal-overlay hidden">
@@ -2388,7 +2396,7 @@ function buildSelectProdutos(selectedId, qtd, idx, ctx) {
 // ── Autocomplete helpers ──────────────────────────────────────
 
 // For standalone inputs (entrada/saida) with a separate hidden id field
-function acFiltrarSimples(inp, hiddenId) {
+function acFiltrarSimples(inp, hiddenId, manterSelecao) {
     var q = inp.value.toLowerCase();
     var ddId = inp.getAttribute('data-dd');
     var dd = document.getElementById(ddId);
@@ -2416,13 +2424,21 @@ function acFiltrarSimples(inp, hiddenId) {
         }).join('');
     }
     dd.classList.add('open');
-    // Clear hidden id if user is typing a new search
-    document.getElementById(hiddenId).value = '';
+    // Só limpa o produto já selecionado quando o usuário está de fato digitando uma
+    // nova busca (evento "input"); reabrir o dropdown ao focar (ex: clicar de novo
+    // no campo) não pode apagar a seleção que já estava feita.
+    if (!manterSelecao) document.getElementById(hiddenId).value = '';
 }
 
 function acFiltrarMulti(inp, hiddenId) {
-    // Same as acFiltrarSimples but works with dynamic ids
-    acFiltrarSimples(inp, hiddenId);
+    // Digitação: usuário está buscando um novo produto, limpa a seleção anterior.
+    acFiltrarSimples(inp, hiddenId, false);
+}
+
+function acAbrirMulti(inp, hiddenId) {
+    // Foco no campo (ex: já tem produto selecionado e o usuário só clicou de
+    // novo nele): reabre o dropdown mas preserva o produto já escolhido.
+    acFiltrarSimples(inp, hiddenId, true);
 }
 
 function acSelecionarSimples(el) {
@@ -2744,61 +2760,123 @@ async function gerarNumeroOS() {
     }
 }
 
+// ── Material Pendente — agrupamento por seção (Inversor / Padrão de Entrada / etc.) ──
+// Mesma lógica de separação em blocos usada na impressão da OS: cada kit
+// confirmado vira uma seção própria, mostrando só a falta daquela seção.
+
+// Agrupa uma lista plana de itens (já com kit_label anexado, como vem de
+// criarOrdem/criarOrdemModal) em [{ label, itens }]
+function agruparPorKitLabel(itens) {
+    const map = new Map();
+    (itens || []).forEach(i => {
+        const label = i.kit_label || 'Materiais';
+        if (!map.has(label)) map.set(label, []);
+        map.get(label).push(i);
+    });
+    return Array.from(map, ([label, itens]) => ({ label, itens }));
+}
+
+// Extrai os itens de uma OS já salva agrupados por seção/kit (a partir do
+// itens_json), preservando o label de cada bloco (Inversor, Padrão de
+// Entrada, etc.) — equivalente agrupado do extrairItensOrdem.
+function extrairKitsOrdem(ordemAtual) {
+    let raw = [];
+    try { raw = ordemAtual.itens_json ? JSON.parse(ordemAtual.itens_json) : []; } catch(e) {}
+    if (raw.length && raw[0] && raw[0].itens && Array.isArray(raw[0].itens)) {
+        return raw.map(kit => ({
+            label: kit.label || kit.tipo || 'Materiais',
+            itens: (kit.itens || []).map(i => ({
+                produto_id: i.produto_id || (i.produto ? i.produto.id : null),
+                quantidade: i.quantidade || i.qtd || 1,
+                nome: i.nome || null
+            })).filter(i => i.produto_id)
+        }));
+    }
+    const itens = extrairItensOrdem(ordemAtual);
+    return itens.length ? [{ label: 'Materiais', itens }] : [];
+}
+
+// Recebe grupos [{label, itens}] e devolve só os que têm itens com estoque
+// insuficiente NESTE momento (saldo ao vivo em state.produtos), descartando
+// seções sem pendência.
+function montarGruposPendentes(kits) {
+    return (kits || []).map(kit => ({
+        label: kit.label,
+        itens: (kit.itens || []).filter(i => {
+            const p = state.produtos.find(x => x.id === i.produto_id) || i.produto;
+            return p && (p.saldo_atual || 0) < i.quantidade;
+        })
+    })).filter(g => g.itens.length);
+}
+
+// Renderiza os grupos pendentes como blocos com título da seção + mini-tabela,
+// usado tanto no modal quanto (em versão própria) na impressão.
+function renderMatPendenteGrupos(grupos) {
+    return grupos.map(g => {
+        const rows = g.itens.map(i => {
+            const p = state.produtos.find(x => x.id === i.produto_id) || i.produto;
+            const saldoAtual = Math.max(0, p ? (p.saldo_atual || 0) : 0);
+            const falta = Math.max(0, i.quantidade - saldoAtual);
+            const nomeDisplay = (p ? p.nome : '—') + (i.nome ? ' — ' + i.nome : '');
+            return '<tr><td>' + nomeDisplay + '</td>' +
+                '<td>' + (p ? (p.codigo || '—') : '—') + '</td>' +
+                '<td style="text-align:center;font-weight:700;color:var(--red)">' + falta + '</td></tr>';
+        }).join('');
+        return '<div style="margin-bottom:14px">' +
+            '<div style="font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#991B1B;background:var(--red-soft);padding:6px 10px;border:1px solid #FECACA;border-bottom:none;border-radius:6px 6px 0 0">' + g.label + '</div>' +
+            '<table class="table" style="margin:0"><thead><tr><th>Produto</th><th>Código</th><th style="text-align:center">Qtd. Faltante</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+            '</div>';
+    }).join('');
+}
+
 // Verifica se a OS recém-criada tem materiais com estoque zerado e, se sim,
 // exibe um modal com o botão "Imprimir Material Pendente"
 function verificarEMostrarMaterialPendente(ordem, todosItens) {
-    const itensZerados = todosItens.filter(i => {
-        const prod = state.produtos.find(p => p.id === i.produto_id) || i.produto;
-        return prod && (prod.saldo_atual || 0) < i.quantidade;
-    });
-    if (!itensZerados.length) return;
+    const grupos = montarGruposPendentes(agruparPorKitLabel(todosItens));
+    if (!grupos.length) return;
 
-    _materialPendenteAtual = { ordem, itens: itensZerados };
+    const itensZerados = grupos.flatMap(g => g.itens);
+    _materialPendenteAtual = { ordem, itens: itensZerados, grupos };
 
     document.getElementById('matPendenteOS').textContent = ordem.numero || '';
-    document.getElementById('matPendenteLista').innerHTML = itensZerados.map(i => {
-        const p = state.produtos.find(x => x.id === i.produto_id) || i.produto;
-        // Saldo negativo (déficit de OS antigas já concluídas) não deve se somar
-        // ao pedido desta OS — a falta mostrada nunca deve passar da quantidade
-        // que esta OS realmente pediu nesta linha.
-        const saldoAtual = Math.max(0, p ? (p.saldo_atual || 0) : 0);
-        const falta = Math.max(0, i.quantidade - saldoAtual);
-        return '<tr><td>' + (p ? p.nome : '—') + '</td>' +
-            '<td>' + (p ? (p.codigo || '—') : '—') + '</td>' +
-            '<td style="text-align:center;font-weight:700;color:var(--red)">' + falta + '</td></tr>';
-    }).join('');
+    document.getElementById('matPendenteLista').innerHTML = renderMatPendenteGrupos(grupos);
 
     openModal('modalMaterialPendente');
 }
 
 function printMaterialPendente() {
     if (!_materialPendenteAtual) return;
-    const { ordem, itens } = _materialPendenteAtual;
+    const { ordem, grupos } = _materialPendenteAtual;
 
     // Re-checa o saldo ATUAL de cada item antes de imprimir — caso algum
     // material já tenha sido reposto (por entrada, edição de produto,
     // inventário, etc.) desde que o modal foi aberto, ele sai da lista.
-    const itensAindaZerados = itens.filter(i => {
-        const p = state.produtos.find(x => x.id === i.produto_id) || i.produto;
-        return p && (p.saldo_atual || 0) < i.quantidade;
-    });
-    if (!itensAindaZerados.length) {
+    const gruposAtuais = montarGruposPendentes(grupos);
+    if (!gruposAtuais.length) {
         showToast('Todos os materiais já foram repostos. Nada pendente para imprimir.', 'info');
         closeModal('modalMaterialPendente');
         return;
     }
 
-    const rows = itensAindaZerados.map(i => {
-        const p = state.produtos.find(x => x.id === i.produto_id) || i.produto;
-        const saldoAtual = Math.max(0, p ? (p.saldo_atual || 0) : 0);
-        const falta = Math.max(0, i.quantidade - saldoAtual);
-        return '<tr>' +
-            '<td>' + (p ? p.nome : '—') + '</td>' +
-            '<td>' + (p ? (p.codigo || '—') : '—') + '</td>' +
-            '<td>' + (p ? (p.categoria || '—') : '—') + '</td>' +
-            '<td>' + (p ? (p.localizacao || '—') : '—') + '</td>' +
-            '<td style="text-align:center;font-weight:700;color:#DC2626">' + falta + '</td>' +
-            '</tr>';
+    const blocosHtml = gruposAtuais.map(g => {
+        const rows = g.itens.map(i => {
+            const p = state.produtos.find(x => x.id === i.produto_id) || i.produto;
+            const saldoAtual = Math.max(0, p ? (p.saldo_atual || 0) : 0);
+            const falta = Math.max(0, i.quantidade - saldoAtual);
+            const nomeDisplay = (p ? p.nome : '—') + (i.nome ? ' — ' + i.nome : '');
+            return '<tr>' +
+                '<td>' + nomeDisplay + '</td>' +
+                '<td>' + (p ? (p.codigo || '—') : '—') + '</td>' +
+                '<td>' + (p ? (p.categoria || '—') : '—') + '</td>' +
+                '<td>' + (p ? (p.localizacao || '—') : '—') + '</td>' +
+                '<td style="text-align:center;font-weight:700;color:#DC2626">' + falta + '</td>' +
+                '</tr>';
+        }).join('');
+        return '<div class="kit-block">' +
+            '<div class="kit-header">' + g.label + '</div>' +
+            '<table><thead><tr><th>Produto</th><th>Código</th><th>Categoria</th><th>Localização</th><th style="text-align:center">Qtd. Faltante</th></tr></thead>' +
+            '<tbody>' + rows + '</tbody></table>' +
+            '</div>';
     }).join('');
 
     const win = window.open('', '_blank', 'width=900,height=700');
@@ -2814,7 +2892,9 @@ body{font-family:'Segoe UI',Arial,sans-serif;color:#1E293B;background:#fff;paddi
 .os-num h2{font-size:1.6rem;font-weight:700;color:#DC2626}
 .os-num p{font-size:0.78rem;color:#64748B;margin-top:3px}
 .alert-box{background:#FEF2F2;border:1px solid #FECACA;border-left:4px solid #DC2626;border-radius:8px;padding:14px 16px;margin-bottom:22px;font-size:0.875rem;color:#991B1B;line-height:1.6}
-table{width:100%;border-collapse:collapse;border:1px solid #E2E8F0;border-radius:8px;overflow:hidden}
+.kit-block{margin-bottom:18px;border:1px solid #FECACA;border-radius:8px;overflow:hidden}
+.kit-header{background:#FEF2F2;color:#991B1B;font-weight:700;font-size:0.875rem;padding:10px 14px;border-bottom:1px solid #FECACA;text-transform:uppercase;letter-spacing:0.04em}
+table{width:100%;border-collapse:collapse}
 th{background:#FEF2F2;padding:9px 12px;font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:#991B1B;text-align:left;border-bottom:1px solid #FECACA}
 td{padding:9px 12px;font-size:0.86rem;border-bottom:1px solid #F1F5F9;color:#1E293B}
 tr:last-child td{border-bottom:none}
@@ -2837,13 +2917,10 @@ tr:last-child td{border-bottom:none}
 </div>
 
 <div class="alert-box">
-  Os materiais listados abaixo foram solicitados na Ordem de Serviço <strong>${ordem.numero || ''}</strong> e estão com <strong>estoque insuficiente</strong> para a quantidade solicitada. É necessário providenciar a reposição da diferença para que esta OS possa ser concluída.
+  Os materiais listados abaixo foram solicitados na Ordem de Serviço <strong>${ordem.numero || ''}</strong> e estão com <strong>estoque insuficiente</strong> para a quantidade solicitada, separados por seção. É necessário providenciar a reposição da diferença para que esta OS possa ser concluída.
 </div>
 
-<table>
-  <thead><tr><th>Produto</th><th>Código</th><th>Categoria</th><th>Localização</th><th style="text-align:center">Qtd. Faltante</th></tr></thead>
-  <tbody>${rows}</tbody>
-</table>
+${blocosHtml}
 
 <div class="signatures">
   <div class="sig">Solicitado por<br><br><br>${ordem.solicitante_nome || ''}</div>
@@ -2856,49 +2933,6 @@ tr:last-child td{border-bottom:none}
     win.focus();
     setTimeout(() => win.print(), 500);
 }
-
-// Retorna { ordem, itens } com os itens da ordem que ESTÃO com estoque
-// zerado no momento atual (busca sempre o saldo ao vivo em state.produtos).
-// Usado tanto pelo modal pós-criação quanto pelo botão na tabela de Ordens,
-// para que o material pendente possa ser reimpresso a qualquer momento —
-// mesmo que o usuário não tenha imprimido na primeira vez que apareceu.
-function getItensZeradosOrdem(ordemId) {
-    const o = state.ordens.find(x => x.id === ordemId);
-    if (!o) return null;
-    const itens = extrairItensOrdem(o);
-    const zerados = itens.filter(i => {
-        const p = state.produtos.find(x => x.id === i.produto_id);
-        return p && (p.saldo_atual || 0) < i.quantidade;
-    });
-    return { ordem: o, itens: zerados };
-}
-
-// Usado para decidir se o botão "Imprimir Material Pendente" aparece na
-// tabela de Ordens para uma determinada linha.
-function ordemTemMaterialZerado(o) {
-    if (!o || o.status === 'concluida' || o.status === 'cancelada') return false;
-    const itens = extrairItensOrdem(o);
-    return itens.some(i => {
-        const p = state.produtos.find(x => x.id === i.produto_id);
-        return p && (p.saldo_atual || 0) < i.quantidade;
-    });
-}
-
-// Botão da tabela: imprime direto o material pendente de uma OS já existente,
-// sem precisar que o modal tenha aparecido no momento da criação.
-function imprimirMaterialPendenteOrdem(ordemId) {
-    const res = getItensZeradosOrdem(ordemId);
-    if (!res) { showToast('Ordem não encontrada.', 'error'); return; }
-    if (!res.itens.length) {
-        showToast('Não há materiais pendentes (estoque insuficiente) nesta ordem no momento.', 'info');
-        if (document.getElementById('page-ordens').classList.contains('active')) renderOrdens(document.getElementById('searchOrdens') ? document.getElementById('searchOrdens').value : '', state.filtroOrdens);
-        if (document.getElementById('page-minhasOrdens').classList.contains('active')) renderMinhasOrdens();
-        return;
-    }
-    _materialPendenteAtual = res;
-    printMaterialPendente();
-}
-
 
 async function criarOrdem() {
     const desc = document.getElementById('ordemDescricao').value.trim();
@@ -3160,48 +3194,6 @@ function verReservasProduto(produtoId) {
     document.getElementById('modalReservasProduto').classList.remove('hidden');
 }
 
-// Remove um item específico de uma OS (libera reserva)
-async function liberarItemReserva(ordemId, itemIdx, produtoId) {
-    if (!confirm('Remover este item da OS libera a reserva sem afetar o estoque. Confirmar?')) return;
-
-    const ordem = state.ordens.find(o => o.id === ordemId);
-    if (!ordem) return;
-
-    let raw = [];
-    try { raw = ordem.itens_json ? JSON.parse(ordem.itens_json) : []; } catch(e) {}
-
-    // Formato de kits: array de kits com sub-itens
-    let novoJson;
-    if (raw.length && raw[0] && raw[0].itens && Array.isArray(raw[0].itens)) {
-        // Localizar e remover o item pelo índice global
-        let globalIdx = 0;
-        const novosKits = raw.map(kit => ({
-            ...kit,
-            itens: kit.itens.filter(i => globalIdx++ !== itemIdx)
-        })).filter(kit => kit.itens.length > 0);
-        novoJson = JSON.stringify(novosKits);
-    } else {
-        // Formato plano
-        const novos = raw.filter((_, i) => i !== itemIdx);
-        novoJson = JSON.stringify(novos);
-    }
-
-    try {
-        const { error } = await sb.from('ordens').update({ itens_json: novoJson }).eq('id', ordemId);
-        if (error) throw error;
-        // Atualizar estado local
-        const idx = state.ordens.findIndex(o => o.id === ordemId);
-        if (idx !== -1) state.ordens[idx].itens_json = novoJson;
-        showToast('Reserva liberada com sucesso!', 'success');
-        // Reabrir modal atualizado
-        verReservasProduto(produtoId);
-        renderProdutos();
-        updateBadges();
-    } catch(err) {
-        showToast('Erro ao liberar reserva: ' + (err.message || ''), 'error');
-    }
-}
-
 // Remove várias linhas de uma OS de uma vez (mesmo produto repetido em
 // mais de um kit dentro da mesma ordem). idxsCsv vem como string
 // "3,7" (índices globais separados por vírgula) vindos do modal de Reservas,
@@ -3264,26 +3256,16 @@ function abrirMaterialPendenteOrdem(id) {
     const ordem = state.ordens.find(o => o.id === id);
     if (!ordem) return;
 
-    const itensZerados = extrairItensOrdem(ordem).filter(i => {
-        const p = state.produtos.find(x => x.id === i.produto_id);
-        return p && (p.saldo_atual || 0) < i.quantidade;
-    });
-    if (!itensZerados.length) {
+    const grupos = montarGruposPendentes(extrairKitsOrdem(ordem));
+    if (!grupos.length) {
         showToast('Não há materiais pendentes (estoque insuficiente) nesta ordem no momento.', 'info');
         return;
     }
 
-    _materialPendenteAtual = { ordem, itens: itensZerados };
+    _materialPendenteAtual = { ordem, itens: grupos.flatMap(g => g.itens), grupos };
 
     document.getElementById('matPendenteOS').textContent = ordem.numero || '';
-    document.getElementById('matPendenteLista').innerHTML = itensZerados.map(i => {
-        const p = state.produtos.find(x => x.id === i.produto_id);
-        const saldoAtual = Math.max(0, p ? (p.saldo_atual || 0) : 0);
-        const falta = Math.max(0, i.quantidade - saldoAtual);
-        return '<tr><td>' + (p ? p.nome : '—') + '</td>' +
-            '<td>' + (p ? (p.codigo || '—') : '—') + '</td>' +
-            '<td style="text-align:center;font-weight:700;color:var(--red)">' + falta + '</td></tr>';
-    }).join('');
+    document.getElementById('matPendenteLista').innerHTML = renderMatPendenteGrupos(grupos);
 
     openModal('modalMaterialPendente');
 }
@@ -4209,7 +4191,7 @@ function devAddItem() {
         '<div class="ac-wrap" style="flex:1">' +
             '<input class="ac-input" id="' + inpId + '" type="text" placeholder="Buscar produto..." autocomplete="off"' +
             ' oninput="acFiltrarMulti(this,\'' + hidId + '\')"' +
-            ' onfocus="acFiltrarMulti(this,\'' + hidId + '\')"' +
+            ' onfocus="acAbrirMulti(this,\'' + hidId + '\')"' +
             ' data-dd="' + ddId + '"' +
             ' onblur="(function(dd){setTimeout(function(){acFechar(dd)},180)})(this.getAttribute(\'data-dd\'))" />' +
             '<input type="hidden" id="' + hidId + '" />' +
@@ -4433,7 +4415,7 @@ function reqAddItem() {
         '<div class="ac-wrap" style="flex:1">' +
             '<input class="ac-input" id="' + inpId + '" type="text" placeholder="Buscar produto..." autocomplete="off"' +
             ' oninput="acFiltrarMulti(this,\'' + hidId + '\')"' +
-            ' onfocus="acFiltrarMulti(this,\'' + hidId + '\')"' +
+            ' onfocus="acAbrirMulti(this,\'' + hidId + '\')"' +
             ' data-dd="' + ddId + '"' +
             ' onblur="(function(dd){setTimeout(function(){acFechar(dd)},180)})(this.getAttribute(\'data-dd\'))" />' +
             '<input type="hidden" id="' + hidId + '" />' +
@@ -4535,7 +4517,7 @@ function entradaAddItem() {
         '<div class="ac-wrap" style="flex:1">' +
             '<input class="ac-input" id="' + inpId + '" type="text" placeholder="Buscar produto pelo nome ou código..." autocomplete="off"' +
             ' oninput="acFiltrarMulti(this,\'' + hidId + '\')"' +
-            ' onfocus="acFiltrarMulti(this,\'' + hidId + '\')"' +
+            ' onfocus="acAbrirMulti(this,\'' + hidId + '\')"' +
             ' data-dd="' + ddId + '"' +
             ' onblur="(function(dd){setTimeout(function(){acFechar(dd)},180)})(this.getAttribute(\'data-dd\'))" />' +
             '<input type="hidden" id="' + hidId + '" />' +
@@ -4580,7 +4562,7 @@ function saidaAddItem() {
         '<div class="ac-wrap" style="flex:1">' +
             '<input class="ac-input" id="' + inpId + '" type="text" placeholder="Buscar produto pelo nome ou código..." autocomplete="off"' +
             ' oninput="acFiltrarMulti(this,\'' + hidId + '\')"' +
-            ' onfocus="acFiltrarMulti(this,\'' + hidId + '\')"' +
+            ' onfocus="acAbrirMulti(this,\'' + hidId + '\')"' +
             ' data-dd="' + ddId + '"' +
             ' onblur="(function(dd){setTimeout(function(){acFechar(dd)},180)})(this.getAttribute(\'data-dd\'))" />' +
             '<input type="hidden" id="' + hidId + '" />' +
@@ -5175,6 +5157,28 @@ function renderDashboard() {
     document.getElementById('statEstoqueBaixo').textContent = baixo.length;
     document.getElementById('statOrdens').textContent = state.ordens.filter(function(o) { return o.status === 'pendente'; }).length;
 
+    // Saldo negativo — não deveria existir fisicamente; sinal de entrada
+    // registrada depois da saída, baixa duplicada, ou erro de contagem.
+    const negativos = state.produtos.filter(function(p) { return (p.saldo_atual || 0) < 0; });
+    const cardNeg = document.getElementById('cardSaldoNegativo');
+    const statNeg = document.getElementById('statSaldoNegativo');
+    if (statNeg) statNeg.textContent = negativos.length;
+    if (cardNeg) cardNeg.style.display = negativos.length > 0 ? 'flex' : 'none';
+    const alertaNegEl = document.getElementById('alertaSaldoNegativo');
+    if (alertaNegEl) {
+        if (negativos.length > 0) {
+            alertaNegEl.style.display = 'flex';
+            const nomesNeg = negativos.slice(0, 3).map(function(p) { return p.nome + ' (' + (p.saldo_atual||0) + ')'; }).join(', ');
+            alertaNegEl.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B91C1C" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>' +
+                '<span style="font-size:0.875rem;color:#7F1D1D;font-weight:600">' + negativos.length + ' produto(s) com saldo NEGATIVO (isso não deveria acontecer fisicamente): ' + nomesNeg + (negativos.length > 3 ? '...' : '') + '</span>' +
+                '<div style="margin-left:auto;display:flex;gap:8px">' +
+                '<button onclick="showPage(&quot;inventario&quot;)" style="background:#B91C1C;color:white;border:none;border-radius:6px;padding:4px 12px;font-size:0.78rem;cursor:pointer;font-family:inherit">Corrigir agora</button>' +
+                '</div>';
+        } else {
+            alertaNegEl.style.display = 'none';
+        }
+    }
+
     // Materiais com entrega demorada (>30 dias)
     var entregaDemorada = state.produtos.filter(function(p) { return (p.prazo_entrega || 0) >= 30; });
     var elED = document.getElementById('statEntregaDemorada');
@@ -5546,6 +5550,105 @@ function verificarOSAtrasadas() {
 
 
 // ============================================================
+// TIPOS DE TELHADO (CONFIGURÁVEL) — usado no Kit e na Ordem de Serviço
+// ============================================================
+const TIPOS_TELHA_DEFAULT = [
+    { value: 'portuguesa_concreto', label: 'Portuguesa de Concreto' },
+    { value: 'portuguesa_ceramica', label: 'Portuguesa de Cerâmica' },
+    { value: 'romana', label: 'Romana' },
+    { value: 'francesa', label: 'Francesa' },
+    { value: 'colonial', label: 'Colonial' },
+    { value: 'metalica', label: 'Metálica' },
+    { value: 'fibrocimento', label: 'Fibrocimento' },
+    { value: 'shingle', label: 'Shingle' },
+    { value: 'laje', label: 'Laje / Terraço' },
+    { value: 'outro', label: 'Outro' },
+];
+const TIPOS_TELHA_SELECT_IDS = ['pageOrdemTipoTelha', 'modalOrdemTipoTelha', 'editOrdemTipoTelha', 'kitTipoTelha'];
+
+function getTiposTelha() {
+    try {
+        const raw = localStorage.getItem('dcm_tipos_telha');
+        if (raw) {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed) && parsed.length) return parsed;
+        }
+    } catch (e) { /* usa o padrão abaixo */ }
+    return TIPOS_TELHA_DEFAULT.slice();
+}
+
+function salvarTiposTelha(lista) {
+    localStorage.setItem('dcm_tipos_telha', JSON.stringify(lista));
+}
+
+function tipoTelhaMap() {
+    const map = {};
+    getTiposTelha().forEach(t => { map[t.value] = t.label; });
+    return map;
+}
+
+function renderAllTelhaSelects() {
+    const tipos = getTiposTelha();
+    TIPOS_TELHA_SELECT_IDS.forEach(id => {
+        const sel = document.getElementById(id);
+        if (!sel) return;
+        const valorAtual = sel.value;
+        sel.innerHTML = '<option value="">— Selecione —</option>' +
+            tipos.map(t => `<option value="${t.value}">${t.label}</option>`).join('');
+        if (valorAtual && tipos.some(t => t.value === valorAtual)) sel.value = valorAtual;
+    });
+}
+
+function renderTiposTelhaConfigList() {
+    const cont = document.getElementById('configTiposTelhaList');
+    if (!cont) return;
+    const tipos = getTiposTelha();
+    cont.innerHTML = tipos.map((t, i) => `
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px" data-idx="${i}">
+          <input type="text" value="${t.label.replace(/"/g, '&quot;')}" style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px;color:var(--text);font-family:inherit;font-size:0.875rem" oninput="configTelhaAtualizarLabel(${i}, this.value)"/>
+          <button type="button" class="btn-ghost" style="padding:6px 10px;color:#ef4444" onclick="configTelhaRemover(${i})" title="Remover">✕</button>
+        </div>`).join('');
+}
+
+let _configTiposTelhaTemp = null;
+
+function abrirConfigTiposTelha() {
+    _configTiposTelhaTemp = getTiposTelha();
+    renderTiposTelhaConfigList();
+    openModal('modalConfigTiposTelha');
+}
+
+function configTelhaAtualizarLabel(idx, valor) {
+    if (!_configTiposTelhaTemp) _configTiposTelhaTemp = getTiposTelha();
+    if (_configTiposTelhaTemp[idx]) _configTiposTelhaTemp[idx].label = valor;
+}
+
+function configTelhaRemover(idx) {
+    if (!_configTiposTelhaTemp) _configTiposTelhaTemp = getTiposTelha();
+    _configTiposTelhaTemp.splice(idx, 1);
+    salvarTiposTelha(_configTiposTelhaTemp);
+    renderTiposTelhaConfigList();
+}
+
+function configTelhaAdicionar() {
+    const input = document.getElementById('configTiposTelhaNovo');
+    const label = (input?.value || '').trim();
+    if (!label) return;
+    if (!_configTiposTelhaTemp) _configTiposTelhaTemp = getTiposTelha();
+    const value = 'telha_' + Date.now();
+    _configTiposTelhaTemp.push({ value, label });
+    salvarTiposTelha(_configTiposTelhaTemp);
+    input.value = '';
+    renderTiposTelhaConfigList();
+}
+
+function salvarConfigTiposTelha() {
+    if (_configTiposTelhaTemp) salvarTiposTelha(_configTiposTelhaTemp);
+    renderAllTelhaSelects();
+    closeModal('modalConfigTiposTelha');
+}
+
+// ============================================================
 // ENGINE DE PAGINAÇÃO CLIENT-SIDE
 // ============================================================
 const _pg = {};   // estado de página por tabela: { page, perPage }
@@ -5690,10 +5793,19 @@ function renderProdutos(filter = '') {
     tb.innerHTML = page.map(p => {
         // Calcular reserva e saldo líquido disponível
         const reserva = calcularReservaProduto(p.id);
-        const saldoLiquido = Math.max(0, (p.saldo_atual || 0) - reserva);
+        const saldoFisico = p.saldo_atual || 0;
+        const isNegativo = saldoFisico < 0;
+        // Math.max(0,...) evita mostrar "líquido" negativo quando a reserva
+        // é maior que o saldo físico (situação normal) — mas isso também
+        // escondia um saldo físico já negativo (mostrava "0" em vez do
+        // problema real). Agora, se o saldo físico já é negativo, exibe
+        // ele mesmo (sem clamp) pra não mascarar o problema.
+        const saldoLiquido = isNegativo ? saldoFisico : Math.max(0, saldoFisico - reserva);
 
         const low = p.estoque_minimo > 0 && saldoLiquido <= p.estoque_minimo;
-        const st = low ? '<span class="tag tag-red">Crítico</span>' : '<span class="tag tag-green">Normal</span>';
+        const st = isNegativo
+            ? '<span class="tag tag-red" style="background:#7F1D1D;color:#fff;cursor:pointer" title="Saldo físico negativo — não deveria acontecer. Clique para ir à Contagem de Inventário e corrigir o saldo." onclick="showPage(\'inventario\')">Negativo</span>'
+            : (low ? '<span class="tag tag-red">Crítico</span>' : '<span class="tag tag-green">Normal</span>');
         const img = p.imagem
             ? '<div class="prod-img lb-thumb" data-src="' + p.imagem + '" data-nome="' + (p.nome||'').replace(/"/g,'') + '" onclick="abrirLightboxEl(this)" style="cursor:zoom-in" title="Clique para ampliar"><img src="' + p.imagem + '" onerror="this.onerror=null;this.outerHTML=\'&#128230;\'"/></div>'
             : '<div class="prod-img">&#128230;</div>';
@@ -5705,7 +5817,7 @@ function renderProdutos(filter = '') {
               + reserva + '</span></button>'
             : '<span style="color:var(--text-4,#ccc);font-size:0.8rem">—</span>';
 
-        return '<tr><td>' + img + '</td><td><code style="font-family:monospace;font-size:0.8rem;">' + (p.codigo || '') + '</code></td><td>' + (p.nome || '') + '</td><td>' + (p.categoria || '—') + '</td><td>' + (p.localizacao || '—') + '</td><td>' + (p.estoque_minimo || 0) + '</td><td><strong title="Saldo físico: ' + (p.saldo_atual||0) + ' · Reservado: ' + reserva + '">' + saldoLiquido + '</strong></td><td>' + reservaCell + '</td><td>' + st + '</td><td><div class="tbl-actions"><button class="tbl-btn" onclick="verHistoricoProduto(\'' + p.id + '\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></button><button class="tbl-btn" title="Gerar etiqueta QR" onclick="gerarEtiquetaQR(\'' + p.id + '\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></button><button class="tbl-btn" onclick="editProduto(\'' + p.id + '\')">Editar</button><button class="tbl-btn danger" onclick="deleteProduto(\'' + p.id + '\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button></div></td></tr>';
+        return '<tr><td>' + img + '</td><td><code style="font-family:monospace;font-size:0.8rem;">' + (p.codigo || '') + '</code></td><td>' + (p.nome || '') + '</td><td>' + (p.categoria || '—') + '</td><td>' + (p.localizacao || '—') + '</td><td>' + (p.estoque_minimo || 0) + '</td><td><strong title="Saldo físico: ' + saldoFisico + ' · Reservado: ' + reserva + '" style="' + (isNegativo ? 'color:#B91C1C' : '') + '">' + saldoLiquido + '</strong></td><td>' + reservaCell + '</td><td>' + st + '</td><td><div class="tbl-actions"><button class="tbl-btn" onclick="verHistoricoProduto(\'' + p.id + '\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></button><button class="tbl-btn" title="Gerar etiqueta QR" onclick="gerarEtiquetaQR(\'' + p.id + '\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></button><button class="tbl-btn" onclick="editProduto(\'' + p.id + '\')">Editar</button><button class="tbl-btn danger" onclick="deleteProduto(\'' + p.id + '\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button></div></td></tr>';
     }).join('');
 }
 
@@ -6226,7 +6338,7 @@ function printOrdem(id) {
     const dt = dtRaw ? (typeof dtRaw === 'string' ? JSON.parse(dtRaw) : dtRaw) : {};
     const dtMap = {
         residencia:       { label: 'Residência',           values: { monofasico:'Monofásico', bifasico:'Bifásico', trifasico:'Trifásico' } },
-        tipo_telha:       { label: 'Tipo de Telha',        values: { portuguesa_concreto:'Portuguesa de Concreto', portuguesa_ceramica:'Portuguesa de Cerâmica', romana:'Romana', francesa:'Francesa', colonial:'Colonial', metalica:'Metálica', fibrocimento:'Fibrocimento', shingle:'Shingle', laje:'Laje / Terraço', outro:'Outro' } },
+        tipo_telha:       { label: 'Tipo de Telha',        values: tipoTelhaMap() },
         tipo_estrutura:   { label: 'Tipo de Estrutura',    values: { madeira:'Madeira', metalica:'Metálica', concreto:'Concreto', mista:'Mista' } },
         condicao_telhado: { label: 'Condição do Telhado',  values: { bom:'✅ Boas condições de instalação', regular:'⚠️ Regular — requer atenção', ruim:'❌ Ruim — necessita reparo' } },
         obs_tecnica:      { label: 'Obs. Técnicas',        values: {} },
@@ -6570,7 +6682,13 @@ function renderOrdens(filter = '', sf = '') {
         
         const descClean = (o.descricao || '').replace(/^\[.*?\]\s*/, '');
         const descTrunc = descClean.length > 50 ? descClean.substring(0,50) + '...' : descClean;
-        return '<tr><td><code style="font-size:0.78rem;font-family:monospace;">' + (o.numero || '') + '</code></td><td>' + (o.solicitante_nome || '') + '</td><td>' + equipeNome + '</td><td class="col-hide-mobile"><span class="tag ' + pr.cls + '">' + pr.label + '</span></td><td><span class="tag ' + st.cls + '">' + st.label + '</span></td><td>' + formatDate(o.criado_em) + '</td><td class="col-hide-mobile" style="max-width:200px;color:var(--text-2);font-size:0.82rem" title="' + descClean.replace(/"/g,"'") + '">' + (descTrunc || '—') + '</td><td><div class="tbl-actions">' + ac + '</div></td></tr>';
+        let statusCell = '<span class="tag ' + st.cls + '">' + st.label + '</span>';
+        if (o.status === 'concluida') {
+            if (o.confirmacao_status === 'confirmado') statusCell += ' <span class="tag tag-green" title="Confirmado por ' + (o.confirmacao_por || '') + ' em ' + formatDate(o.confirmacao_data) + '">✓ Receb.</span>';
+            else if (o.confirmacao_status === 'parcial') statusCell += ' <span class="tag tag-red" title="' + (o.confirmacao_obs || '').replace(/"/g,"'") + '">⚠ Diverg.</span>';
+            else statusCell += ' <span class="tag tag-amber" title="Aguardando a equipe confirmar recebimento">Aguard. confirm.</span>';
+        }
+        return '<tr><td><code style="font-size:0.78rem;font-family:monospace;">' + (o.numero || '') + '</code></td><td>' + (o.solicitante_nome || '') + '</td><td>' + equipeNome + '</td><td class="col-hide-mobile"><span class="tag ' + pr.cls + '">' + pr.label + '</span></td><td>' + statusCell + '</td><td>' + formatDate(o.criado_em) + '</td><td class="col-hide-mobile" style="max-width:200px;color:var(--text-2);font-size:0.82rem" title="' + descClean.replace(/"/g,"'") + '">' + (descTrunc || '—') + '</td><td><div class="tbl-actions">' + ac + '</div></td></tr>';
     }).join('');
 }
 
@@ -6640,7 +6758,7 @@ function verOrdem(id) {
         : {};
     const dtLabels = {
         residencia:       { label: 'Residência',           map: { monofasico:'Monofásico', bifasico:'Bifásico', trifasico:'Trifásico' } },
-        tipo_telha:       { label: 'Tipo de Telha',        map: { portuguesa_concreto:'Portuguesa de Concreto', portuguesa_ceramica:'Portuguesa de Cerâmica', romana:'Romana', francesa:'Francesa', colonial:'Colonial', metalica:'Metálica', fibrocimento:'Fibrocimento', shingle:'Shingle', laje:'Laje / Terraço', outro:'Outro' } },
+        tipo_telha:       { label: 'Tipo de Telha',        map: tipoTelhaMap() },
         tipo_estrutura:   { label: 'Tipo de Estrutura',    map: { madeira:'Madeira', metalica:'Metálica', concreto:'Concreto', mista:'Mista' } },
         condicao_telhado: { label: 'Condição do Telhado',  map: { bom:'✅ Boas condições de instalação', regular:'⚠️ Regular — requer atenção', ruim:'❌ Ruim — necessita reparo' } },
         obs_tecnica:      { label: 'Obs. Técnicas',        map: {} },
@@ -6698,8 +6816,95 @@ function renderMinhasOrdens() {
         let ac = '<button class="tbl-btn" onclick="printOrdem(\'' + o.id + '\')" title="Imprimir OS"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Imprimir</button>';
         if (temMaterialZerado(o)) ac += '<button class="tbl-btn" style="color:var(--red);border-color:#FECACA;background:var(--red-soft)" onclick="abrirMaterialPendenteOrdem(\'' + o.id + '\')" title="Imprimir Material Pendente"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/><line x1="9" y1="17" x2="9.01" y2="17"/></svg> Pendente</button>';
 
-        return '<tr><td><code style="font-size:0.78rem;font-family:monospace;">' + (o.numero || '') + '</code></td><td>' + (p ? p.nome : '—') + '</td><td>' + (o.quantidade || 0) + '</td><td class="col-hide-mobile"><span class="tag ' + pr.cls + '">' + pr.label + '</span></td><td><span class="tag ' + st.cls + '">' + st.label + '</span></td><td>' + formatDate(o.criado_em) + '</td><td><div class="tbl-actions">' + ac + '</div></td></tr>';
+        let receb = '<span style="color:var(--text-3)">—</span>';
+        if (o.status === 'concluida') {
+            if (o.confirmacao_status === 'confirmado') {
+                receb = '<span class="tag tag-green" title="Confirmado por ' + (o.confirmacao_por || '') + ' em ' + formatDate(o.confirmacao_data) + '">✓ Recebido</span>';
+            } else if (o.confirmacao_status === 'parcial') {
+                receb = '<span class="tag tag-red" title="' + (o.confirmacao_obs || '').replace(/"/g, "'") + '">⚠ Divergência</span> <button class="tbl-btn" title="Editar divergência" onclick="abrirConfirmarRecebimento(\'' + o.id + '\')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>';
+            } else {
+                receb = '<button class="tbl-btn success" onclick="abrirConfirmarRecebimento(\'' + o.id + '\')">Confirmar Recebimento</button>';
+            }
+        }
+
+        return '<tr><td><code style="font-size:0.78rem;font-family:monospace;">' + (o.numero || '') + '</code></td><td>' + (p ? p.nome : '—') + '</td><td>' + (o.quantidade || 0) + '</td><td class="col-hide-mobile"><span class="tag ' + pr.cls + '">' + pr.label + '</span></td><td><span class="tag ' + st.cls + '">' + st.label + '</span></td><td>' + receb + '</td><td>' + formatDate(o.criado_em) + '</td><td><div class="tbl-actions">' + ac + '</div></td></tr>';
     }).join('');
+}
+
+// ============================================================
+// CONFIRMAÇÃO DE RECEBIMENTO PELA EQUIPE (Minhas Ordens)
+// ============================================================
+let _confRecebOrdemId = null;
+
+function abrirConfirmarRecebimento(id) {
+    const o = state.ordens.find(function(x) { return x.id === id; });
+    if (!o) return;
+    _confRecebOrdemId = id;
+
+    document.getElementById('confRecebOSNumero').textContent = o.numero || '';
+
+    const itens = extrairItensOrdem(o);
+    document.getElementById('confRecebMateriais').innerHTML = itens.length
+        ? itens.map(function(i) {
+            const p = state.produtos.find(function(x) { return x.id === i.produto_id; });
+            return '<li>' + (p ? p.nome : '—') + ' — <strong>' + (i.quantidade || 0) + '</strong></li>';
+        }).join('')
+        : '<li class="empty">Nenhum material listado nesta OS</li>';
+
+    // Se já existe uma divergência registrada, abre direto na edição dela
+    const editandoDivergencia = o.confirmacao_status === 'parcial';
+    document.getElementById('confRecebObs').value = editandoDivergencia ? (o.confirmacao_obs || '') : '';
+    if (editandoDivergencia) {
+        document.getElementById('confRecebParcialBox').classList.remove('hidden');
+        document.getElementById('confRecebBotoes').classList.add('hidden');
+    } else {
+        document.getElementById('confRecebParcialBox').classList.add('hidden');
+        document.getElementById('confRecebBotoes').classList.remove('hidden');
+    }
+    openModal('modalConfirmarRecebimento');
+}
+
+function confRecebMostrarParcial() {
+    document.getElementById('confRecebParcialBox').classList.remove('hidden');
+    document.getElementById('confRecebBotoes').classList.add('hidden');
+}
+
+async function confirmarRecebimento(tipo) {
+    const id = _confRecebOrdemId;
+    if (!id) return;
+
+    let obs = null;
+    if (tipo === 'parcial') {
+        obs = document.getElementById('confRecebObs').value.trim();
+        if (!obs) { showToast('Descreva o que faltou ou veio diferente.', 'error'); return; }
+    }
+
+    const updates = {
+        confirmacao_status: tipo === 'parcial' ? 'parcial' : 'confirmado',
+        confirmacao_data: new Date().toISOString(),
+        confirmacao_por: state.currentUser.nome,
+        confirmacao_obs: obs
+    };
+
+    try {
+        let { data, error } = await sb.from('ordens').update(updates).eq('id', id).select().single();
+        // Fallback: colunas de confirmação ainda não existem na tabela `ordens`
+        if (error && error.message && error.message.includes('confirmacao')) {
+            showToast('Faltam colunas no Supabase (confirmacao_status, confirmacao_data, confirmacao_por, confirmacao_obs) na tabela ordens. Peça pro admin criar essas colunas.', 'error');
+            return;
+        }
+        if (error) throw error;
+
+        const idx = state.ordens.findIndex(function(x) { return x.id === id; });
+        if (idx !== -1) state.ordens[idx] = Object.assign({}, state.ordens[idx], data);
+
+        closeModal('modalConfirmarRecebimento');
+        showToast(tipo === 'parcial' ? 'Divergência registrada. O administrador vai poder ver.' : 'Recebimento confirmado!', 'success');
+        if (document.getElementById('page-minhasOrdens').classList.contains('active')) renderMinhasOrdens();
+    } catch (err) {
+        console.error('Erro ao confirmar recebimento:', err);
+        showToast('Erro ao confirmar recebimento.', 'error');
+    }
 }
 
 function renderUsuarios(filter = '') {
@@ -8029,6 +8234,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         aplicarFundoLogin();
         updateDate();
         setInterval(updateDate, 60000);
+        renderAllTelhaSelects();
         
         // Fecha o modal ao clicar fora dele (no backdrop escurecido).
         // IMPORTANTE: usa 'mousedown' em vez de 'click'. O motivo: ao selecionar
@@ -9111,7 +9317,7 @@ function verKit(id) {
     // Dados Técnicos
     const dtLabels = {
         residencia:       { label: 'Residência', map: { monofasico:'Monofásico', bifasico:'Bifásico', trifasico:'Trifásico' } },
-        tipo_telha:       { label: 'Tipo de Telha', map: { portuguesa_concreto:'Portuguesa de Concreto', portuguesa_ceramica:'Portuguesa de Cerâmica', romana:'Romana', francesa:'Francesa', colonial:'Colonial', metalica:'Metálica', fibrocimento:'Fibrocimento', shingle:'Shingle', laje:'Laje / Terraço', outro:'Outro' } },
+        tipo_telha:       { label: 'Tipo de Telha', map: tipoTelhaMap() },
         tipo_estrutura:   { label: 'Tipo de Estrutura', map: { madeira:'Madeira', metalica:'Metálica', concreto:'Concreto', mista:'Mista' } },
         condicao_telhado: { label: 'Condição do Telhado', map: { bom:'✅ Boas condições', regular:'⚠️ Regular', ruim:'❌ Necessita reparo' } },
         obs_tecnica:      { label: 'Obs. Técnicas', map: {} },
@@ -9523,17 +9729,9 @@ function _autoPreencherDtOS(kit, ctx) {
               </select>
             </div>
             <div class="form-group" style="margin:0">
-              <label>Tipo de Telha</label>
+              <label style="display:flex;align-items:center;justify-content:space-between">Tipo de Telha <a href="#" onclick="abrirConfigTiposTelha();return false" style="font-weight:400;font-size:0.75rem;color:var(--primary,#3b82f6);text-transform:none;letter-spacing:normal">⚙️ editar</a></label>
               <select id="kitTipoTelha" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
                 <option value="">— Selecione —</option>
-                <option value="portuguesa_concreto">Fibrocimento/Brasilit</option>
-                <option value="portuguesa_ceramica">Fibrocimento/Ondulada</option>
-                <option value="colonial">Colonial/Barro</option>
-                <option value="metalica">Metálica</option>
-                <option value="fibrocimento"></option>
-                <option value="shingle"></option>
-                <option value="laje">Laje / Terraço</option>
-                <option value="outro">Outro</option>
               </select>
             </div>
             <div class="form-group" style="margin:0">
