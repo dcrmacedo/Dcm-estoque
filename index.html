@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -1047,7 +1048,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
                     </select>
                   </div>
                   <div class="form-group" style="margin:0">
-                    <label style="display:flex;align-items:center;justify-content:space-between">Tipo de Telha <a href="#" onclick="abrirConfigTiposTelha();return false" style="font-weight:400;font-size:0.75rem;color:var(--primary,#3b82f6);text-transform:none;letter-spacing:normal">⚙️ editar</a></label>
+                    <label style="display:flex;align-items:center;justify-content:space-between">Tipo de Telha <a href="#" onclick="abrirConfigTiposTelha();return false" style="font-weight:400;font-size:0.75rem;color:var(--primary,#3b82f6);text-transform:none;letter-spacing:normal">Edit</a></label>
                     <select id="pageOrdemTipoTelha" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
                       <option value="">— Selecione —</option>
                     </select>
@@ -1355,7 +1356,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
               </select>
             </div>
             <div class="form-group" style="margin:0">
-              <label style="display:flex;align-items:center;justify-content:space-between">Tipo de Telha <a href="#" onclick="abrirConfigTiposTelha();return false" style="font-weight:400;font-size:0.75rem;color:var(--primary,#3b82f6);text-transform:none;letter-spacing:normal">⚙️ editar</a></label>
+              <label style="display:flex;align-items:center;justify-content:space-between">Tipo de Telha <a href="#" onclick="abrirConfigTiposTelha();return false" style="font-weight:400;font-size:0.75rem;color:var(--primary,#3b82f6);text-transform:none;letter-spacing:normal">Edit</a></label>
               <select id="modalOrdemTipoTelha" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
                 <option value="">— Selecione —</option>
               </select>
@@ -1480,7 +1481,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
               </select>
             </div>
             <div class="form-group" style="margin:0">
-              <label style="display:flex;align-items:center;justify-content:space-between">Tipo de Telha <a href="#" onclick="abrirConfigTiposTelha();return false" style="font-weight:400;font-size:0.75rem;color:var(--primary,#3b82f6);text-transform:none;letter-spacing:normal">⚙️ editar</a></label>
+              <label style="display:flex;align-items:center;justify-content:space-between">Tipo de Telha <a href="#" onclick="abrirConfigTiposTelha();return false" style="font-weight:400;font-size:0.75rem;color:var(--primary,#3b82f6);text-transform:none;letter-spacing:normal">Edit</a></label>
               <select id="editOrdemTipoTelha" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
                 <option value="">— Selecione —</option>
               </select>
@@ -6356,6 +6357,19 @@ function printOrdem(id) {
           </div>`
         : '';
 
+    // Valor total dos materiais — só entra na impressão se quem está
+    // imprimindo (usuário logado no momento) for admin.
+    let valorTotalHtml = '';
+    if (state.currentUser?.perfil === 'admin') {
+        const valorTotal = kits.reduce((soma, kit) => soma + kit.itens.reduce((s, item) => {
+            const p = state.produtos.find(x => x.id === item.produto_id) || item.produto;
+            return s + (item.quantidade || 0) * (p?.preco_unitario || 0);
+        }, 0), 0);
+        valorTotalHtml = '<div style="margin-top:14px;text-align:right;font-size:0.9rem;color:#1E293B;padding:10px 14px;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:8px">' +
+            'Valor total dos materiais: <strong>' + formatCurrency(valorTotal) + '</strong>' +
+            '<div style="font-size:0.65rem;color:#64748B;margin-top:2px;font-weight:400">Informação visível apenas para administradores</div></div>';
+    }
+
     const win = window.open('', '_blank', 'width=900,height=700');
     win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"/>
 <title>OS ${o.numero || ''}</title>
@@ -6418,6 +6432,8 @@ tr:last-child td{border-bottom:none}
 ${o.descricao ? '<div class="desc-box"><label>Descrição / Justificativa</label><p style="font-size:0.875rem;line-height:1.6">' + o.descricao + '</p></div>' : ''}
 
 ${kitsHtml}
+
+${valorTotalHtml}
 
 ${dadosTecnicosHtml}
 
@@ -6777,6 +6793,20 @@ function verOrdem(id) {
           }).join('') + '</div></div>'
         : '';
 
+    // Valor total dos materiais — visível somente para admin
+    let valorTotalHtml = '';
+    if (state.currentUser?.perfil === 'admin') {
+        const valorTotal = kits.reduce((soma, kit) => soma + kit.itens.reduce((s, item) => {
+            const p = state.produtos.find(x => x.id === item.produto_id) || item.produto;
+            const qtd = item.quantidade || item.qtd || 1;
+            return s + qtd * (p?.preco_unitario || 0);
+        }, 0), 0);
+        valorTotalHtml = '<div style="margin-top:10px;display:flex;justify-content:flex-end">' +
+            '<div style="background:var(--accent-soft);border:1px solid var(--accent);border-radius:var(--radius);padding:8px 14px;font-size:0.82rem;color:var(--text)">' +
+            '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:4px;color:var(--accent)"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>' +
+            'Valor total dos materiais (só admin): <strong>' + formatCurrency(valorTotal) + '</strong></div></div>';
+    }
+
     document.getElementById('ordemDetalheContent').innerHTML =
         '<div class="ordem-detail-grid">' +
             '<div class="ordem-detail-item"><label>Número</label><span><code style="font-family:monospace;">' + (o.numero || '') + '</code></span></div>' +
@@ -6789,7 +6819,7 @@ function verOrdem(id) {
         '</div>' +
         '<div style="margin-top:16px;border-top:1px solid var(--border);padding-top:14px">' +
             '<div style="font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-3);margin-bottom:10px">Materiais</div>' +
-            kitsHtml + dtHtml +
+            kitsHtml + dtHtml + valorTotalHtml +
         '</div>';
 
     document.getElementById('ordemDetalheContent').innerHTML += osRenderStatusLog(id);
@@ -9729,7 +9759,7 @@ function _autoPreencherDtOS(kit, ctx) {
               </select>
             </div>
             <div class="form-group" style="margin:0">
-              <label style="display:flex;align-items:center;justify-content:space-between">Tipo de Telha <a href="#" onclick="abrirConfigTiposTelha();return false" style="font-weight:400;font-size:0.75rem;color:var(--primary,#3b82f6);text-transform:none;letter-spacing:normal">⚙️ editar</a></label>
+              <label style="display:flex;align-items:center;justify-content:space-between">Tipo de Telha <a href="#" onclick="abrirConfigTiposTelha();return false" style="font-weight:400;font-size:0.75rem;color:var(--primary,#3b82f6);text-transform:none;letter-spacing:normal">Edit</a></label>
               <select id="kitTipoTelha" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
                 <option value="">— Selecione —</option>
               </select>
