@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -1048,7 +1047,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
                     </select>
                   </div>
                   <div class="form-group" style="margin:0">
-                    <label style="display:flex;align-items:center;justify-content:space-between">Tipo de Telha <a href="#" onclick="abrirConfigTiposTelha();return false" style="font-weight:400;font-size:0.75rem;color:var(--primary,#3b82f6);text-transform:none;letter-spacing:normal">Edit</a></label>
+                    <label style="display:flex;align-items:center;justify-content:space-between">Tipo de Telha <a href="#" onclick="abrirConfigTiposTelha();return false" style="font-weight:400;font-size:0.75rem;color:var(--primary,#3b82f6);text-transform:none;letter-spacing:normal">⚙️ editar</a></label>
                     <select id="pageOrdemTipoTelha" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
                       <option value="">— Selecione —</option>
                     </select>
@@ -1356,7 +1355,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
               </select>
             </div>
             <div class="form-group" style="margin:0">
-              <label style="display:flex;align-items:center;justify-content:space-between">Tipo de Telha <a href="#" onclick="abrirConfigTiposTelha();return false" style="font-weight:400;font-size:0.75rem;color:var(--primary,#3b82f6);text-transform:none;letter-spacing:normal">Edit</a></label>
+              <label style="display:flex;align-items:center;justify-content:space-between">Tipo de Telha <a href="#" onclick="abrirConfigTiposTelha();return false" style="font-weight:400;font-size:0.75rem;color:var(--primary,#3b82f6);text-transform:none;letter-spacing:normal">⚙️ editar</a></label>
               <select id="modalOrdemTipoTelha" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
                 <option value="">— Selecione —</option>
               </select>
@@ -1481,7 +1480,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
               </select>
             </div>
             <div class="form-group" style="margin:0">
-              <label style="display:flex;align-items:center;justify-content:space-between">Tipo de Telha <a href="#" onclick="abrirConfigTiposTelha();return false" style="font-weight:400;font-size:0.75rem;color:var(--primary,#3b82f6);text-transform:none;letter-spacing:normal">Edit</a></label>
+              <label style="display:flex;align-items:center;justify-content:space-between">Tipo de Telha <a href="#" onclick="abrirConfigTiposTelha();return false" style="font-weight:400;font-size:0.75rem;color:var(--primary,#3b82f6);text-transform:none;letter-spacing:normal">⚙️ editar</a></label>
               <select id="editOrdemTipoTelha" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
                 <option value="">— Selecione —</option>
               </select>
@@ -2761,6 +2760,39 @@ async function gerarNumeroOS() {
     }
 }
 
+// ── Alocação sequencial de estoque compartilhado ──────────────────────────
+// Quando o MESMO produto aparece em mais de uma linha de uma ordem/kit (ex:
+// "Cabo Preto 10mm (Linha)" e "Cabo Preto 10mm (Carga)"), as duas linhas
+// disputam o MESMO saldo físico — não faz sentido cada uma checar o saldo
+// total do produto de forma independente, senão as duas "acham" que o
+// mesmo estoque está livre pra elas. Aqui o saldo de cada produto é
+// consumido virtualmente conforme as linhas aparecem (na ordem em que
+// vêm): a primeira linha pega o que tem disponível primeiro: a próxima
+// linha do mesmo produto só vê o que sobrou depois da anterior.
+// Recebe grupos [{label, itens:[{produto_id, quantidade, ...}]}] e devolve
+// os mesmos grupos com cada item anotado com _disponivelAntes, _falta e _ok.
+// saldoInicial(produtoId) define o estoque de partida de cada produto antes
+// de qualquer linha desta lista (por padrão, o saldo_atual ao vivo).
+function alocarEstoqueSequencial(kits, saldoInicial) {
+    const getInicial = saldoInicial || function(pid) {
+        const p = state.produtos.find(x => x.id === pid);
+        return p ? (p.saldo_atual || 0) : 0;
+    };
+    const pool = new Map();
+    return (kits || []).map(kit => ({
+        label: kit.label,
+        itens: (kit.itens || []).map(item => {
+            const pid = item.produto_id;
+            if (!pool.has(pid)) pool.set(pid, Math.max(0, getInicial(pid)));
+            const disponivel = pool.get(pid);
+            const qtd = item.quantidade || item.qtd || 1;
+            const falta = Math.max(0, qtd - disponivel);
+            pool.set(pid, Math.max(0, disponivel - qtd));
+            return { ...item, _disponivelAntes: disponivel, _falta: falta, _ok: falta === 0 };
+        })
+    }));
+}
+
 // ── Material Pendente — agrupamento por seção (Inversor / Padrão de Entrada / etc.) ──
 // Mesma lógica de separação em blocos usada na impressão da OS: cada kit
 // confirmado vira uma seção própria, mostrando só a falta daquela seção.
@@ -2798,16 +2830,13 @@ function extrairKitsOrdem(ordemAtual) {
 }
 
 // Recebe grupos [{label, itens}] e devolve só os que têm itens com estoque
-// insuficiente NESTE momento (saldo ao vivo em state.produtos), descartando
+// insuficiente NESTE momento (saldo ao vivo em state.produtos), considerando
+// a alocação sequencial entre linhas do mesmo produto, e descartando
 // seções sem pendência.
 function montarGruposPendentes(kits) {
-    return (kits || []).map(kit => ({
-        label: kit.label,
-        itens: (kit.itens || []).filter(i => {
-            const p = state.produtos.find(x => x.id === i.produto_id) || i.produto;
-            return p && (p.saldo_atual || 0) < i.quantidade;
-        })
-    })).filter(g => g.itens.length);
+    return alocarEstoqueSequencial(kits)
+        .map(kit => ({ label: kit.label, itens: kit.itens.filter(i => i._falta > 0) }))
+        .filter(g => g.itens.length);
 }
 
 // Renderiza os grupos pendentes como blocos com título da seção + mini-tabela,
@@ -2816,12 +2845,10 @@ function renderMatPendenteGrupos(grupos) {
     return grupos.map(g => {
         const rows = g.itens.map(i => {
             const p = state.produtos.find(x => x.id === i.produto_id) || i.produto;
-            const saldoAtual = Math.max(0, p ? (p.saldo_atual || 0) : 0);
-            const falta = Math.max(0, i.quantidade - saldoAtual);
-            const nomeDisplay = (p ? p.nome : '—') + (i.nome ? ' — ' + i.nome : '');
+            const nomeDisplay = nomeExibicaoItem(i, p);
             return '<tr><td>' + nomeDisplay + '</td>' +
                 '<td>' + (p ? (p.codigo || '—') : '—') + '</td>' +
-                '<td style="text-align:center;font-weight:700;color:var(--red)">' + falta + '</td></tr>';
+                '<td style="text-align:center;font-weight:700;color:var(--red)">' + i._falta + '</td></tr>';
         }).join('');
         return '<div style="margin-bottom:14px">' +
             '<div style="font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#991B1B;background:var(--red-soft);padding:6px 10px;border:1px solid #FECACA;border-bottom:none;border-radius:6px 6px 0 0">' + g.label + '</div>' +
@@ -2833,11 +2860,15 @@ function renderMatPendenteGrupos(grupos) {
 // Verifica se a OS recém-criada tem materiais com estoque zerado e, se sim,
 // exibe um modal com o botão "Imprimir Material Pendente"
 function verificarEMostrarMaterialPendente(ordem, todosItens) {
-    const grupos = montarGruposPendentes(agruparPorKitLabel(todosItens));
+    const kitsCompletos = agruparPorKitLabel(todosItens);
+    const grupos = montarGruposPendentes(kitsCompletos);
     if (!grupos.length) return;
 
-    const itensZerados = grupos.flatMap(g => g.itens);
-    _materialPendenteAtual = { ordem, itens: itensZerados, grupos };
+    // Guarda a lista COMPLETA da OS (não só os itens pendentes) — necessário
+    // pra reimpressão recalcular a alocação sequencial corretamente, já que
+    // um item que hoje está "OK" também consome uma parte do mesmo estoque
+    // compartilhado com os itens pendentes do mesmo produto.
+    _materialPendenteAtual = { ordem, kitsCompletos };
 
     document.getElementById('matPendenteOS').textContent = ordem.numero || '';
     document.getElementById('matPendenteLista').innerHTML = renderMatPendenteGrupos(grupos);
@@ -2847,12 +2878,14 @@ function verificarEMostrarMaterialPendente(ordem, todosItens) {
 
 function printMaterialPendente() {
     if (!_materialPendenteAtual) return;
-    const { ordem, grupos } = _materialPendenteAtual;
+    const { ordem, kitsCompletos } = _materialPendenteAtual;
 
-    // Re-checa o saldo ATUAL de cada item antes de imprimir — caso algum
-    // material já tenha sido reposto (por entrada, edição de produto,
-    // inventário, etc.) desde que o modal foi aberto, ele sai da lista.
-    const gruposAtuais = montarGruposPendentes(grupos);
+    // Recalcula a alocação sequencial a partir da lista COMPLETA da OS (não
+    // só dos itens que estavam pendentes quando o modal abriu) e com o saldo
+    // ATUAL de cada produto — caso algum material já tenha sido reposto (por
+    // entrada, edição de produto, inventário, etc.) desde então, ele sai da
+    // lista de pendências.
+    const gruposAtuais = montarGruposPendentes(kitsCompletos);
     if (!gruposAtuais.length) {
         showToast('Todos os materiais já foram repostos. Nada pendente para imprimir.', 'info');
         closeModal('modalMaterialPendente');
@@ -2862,15 +2895,13 @@ function printMaterialPendente() {
     const blocosHtml = gruposAtuais.map(g => {
         const rows = g.itens.map(i => {
             const p = state.produtos.find(x => x.id === i.produto_id) || i.produto;
-            const saldoAtual = Math.max(0, p ? (p.saldo_atual || 0) : 0);
-            const falta = Math.max(0, i.quantidade - saldoAtual);
-            const nomeDisplay = (p ? p.nome : '—') + (i.nome ? ' — ' + i.nome : '');
+            const nomeDisplay = nomeExibicaoItem(i, p);
             return '<tr>' +
                 '<td>' + nomeDisplay + '</td>' +
                 '<td>' + (p ? (p.codigo || '—') : '—') + '</td>' +
                 '<td>' + (p ? (p.categoria || '—') : '—') + '</td>' +
                 '<td>' + (p ? (p.localizacao || '—') : '—') + '</td>' +
-                '<td style="text-align:center;font-weight:700;color:#DC2626">' + falta + '</td>' +
+                '<td style="text-align:center;font-weight:700;color:#DC2626">' + i._falta + '</td>' +
                 '</tr>';
         }).join('');
         return '<div class="kit-block">' +
@@ -3257,13 +3288,14 @@ function abrirMaterialPendenteOrdem(id) {
     const ordem = state.ordens.find(o => o.id === id);
     if (!ordem) return;
 
-    const grupos = montarGruposPendentes(extrairKitsOrdem(ordem));
+    const kitsCompletos = extrairKitsOrdem(ordem);
+    const grupos = montarGruposPendentes(kitsCompletos);
     if (!grupos.length) {
         showToast('Não há materiais pendentes (estoque insuficiente) nesta ordem no momento.', 'info');
         return;
     }
 
-    _materialPendenteAtual = { ordem, itens: grupos.flatMap(g => g.itens), grupos };
+    _materialPendenteAtual = { ordem, kitsCompletos };
 
     document.getElementById('matPendenteOS').textContent = ordem.numero || '';
     document.getElementById('matPendenteLista').innerHTML = renderMatPendenteGrupos(grupos);
@@ -6737,18 +6769,21 @@ function verOrdem(id) {
         kits = [{ label: 'Produto', itens: [{ produto_id: o.produto_id, quantidade: o.quantidade, produto: p0 }] }];
     }
 
-    // Renderiza lista de materiais com variante e badge de estoque
-    const kitsHtml = kits.map(kit => {
+    // Renderiza lista de materiais com variante e badge de estoque — a
+    // alocação é sequencial entre kits: se o mesmo produto aparecer em mais
+    // de uma linha (ex: "Cabo Preto 10mm (Linha)" e "(Carga)"), a segunda
+    // linha só vê o que sobrou do estoque depois da primeira, em vez de as
+    // duas mostrarem o mesmo saldo total como se estivesse livre pras duas.
+    const kitsAlocados = alocarEstoqueSequencial(kits);
+    const kitsHtml = kitsAlocados.map(kit => {
         const rows = kit.itens.map(item => {
             const p = state.produtos.find(x => x.id === item.produto_id) || item.produto;
             const qtd = item.quantidade || item.qtd || 1;
-            const saldo = p ? (p.saldo_atual || 0) : 0;
-            const ok = saldo >= qtd;
             // Nome sempre vem do produto atual; item.nome só contribui um sufixo de variante salvo
             const nome = nomeExibicaoItem(item, p);
-            const badge = ok
-                ? '<span class="tag tag-green" style="font-size:0.68rem">OK (' + saldo + ')</span>'
-                : '<span class="tag tag-red" style="font-size:0.68rem">Insuf. (' + saldo + ')</span>';
+            const badge = item._ok
+                ? '<span class="tag tag-green" style="font-size:0.68rem">OK (' + item._disponivelAntes + ')</span>'
+                : '<span class="tag tag-red" style="font-size:0.68rem">Insuf. (' + item._disponivelAntes + ')</span>';
             return '<div class="kit-item-row">' +
                 '<span class="kit-item-nome">' + nome + '</span>' +
                 '<span class="kit-item-qtd">' + qtd + ' un</span>' +
@@ -9292,6 +9327,14 @@ function verKit(id) {
 
     const tipoKit = _tipoKitReal(kit);
 
+    // Pool de estoque compartilhado entre TODAS as chamadas de _renderItensKit
+    // desta visualização (inclusive entre sub-kits diferentes): se o mesmo
+    // produto aparecer em mais de uma linha/sub-kit, a segunda linha só vê o
+    // que sobrou depois da primeira consumir sua parte — evita mostrar o
+    // mesmo saldo total como "disponível" pra duas linhas que na prática
+    // disputam o mesmo estoque físico.
+    const _poolKit = new Map();
+
     // Função auxiliar para renderizar uma lista de itens
     function _renderItensKit(itens) {
         let temEstoque = true;
@@ -9299,14 +9342,19 @@ function verKit(id) {
             const prod = state.produtos.find(p => p.id === item.produto_id) || item.produto;
             const nome = nomeExibicaoItem(item, prod);
             const qtd  = item.quantidade || item.qtd || 1;
-            const saldoFisico = prod ? (prod.saldo_atual || 0) : 0;
-            const reserva = prod ? calcularReservaProduto(prod.id) : 0;
-            const saldoLiq = Math.max(0, saldoFisico - reserva);
-            const ok = saldoLiq >= qtd;
+            const pid = item.produto_id;
+            if (!_poolKit.has(pid)) {
+                const saldoFisico = prod ? (prod.saldo_atual || 0) : 0;
+                const reserva = prod ? calcularReservaProduto(prod.id) : 0;
+                _poolKit.set(pid, Math.max(0, saldoFisico - reserva));
+            }
+            const disponivel = _poolKit.get(pid);
+            const ok = disponivel >= qtd;
+            _poolKit.set(pid, Math.max(0, disponivel - qtd));
             if (!ok) temEstoque = false;
             const badge = ok
-                ? '<span class="tag tag-green" style="font-size:0.68rem">OK (' + saldoLiq + ')</span>'
-                : '<span class="tag tag-red" style="font-size:0.68rem">Insuf. (' + saldoLiq + ')</span>';
+                ? '<span class="tag tag-green" style="font-size:0.68rem">OK (' + disponivel + ')</span>'
+                : '<span class="tag tag-red" style="font-size:0.68rem">Insuf. (' + disponivel + ')</span>';
             return '<div class="kit-item-row">' +
                 '<span class="kit-item-nome">' + nome + '</span>' +
                 '<span class="kit-item-qtd">' + qtd + ' un</span>' +
@@ -9759,7 +9807,7 @@ function _autoPreencherDtOS(kit, ctx) {
               </select>
             </div>
             <div class="form-group" style="margin:0">
-              <label style="display:flex;align-items:center;justify-content:space-between">Tipo de Telha <a href="#" onclick="abrirConfigTiposTelha();return false" style="font-weight:400;font-size:0.75rem;color:var(--primary,#3b82f6);text-transform:none;letter-spacing:normal">Edit</a></label>
+              <label style="display:flex;align-items:center;justify-content:space-between">Tipo de Telha <a href="#" onclick="abrirConfigTiposTelha();return false" style="font-weight:400;font-size:0.75rem;color:var(--primary,#3b82f6);text-transform:none;letter-spacing:normal">⚙️ editar</a></label>
               <select id="kitTipoTelha" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
                 <option value="">— Selecione —</option>
               </select>
