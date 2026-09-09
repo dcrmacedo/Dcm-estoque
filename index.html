@@ -1024,6 +1024,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px">
               <div class="form-group"><label>Prioridade</label><select id="ordemPrioridade"><option value="baixa">Baixa</option><option value="media" selected>Média</option><option value="alta">Alta</option><option value="urgente">Urgente</option></select></div>
               <div class="form-group"><label>Data Necessária</label><input type="date" id="ordemData"/></div>
+              <div class="form-group full-width" style="grid-column:1/-1"><label>URL da Localização <span style="font-weight:400;color:var(--text-3)">(opcional — link do Google Maps, por ex.)</span></label><input type="url" id="ordemLocalizacaoUrl" placeholder="https://maps.google.com/..."/></div>
               <div class="form-group full-width" style="grid-column:1/-1"><label>Descrição / Justificativa *</label><textarea id="ordemDescricao" rows="3" placeholder="Descreva o motivo da solicitação..."></textarea></div>
               <div class="form-group full-width" style="grid-column:1/-1"><label>Equipe <span style="font-weight:400;color:var(--text-3)">(opcional)</span></label><select id="ordemEquipe"><option value="">Sem equipe</option></select></div>
             </div>
@@ -1031,7 +1032,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
             <!-- Dados Técnicos da Instalação -->
             <details id="pageOrdemDadosTecnicos" style="margin-bottom:16px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden">
               <summary style="padding:10px 14px;cursor:pointer;font-size:0.78rem;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-2);list-style:none;display:flex;align-items:center;gap:8px;user-select:none">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points=""/></svg>
                 Dados Técnicos da Instalação
                 <span style="margin-left:auto;font-size:0.7rem;font-weight:400;color:var(--text-3)">(opcional)</span>
               </summary>
@@ -1047,7 +1048,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
                     </select>
                   </div>
                   <div class="form-group" style="margin:0">
-                    <label style="display:flex;align-items:center;justify-content:space-between">Tipo de Telha <a href="#" onclick="abrirConfigTiposTelha();return false" style="font-weight:400;font-size:0.75rem;color:var(--primary,#3b82f6);text-transform:none;letter-spacing:normal">Edit</a></label>
+                    <label style="display:flex;align-items:center;justify-content:space-between">Tipo de Telha <a href="#" onclick="abrirConfigTiposTelha();return false" style="font-weight:400;font-size:0.75rem;color:var(--primary,#3b82f6);text-transform:none;letter-spacing:normal">Editar</a></label>
                     <select id="pageOrdemTipoTelha" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
                       <option value="">— Selecione —</option>
                     </select>
@@ -1133,6 +1134,29 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
         <div class="form-group"><label>Fornecedor</label><select id="prodFornecedor"><option value="">Selecione...</option></select></div>
         <div class="form-group"><label>Prazo de Entrega (dias)</label><input type="number" id="prodPrazoEntrega" placeholder="Ex: 45" min="0" value="0"/></div>
         <div class="form-group"><label>Estoque Mínimo</label><input type="number" id="prodEstoqueMin" placeholder="Ex: 10" min="0"/></div>
+        <div class="form-group">
+          <label>Unidade de Medida</label>
+          <select id="prodUnidade" onchange="document.getElementById('prodUnidadeOutraWrap').classList.toggle('hidden', this.value !== 'outro')">
+            <option value="UN">UN — Unidade</option>
+            <option value="CX">CX — Caixa</option>
+            <option value="BD">BD — Balde</option>
+            <option value="PT">PT — Pacote</option>
+            <option value="KG">KG — Quilograma</option>
+            <option value="L">L — Litro</option>
+            <option value="M">M — Metro</option>
+            <option value="M²">M² — Metro Quadrado</option>
+            <option value="RL">RL — Rolo</option>
+            <option value="PC">PC — Peça</option>
+            <option value="CJ">CJ — Conjunto</option>
+            <option value="PAR">PAR — Par</option>
+            <option value="FRD">FRD — Fardo</option>
+            <option value="TON">TON — Tonelada</option>
+            <option value="outro">Outra...</option>
+          </select>
+          <div id="prodUnidadeOutraWrap" class="hidden" style="margin-top:6px">
+            <input type="text" id="prodUnidadeOutra" placeholder="Ex: GL (Galão)" maxlength="10"/>
+          </div>
+        </div>
         <div class="form-group"><label>Saldo Inicial</label><input type="number" id="prodSaldoInicial" value="0" min="0"/></div>
         <div class="form-group"><label>Preço Unitário (R$)</label><input type="number" id="prodPreco" placeholder="Ex: 10.00" step="0.01" min="0"/></div>
         <div class="form-group full-width">
@@ -1330,6 +1354,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
           </select>
         </div>
         <div class="form-group"><label>Data Necessária</label><input type="date" id="modalOrdemData"/></div>
+        <div class="form-group full-width" style="grid-column:1/-1"><label>URL da Localização <span style="font-weight:400;color:var(--text-3)">(opcional — link do Google Maps, por ex.)</span></label><input type="url" id="modalOrdemLocalizacaoUrl" placeholder="https://maps.google.com/..."/></div>
         <div class="form-group full-width" style="grid-column:1/-1"><label>Descrição / Justificativa *</label>
           <textarea id="modalOrdemDescricao" rows="2" placeholder="Descreva o motivo da solicitação..."></textarea>
         </div>
@@ -1355,7 +1380,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
               </select>
             </div>
             <div class="form-group" style="margin:0">
-              <label style="display:flex;align-items:center;justify-content:space-between">Tipo de Telha <a href="#" onclick="abrirConfigTiposTelha();return false" style="font-weight:400;font-size:0.75rem;color:var(--primary,#3b82f6);text-transform:none;letter-spacing:normal">Edit</a></label>
+              <label style="display:flex;align-items:center;justify-content:space-between">Tipo de Telha <a href="#" onclick="abrirConfigTiposTelha();return false" style="font-weight:400;font-size:0.75rem;color:var(--primary,#3b82f6);text-transform:none;letter-spacing:normal">Editar</a></label>
               <select id="modalOrdemTipoTelha" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
                 <option value="">— Selecione —</option>
               </select>
@@ -1456,6 +1481,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
           </select>
         </div>
         <div class="form-group"><label>Data Necessária</label><input type="date" id="editOrdemData"/></div>
+        <div class="form-group full-width" style="grid-column:1/-1"><label>URL da Localização <span style="font-weight:400;color:var(--text-3)">(opcional — link do Google Maps, por ex.)</span></label><input type="url" id="editOrdemLocalizacaoUrl" placeholder="https://maps.google.com/..."/></div>
         <div class="form-group full-width" style="grid-column:1/-1"><label>Descrição / Justificativa *</label>
           <textarea id="editOrdemDescricao" rows="2"></textarea>
         </div>
@@ -1464,7 +1490,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
       <!-- Dados Técnicos da Instalação -->
       <details id="editOrdemDadosTecnicos" style="margin-bottom:16px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden">
         <summary style="padding:10px 14px;cursor:pointer;font-size:0.78rem;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-2);list-style:none;display:flex;align-items:center;gap:8px;user-select:none">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points=""/></svg>
           Dados Técnicos da Instalação
           <span style="margin-left:auto;font-size:0.7rem;font-weight:400;color:var(--text-3)">(opcional)</span>
         </summary>
@@ -1480,7 +1506,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
               </select>
             </div>
             <div class="form-group" style="margin:0">
-              <label style="display:flex;align-items:center;justify-content:space-between">Tipo de Telha <a href="#" onclick="abrirConfigTiposTelha();return false" style="font-weight:400;font-size:0.75rem;color:var(--primary,#3b82f6);text-transform:none;letter-spacing:normal">Edit</a></label>
+              <label style="display:flex;align-items:center;justify-content:space-between">Tipo de Telha <a href="#" onclick="abrirConfigTiposTelha();return false" style="font-weight:400;font-size:0.75rem;color:var(--primary,#3b82f6);text-transform:none;letter-spacing:normal">Editar</a></label>
               <select id="editOrdemTipoTelha" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
                 <option value="">— Selecione —</option>
               </select>
@@ -2000,6 +2026,11 @@ async function salvarProduto() {
             document.getElementById('imgUploadStatus').textContent = 'Imagem enviada!';
         }
 
+        const unidadeSelecionada = document.getElementById('prodUnidade').value;
+        const unidade = unidadeSelecionada === 'outro'
+            ? (document.getElementById('prodUnidadeOutra').value.trim().toUpperCase() || 'UN')
+            : unidadeSelecionada;
+
         const produto = {
             codigo, nome,
             ean:           document.getElementById('prodEan').value.trim() || null,
@@ -2010,11 +2041,12 @@ async function salvarProduto() {
             estoque_minimo: parseInt(document.getElementById('prodEstoqueMin').value) || 0,
             saldo_atual:   parseInt(document.getElementById('prodSaldoInicial').value) || 0,
             preco_unitario: parseFloat(document.getElementById('prodPreco').value) || 0,
+            unidade,
             imagem:        imagemUrl,
             usuario_id:    state.currentUser.id
         };
 
-        // Tenta salvar; se a coluna 'ean' não existir no banco, salva sem ela
+        // Tenta salvar; se a coluna 'ean' ou 'unidade' não existir no banco, salva sem ela
         async function _upsertProduto(dados) {
             if (state.editingProdutoId) {
                 const r = await sb.from('produtos').update(dados).eq('id', state.editingProdutoId).select().single();
@@ -2031,6 +2063,14 @@ async function salvarProduto() {
             // Coluna ean não existe no banco — salva sem ela
             const { ean, ...produtoSemEan } = produto;
             ({ data, error } = await _upsertProduto(produtoSemEan));
+        }
+
+        if (error && error.message && error.message.toLowerCase().includes("'unidade'")) {
+            // Coluna unidade não existe no banco ainda — salva sem ela (peça ao
+            // administrador rodar a migração ALTER TABLE produtos ADD COLUMN
+            // unidade text DEFAULT 'UN'; pra essa informação persistir)
+            const { unidade, ...produtoSemUnidade } = produto;
+            ({ data, error } = await _upsertProduto(produtoSemUnidade));
         }
 
         if (error) throw error;
@@ -2395,9 +2435,25 @@ function buildSelectProdutos(selectedId, qtd, idx, ctx) {
 
 // ── Autocomplete helpers ──────────────────────────────────────
 
+// Limpa sufixos que o próprio sistema injeta no texto exibido do campo de
+// busca — "(Saldo: X)" (mostrado após selecionar um produto) e qualquer
+// variante entre parênteses tipo "(Bifásico)", "(Linha)", "(Fase)" (mostrada
+// após escolher uma variante em KIT_VARIANTES) — antes de usar o texto como
+// termo de busca. Sem isso, reabrir um campo que já tem produto+variante
+// selecionados nunca encontra mais o produto (a busca inclui texto que não
+// existe no nome real dele), impedindo o usuário de trocar a seleção depois
+// — ex: escolheu "Disjuntor ... (Bifásico)" e depois quer mudar para
+// "Trifásico", mas a busca não acha mais o disjuntor pra reabrir o painel.
+function _limparTextoBuscaProduto(texto) {
+    return (texto || '')
+        .replace(/\s*\(Saldo:\s*[\d-]+\)/gi, '')
+        .replace(/\s*\([^)]+\)\s*$/, '')
+        .trim();
+}
+
 // For standalone inputs (entrada/saida) with a separate hidden id field
 function acFiltrarSimples(inp, hiddenId, manterSelecao) {
-    var q = inp.value.toLowerCase();
+    var q = _limparTextoBuscaProduto(inp.value).toLowerCase();
     var ddId = inp.getAttribute('data-dd');
     var dd = document.getElementById(ddId);
     if (!dd) return;
@@ -2457,7 +2513,7 @@ function acSelecionarSimples(el) {
 }
 
 function acFiltrar(inp) {
-    var q = inp.value.toLowerCase();
+    var q = _limparTextoBuscaProduto(inp.value).toLowerCase();
     var ddId = inp.id.replace('ac_', 'dd_');
     var dd = document.getElementById(ddId);
     if (!dd) return;
@@ -2468,7 +2524,7 @@ function acFiltrar(inp) {
 }
 
 function acAbrir(inp) {
-    var q = inp.value.toLowerCase();
+    var q = _limparTextoBuscaProduto(inp.value).toLowerCase();
     var ddId = inp.id.replace('ac_', 'dd_');
     var dd = document.getElementById(ddId);
     if (!dd) return;
@@ -2848,7 +2904,7 @@ function renderMatPendenteGrupos(grupos) {
             const nomeDisplay = nomeExibicaoItem(i, p);
             return '<tr><td>' + nomeDisplay + '</td>' +
                 '<td>' + (p ? (p.codigo || '—') : '—') + '</td>' +
-                '<td style="text-align:center;font-weight:700;color:var(--red)">' + i._falta + '</td></tr>';
+                '<td style="text-align:center;font-weight:700;color:var(--red)">' + i._falta + ' ' + (p?.unidade || 'UN') + '</td></tr>';
         }).join('');
         return '<div style="margin-bottom:14px">' +
             '<div style="font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#991B1B;background:var(--red-soft);padding:6px 10px;border:1px solid #FECACA;border-bottom:none;border-radius:6px 6px 0 0">' + g.label + '</div>' +
@@ -2901,7 +2957,7 @@ function printMaterialPendente() {
                 '<td>' + (p ? (p.codigo || '—') : '—') + '</td>' +
                 '<td>' + (p ? (p.categoria || '—') : '—') + '</td>' +
                 '<td>' + (p ? (p.localizacao || '—') : '—') + '</td>' +
-                '<td style="text-align:center;font-weight:700;color:#DC2626">' + i._falta + '</td>' +
+                '<td style="text-align:center;font-weight:700;color:#DC2626">' + i._falta + ' ' + (p?.unidade || 'UN') + '</td>' +
                 '</tr>';
         }).join('');
         return '<div class="kit-block">' +
@@ -2992,7 +3048,8 @@ async function criarOrdem() {
         status: 'pendente',
         usuario_id: state.currentUser.id,
         itens_json: JSON.stringify(kits),
-        equipe_id: document.getElementById('ordemEquipe').value || null
+        equipe_id: document.getElementById('ordemEquipe').value || null,
+        localizacao_url: document.getElementById('ordemLocalizacaoUrl').value.trim() || null
     };
 
     const dadosTecnicosPage = _coletarDadosTecnicosOrdem('page');
@@ -3013,6 +3070,11 @@ async function criarOrdem() {
             delete ordem.dados_tecnicos;
             ({ data, error } = await sb.from('ordens').insert([ordem]).select('*, produto:produtos(*)').single());
         }
+        // Se a coluna localizacao_url ainda não existir na tabela, tenta novamente sem ela
+        if (error && error.message && error.message.includes('localizacao_url')) {
+            delete ordem.localizacao_url;
+            ({ data, error } = await sb.from('ordens').insert([ordem]).select('*, produto:produtos(*)').single());
+        }
         if (error) throw error;
 
         state.ordens.unshift({ ...data, solicitante: state.currentUser });
@@ -3022,6 +3084,7 @@ async function criarOrdem() {
         renderLinhasOrdem('page');
         renderKitsConfirmados('page');
         document.getElementById('ordemDescricao').value = '';
+        document.getElementById('ordemLocalizacaoUrl').value = '';
         ['pageOrdemResidencia','pageOrdemTipoTelha','pageOrdemTipoEstrutura','pageOrdemCondicaoTelhado','pageOrdemObsTecnica'].forEach(id => {
             const el = document.getElementById(id); if (el) el.value = '';
         });
@@ -3066,7 +3129,8 @@ async function criarOrdemModal() {
         status: 'pendente',
         usuario_id: state.currentUser.id,
         itens_json: JSON.stringify(kits),
-        equipe_id: document.getElementById('modalOrdemEquipe').value || null
+        equipe_id: document.getElementById('modalOrdemEquipe').value || null,
+        localizacao_url: document.getElementById('modalOrdemLocalizacaoUrl').value.trim() || null
     };
 
     const dadosTecnicosModal = _coletarDadosTecnicosOrdem('modal');
@@ -3087,12 +3151,18 @@ async function criarOrdemModal() {
             delete ordem.dados_tecnicos;
             ({ data, error } = await sb.from('ordens').insert([ordem]).select('*, produto:produtos(*)').single());
         }
+        // Se a coluna localizacao_url ainda não existir na tabela, tenta novamente sem ela
+        if (error && error.message && error.message.includes('localizacao_url')) {
+            delete ordem.localizacao_url;
+            ({ data, error } = await sb.from('ordens').insert([ordem]).select('*, produto:produtos(*)').single());
+        }
         if (error) throw error;
 
         state.ordens.unshift({ ...data, solicitante: state.currentUser });
         _kitsConfirmados['modal'] = [];
         _kitEditIndex['modal'] = null;
         _ordemItens['modal'] = [];
+        document.getElementById('modalOrdemLocalizacaoUrl').value = '';
         ['modalOrdemResidencia','modalOrdemTipoTelha','modalOrdemTipoEstrutura','modalOrdemCondicaoTelhado','modalOrdemObsTecnica'].forEach(id => {
             const el = document.getElementById(id); if (el) el.value = '';
         });
@@ -3903,6 +3973,8 @@ function closeModal(id) {
         });
         m.querySelectorAll('textarea').forEach(el => el.value = '');
         m.querySelectorAll('select').forEach(el => el.selectedIndex = 0);
+        const outraWrap = document.getElementById('prodUnidadeOutraWrap');
+        if (outraWrap) outraWrap.classList.add('hidden');
         // Reset image preview
         const wrap = document.getElementById('imgPreviewWrap');
         if (wrap) wrap.style.display = 'none';
@@ -5877,7 +5949,21 @@ async function editProduto(id) {
     document.getElementById('prodSaldoInicial').value = p.saldo_atual || 0;
     document.getElementById('prodPreco').value = p.preco_unitario || '';
     document.getElementById('prodImgUrl').value = p.imagem || '';
-    
+
+    const unidadesPadrao = ['UN','CX','BD','PT','KG','L','M','M²','RL','PC','CJ','PAR','FRD','TON'];
+    const unidadeSalva = (p.unidade || 'UN').toUpperCase();
+    const selUnidade = document.getElementById('prodUnidade');
+    const outraWrap = document.getElementById('prodUnidadeOutraWrap');
+    if (unidadesPadrao.includes(unidadeSalva)) {
+        selUnidade.value = unidadeSalva;
+        outraWrap.classList.add('hidden');
+        document.getElementById('prodUnidadeOutra').value = '';
+    } else {
+        selUnidade.value = 'outro';
+        outraWrap.classList.remove('hidden');
+        document.getElementById('prodUnidadeOutra').value = unidadeSalva;
+    }
+
     document.getElementById('modalProdutoTitle').textContent = 'Editar Produto';
     document.getElementById('btnSalvarProduto').onclick = salvarProduto;
     document.getElementById('modalProduto').classList.remove('hidden');
@@ -6351,7 +6437,7 @@ function printOrdem(id) {
                 '<td>' + (p ? (p.codigo || '—') : '—') + '</td>' +
                 '<td>' + (p ? (p.categoria || '—') : '—') + '</td>' +
                 '<td>' + (p ? (p.localizacao || '—') : '—') + '</td>' +
-                '<td style="text-align:center;font-weight:700;color:#3B82F6">' + item.quantidade + '</td>' +
+                '<td style="text-align:center;font-weight:700;color:#3B82F6">' + item.quantidade + ' ' + (p?.unidade || 'UN') + '</td>' +
                 '</tr>';
         }).join('');
         return '<div class="kit-block">' +
@@ -6459,6 +6545,7 @@ tr:last-child td{border-bottom:none}
   <div class="info-item"><label>Solicitante</label><span>${o.solicitante_nome || '—'}</span></div>
   <div class="info-item"><label>Data da Solicitação</label><span>${formatDate(o.criado_em)}</span></div>
   <div class="info-item"><label>Data Necessária</label><span>${o.data_necessaria ? formatDate(o.data_necessaria) : '—'}</span></div>
+  ${o.localizacao_url ? '<div class="info-item"><label>Localização</label><span><a href="' + o.localizacao_url + '" target="_blank" style="color:#2563EB;text-decoration:underline">Ver no mapa</a></span></div>' : ''}
 </div>
 
 ${o.descricao ? '<div class="desc-box"><label>Descrição / Justificativa</label><p style="font-size:0.875rem;line-height:1.6">' + o.descricao + '</p></div>' : ''}
@@ -6505,6 +6592,7 @@ async function editarOrdem(id) {
     document.getElementById('editOrdemPrioridade').value = o.prioridade || 'media';
     document.getElementById('editOrdemData').value = o.data_necessaria ? o.data_necessaria.split('T')[0] : '';
     document.getElementById('editOrdemDescricao').value = (o.descricao || '').replace(/^\[.*?\]\s*/, '');
+    document.getElementById('editOrdemLocalizacaoUrl').value = o.localizacao_url || '';
     populateEquipeSelect('editOrdemEquipe');
     document.getElementById('editOrdemEquipe').value = o.equipe_id || '';
     ['editOrdemResidencia','editOrdemTipoTelha','editOrdemTipoEstrutura','editOrdemCondicaoTelhado','editOrdemObsTecnica'].forEach(id => {
@@ -6613,7 +6701,8 @@ async function salvarEdicaoOrdem() {
             : null,
         descricao: '[' + kitLabel + '] ' + desc,
         equipe_id: document.getElementById('editOrdemEquipe').value || null,
-        itens_json: JSON.stringify(kits)
+        itens_json: JSON.stringify(kits),
+        localizacao_url: document.getElementById('editOrdemLocalizacaoUrl').value.trim() || null
     };
 
     var dadosTecnicosEdit = _coletarDadosTecnicosOrdem('edit');
@@ -6624,6 +6713,11 @@ async function salvarEdicaoOrdem() {
         // Se a coluna dados_tecnicos ainda não existir na tabela, tenta novamente sem ela
         if (res.error && res.error.message && res.error.message.includes('dados_tecnicos')) {
             delete updates.dados_tecnicos;
+            res = await sb.from('ordens').update(updates).eq('id', id).select('*, produto:produtos(*)').single();
+        }
+        // Se a coluna localizacao_url ainda não existir na tabela, tenta novamente sem ela
+        if (res.error && res.error.message && res.error.message.includes('localizacao_url')) {
+            delete updates.localizacao_url;
             res = await sb.from('ordens').update(updates).eq('id', id).select('*, produto:produtos(*)').single();
         }
         if (res.error) throw res.error;
@@ -6786,7 +6880,7 @@ function verOrdem(id) {
                 : '<span class="tag tag-red" style="font-size:0.68rem">Insuf. (' + item._disponivelAntes + ')</span>';
             return '<div class="kit-item-row">' +
                 '<span class="kit-item-nome">' + nome + '</span>' +
-                '<span class="kit-item-qtd">' + qtd + ' un</span>' +
+                '<span class="kit-item-qtd">' + qtd + ' ' + (p?.unidade || 'UN') + '</span>' +
                 badge + '</div>';
         }).join('');
         return '<div style="margin-bottom:14px">' +
@@ -6839,7 +6933,7 @@ function verOrdem(id) {
         valorTotalHtml = '<div style="margin-top:10px;display:flex;justify-content:flex-end">' +
             '<div style="background:var(--accent-soft);border:1px solid var(--accent);border-radius:var(--radius);padding:8px 14px;font-size:0.82rem;color:var(--text)">' +
             '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:4px;color:var(--accent)"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>' +
-            'Valor total dos materiais: <strong>' + formatCurrency(valorTotal) + '</strong></div></div>';
+            'Valor total dos materiais (só admin): <strong>' + formatCurrency(valorTotal) + '</strong></div></div>';
     }
 
     document.getElementById('ordemDetalheContent').innerHTML =
@@ -6850,6 +6944,7 @@ function verOrdem(id) {
             '<div class="ordem-detail-item"><label>Status</label><span class="tag ' + st.cls + '">' + st.label + '</span></div>' +
             '<div class="ordem-detail-item"><label>Data necessária</label><span>' + formatDate(o.data_necessaria) + '</span></div>' +
             '<div class="ordem-detail-item"><label>Criada em</label><span>' + formatDate(o.criado_em) + '</span></div>' +
+            (o.localizacao_url ? '<div class="ordem-detail-item"><label>Localização</label><span><a href="' + o.localizacao_url + '" target="_blank" style="color:var(--primary,#3b82f6)">Ver no mapa</a></span></div>' : '') +
             '<div class="ordem-detail-item full-width"><label>Descrição</label><div class="ordem-detail-desc">' + (o.descricao || '') + '</div></div>' +
         '</div>' +
         '<div style="margin-top:16px;border-top:1px solid var(--border);padding-top:14px">' +
@@ -8549,7 +8644,7 @@ function renderKits(filter) {
             const prod = state.produtos.find(p => p.id === item.produto_id);
             const nome = nomeExibicaoItem(item, prod);
             const qtd  = item.quantidade || item.qtd || 1;
-            return '<div class="kit-item-row"><span class="kit-item-nome" title="' + nome + '">' + nome + '</span><span class="kit-item-qtd">' + qtd + ' un</span></div>';
+            return '<div class="kit-item-row"><span class="kit-item-nome" title="' + nome + '">' + nome + '</span><span class="kit-item-qtd">' + qtd + ' ' + (prod?.unidade || 'UN') + '</span></div>';
         }).join('');
         const maisStr = itens.length > 5 ? '<div style="font-size:0.75rem;color:var(--text-3);padding:6px 0">+ ' + (itens.length - 5) + ' material(is)...</div>' : '';
 
@@ -8616,7 +8711,12 @@ function renderKits(filter) {
 // essa chave e por isso o painel aparece em qualquer tipo de kit.
 const KIT_VARIANTES = [
     { regex: /\bcabo\b/i,        variantes: ['Linha', 'Carga'], restritoATipo: 'padrao_entrada' },
-    { regex: /\bdisjuntor\b/i,   variantes: ['Monofásico', 'Bifásico', 'Trifásico'] },
+    // "substituirPolos": ao escolher a variante, corrige o número de polos já
+    // presente no nome do disjuntor (ex: "Disjuntor 80A 3P" -> "Disjuntor 80A
+    // 2P") em vez de deixar o polo antigo (do produto escolhido primeiro)
+    // incompatível com a fase escolhida depois — a variante muda tanto o
+    // sufixo "(Bifásico)" quanto o "Xp" que já estava no nome.
+    { regex: /\bdisjuntor\b/i,   variantes: ['Monofásico', 'Bifásico', 'Trifásico'], substituirPolos: { 'Monofásico': '1P', 'Bifásico': '2P', 'Trifásico': '3P' } },
     { regex: /\bfio\b/i,         variantes: ['Fase', 'Neutro', 'Terra'] },
     { regex: /\bcondutor\b/i,    variantes: ['Fase', 'Neutro', 'Terra'] },
     { regex: /\btomada\b/i,      variantes: ['2P', '2P+T', 'Schuko'] },
@@ -8730,16 +8830,92 @@ function _kitFecharPainelVariante(inpId) {
     if (painel) painel.remove();
 }
 
+// Remove o token de polaridade ("2p", "3P", etc.) do nome de um disjuntor e
+// normaliza espaços/caixa — usado para comparar se dois produtos são "o
+// mesmo modelo" em polaridades diferentes (ex: "Disjuntor 80w 3p" e
+// "Disjuntor 80w 2p" têm a mesma base "disjuntor 80w").
+function _baseDisjuntorSemPolo(nome) {
+    return (nome || '')
+        .replace(/\b\d+\s*p\b/i, '')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .toLowerCase();
+}
+
 // Aplica a variante escolhida ao campo de texto da linha
 function _kitSelecionarVariante(inpId, variante) {
     const inp = document.getElementById(inpId);
     if (inp) {
+        // Descobre onde vive o produto_id atualmente selecionado nesta linha:
+        // no fluxo de Ordem de Serviço vem de _ordemItens (data-ctx/data-idx);
+        // nos fluxos de Kit/Sub-kit vem de um campo hidden ao lado (data-hid).
+        const ctx = inp.dataset.ctx;
+        const idxAttr = inp.dataset.idx;
+        let itemOrdem = null;
+        let hidEl = null;
+        let produtoAtualId = null;
+        if (ctx && idxAttr && _ordemItens[ctx]) {
+            const idx = parseFloat(idxAttr);
+            itemOrdem = _ordemItens[ctx].find(i => i.idx === idx);
+            if (itemOrdem) produtoAtualId = itemOrdem.produto_id;
+        } else if (inp.dataset.hid) {
+            hidEl = document.getElementById(inp.dataset.hid);
+            if (hidEl) produtoAtualId = hidEl.value;
+        }
+        const prodAtual = produtoAtualId ? state.produtos.find(p => p.id === produtoAtualId) : null;
+
         // Remove "(Saldo: X)" que o autocomplete injeta e qualquer variante anterior
         let val = inp.value
             .replace(/\s*\(Saldo:\s*[\d-]+\)/gi, '')
             .replace(/\s*\([^)]+\)\s*$/, '')
             .trim();
-        inp.value = val + ' (' + variante + ')';
+
+        // Para disjuntor: a fase escolhida define a polaridade certa
+        // (Monofásico=1P, Bifásico=2P, Trifásico=3P). Em vez de só corrigir o
+        // TEXTO (o que ficaria bonito na tela mas continuaria descontando
+        // estoque do disjuntor errado), procura no estoque um disjuntor do
+        // MESMO modelo com a polaridade certa e troca o produto selecionado
+        // desta linha pra ele de verdade. Se não existir um equivalente
+        // cadastrado, avisa e mantém o produto atual (só corrige o texto),
+        // pra não fingir que a troca aconteceu quando na prática não há
+        // material daquela polaridade no sistema.
+        let produtoFinal = prodAtual;
+        const entradaPolos = KIT_VARIANTES.find(v => v.variantes.includes(variante) && v.substituirPolos);
+        if (entradaPolos && prodAtual) {
+            const novoPolo = entradaPolos.substituirPolos[variante];
+            if (novoPolo && /\b\d+\s*p\b/i.test(prodAtual.nome)) {
+                const baseAtual = _baseDisjuntorSemPolo(prodAtual.nome);
+                const poloEscapado = novoPolo.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const poloRegex = new RegExp('\\b' + poloEscapado + '\\b', 'i');
+                const equivalente = state.produtos.find(cand =>
+                    cand.id !== prodAtual.id &&
+                    poloRegex.test(cand.nome) &&
+                    _baseDisjuntorSemPolo(cand.nome) === baseAtual
+                );
+                if (equivalente) {
+                    produtoFinal = equivalente;
+                    val = equivalente.nome;
+                } else {
+                    val = val.replace(/\b\d+\s*p\b/i, novoPolo);
+                    showToast('Não há um disjuntor "' + novoPolo + '" equivalente cadastrado no estoque — mantendo ' + prodAtual.nome + ' selecionado.', 'info');
+                }
+            }
+        }
+
+        const valFinal = val + ' (' + variante + ')';
+        inp.value = valFinal;
+
+        // Persiste a troca de produto (se houve) + o nome com variante — o
+        // texto do campo é só visual; quem realmente é salvo é o item em
+        // _ordemItens[ctx] (OS) ou o campo hidden (Kit/Sub-kit). Sem isso a
+        // variante/polaridade escolhida aparece na tela mas some — ou pior,
+        // continua descontando do produto antigo — ao confirmar/salvar.
+        if (itemOrdem) {
+            if (produtoFinal) itemOrdem.produto_id = produtoFinal.id;
+            itemOrdem.nome = valFinal;
+        } else if (hidEl && produtoFinal) {
+            hidEl.value = produtoFinal.id;
+        }
     }
     // Painel fixo (usado no fluxo de sub-kits dentro do modal de Kit)
     const fixo = document.getElementById('kitVariantePanel');
@@ -8771,7 +8947,7 @@ function addKitItemLinha() {
             '<input class="ac-input" id="' + inputId + '" type="text" placeholder="Buscar produto..." autocomplete="off"' +
             ' oninput="acFiltrarSimples(this,\'' + hidId + '\')"' +
             ' onfocus="acFiltrarSimples(this,\'' + hidId + '\')"' +
-            ' data-dd="' + ddId + '"' +
+            ' data-dd="' + ddId + '" data-hid="' + hidId + '"' +
             ' onblur="var dd=this.getAttribute(\'data-dd\');setTimeout(function(){acFechar(dd)},180)"/>' +
             '<input type="hidden" id="' + hidId + '" onchange="_kitVerificarVariante(this.value,\'' + inputId + '\')"/>' +
             '<div class="ac-dropdown" id="' + ddId + '"></div>' +
@@ -9357,7 +9533,7 @@ function verKit(id) {
                 : '<span class="tag tag-red" style="font-size:0.68rem">Insuf. (' + disponivel + ')</span>';
             return '<div class="kit-item-row">' +
                 '<span class="kit-item-nome">' + nome + '</span>' +
-                '<span class="kit-item-qtd">' + qtd + ' un</span>' +
+                '<span class="kit-item-qtd">' + qtd + ' ' + (prod?.unidade || 'UN') + '</span>' +
                 badge + '</div>';
         }).join('');
         return { html, temEstoque };
@@ -9791,7 +9967,7 @@ function _autoPreencherDtOS(kit, ctx) {
       <!-- ── Dados Técnicos da Instalação ── -->
       <details id="kitDadosTecnicos" style="margin-bottom:16px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden">
         <summary style="padding:10px 14px;cursor:pointer;font-size:0.78rem;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-2);list-style:none;display:flex;align-items:center;gap:8px;user-select:none">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points=""/></svg>
           Dados Técnicos da Instalação
           <span style="margin-left:auto;font-size:0.7rem;font-weight:400;color:var(--text-3)">(opcional)</span>
         </summary>
@@ -9807,7 +9983,7 @@ function _autoPreencherDtOS(kit, ctx) {
               </select>
             </div>
             <div class="form-group" style="margin:0">
-              <label style="display:flex;align-items:center;justify-content:space-between">Tipo de Telha <a href="#" onclick="abrirConfigTiposTelha();return false" style="font-weight:400;font-size:0.75rem;color:var(--primary,#3b82f6);text-transform:none;letter-spacing:normal">Edit</a></label>
+              <label style="display:flex;align-items:center;justify-content:space-between">Tipo de Telha <a href="#" onclick="abrirConfigTiposTelha();return false" style="font-weight:400;font-size:0.75rem;color:var(--primary,#3b82f6);text-transform:none;letter-spacing:normal">Editar</a></label>
               <select id="kitTipoTelha" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:inherit;font-size:0.875rem">
                 <option value="">— Selecione —</option>
               </select>
@@ -10398,8 +10574,8 @@ async function nfeConfirmarEntrada(){
     nfeAdicionarHistorico(vinculados);
     showToast(`${vinculados.length} entrada(s) registrada(s) com sucesso!`,'success');
     nfeLimpar();
-    if(typeof loadData === 'function') loadData();
-    else if(typeof fetchProdutos === 'function') fetchProdutos();
+    await carregarDados();
+    renderProdutos();
   } catch(err){
     showToast('Erro ao registrar entradas: ' + err.message,'error');
     console.error(err);
@@ -10408,36 +10584,42 @@ async function nfeConfirmarEntrada(){
 
 // ── Registra uma entrada via Supabase ───────────────────────
 async function nfeRegistrarEntradaItem(item){
-  const prod = (typeof produtos !== 'undefined') ? produtos.find(p => p.id === item.produtoIdSistema) : null;
+  const prod = state.produtos.find(p => p.id === item.produtoIdSistema);
   if(!prod) throw new Error('Produto não encontrado: ' + item.produtoNomeSistema);
 
-  const novoSaldo = (prod.saldo || 0) + item.qCom;
+  const numeroNota = (() => {
+    const _n = (document.getElementById('nfeNumeroManual')||{}).value;
+    return _n ? 'NF-e ' + _n : (nfeMetaDados.numero ? 'NF-e ' + nfeMetaDados.numero : '');
+  })();
 
-  const { error: errProd } = await supabase
+  const entrada = {
+    produto_id    : item.produtoIdSistema,
+    fornecedor_id : null,
+    quantidade    : item.qCom,
+    valor_unitario: item.vUnCom,
+    nota_fiscal   : numeroNota,
+    data          : nfeMetaDados.dataISO,
+    observacoes   : 'Importação XML NF-e — ' + (nfeMetaDados.emitente || ''),
+    responsavel   : state.currentUser ? state.currentUser.nome : 'Sistema',
+    usuario_id    : state.currentUser ? state.currentUser.id : null
+  };
+
+  const { data, error: errEntrada } = await sb
+    .from('entradas')
+    .insert([entrada])
+    .select('*, produto:produtos(*), fornecedor:fornecedores(*)')
+    .single();
+  if(errEntrada) throw errEntrada;
+
+  const novoSaldo = (prod.saldo_atual || 0) + item.qCom;
+  const { error: errProd } = await sb
     .from('produtos')
-    .update({ saldo: novoSaldo })
+    .update({ saldo_atual: novoSaldo })
     .eq('id', item.produtoIdSistema);
   if(errProd) throw errProd;
 
-  const userName = document.getElementById('sidebarUserName')
-    ? document.getElementById('sidebarUserName').textContent
-    : 'Sistema';
-
-  const { error: errMov } = await supabase
-    .from('movimentacoes')
-    .insert({
-      produto_id  : item.produtoIdSistema,
-      tipo        : 'entrada',
-      quantidade  : item.qCom,
-      valor_unit  : item.vUnCom,
-      nota_fiscal : (() => { const _n = (document.getElementById('nfeNumeroManual')||{}).value; return _n ? 'NF-e ' + _n : (nfeMetaDados.numero ? 'NF-e ' + nfeMetaDados.numero : ''); })(),
-      data        : nfeMetaDados.dataISO,
-      responsavel : userName,
-      obs         : 'Importação XML NF-e — ' + nfeMetaDados.emitente
-    });
-  if(errMov) throw errMov;
-
-  if(prod) prod.saldo = novoSaldo;
+  prod.saldo_atual = novoSaldo;
+  state.entradas.unshift(data);
 }
 
 // ── Histórico local (tela) ──────────────────────────────────
