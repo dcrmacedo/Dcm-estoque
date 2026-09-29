@@ -1115,7 +1115,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
     </div>
 
     <div id="page-minhasOrdens" class="page">
-      <div class="card"><div class="card-header"><h3>Minhas Ordens de Serviço</h3></div><div class="card-body no-pad"><table class="table"><thead><tr><th>#</th><th>Produto</th><th>Qtd</th><th class="col-hide-mobile">Prioridade</th><th>Status</th><th>Recebimento</th><th>Data</th><th>Ações</th></tr></thead><tbody id="tbodyMinhasOrdens"><tr><td colspan="8" class="empty">Você não possui ordens abertas</td></tr></tbody></table></div></div>
+      <div class="card"><div class="card-header"><h3>Minhas Ordens de Serviço</h3></div><div class="card-body no-pad"><table class="table"><thead><tr><th>#</th><th>Descrição/Justificativa</th><th>Qtd</th><th class="col-hide-mobile">Prioridade</th><th>Status</th><th>Recebimento</th><th>Data</th><th>Ações</th></tr></thead><tbody id="tbodyMinhasOrdens"><tr><td colspan="8" class="empty">Você não possui ordens abertas</td></tr></tbody></table></div></div>
     </div>
 
 
@@ -7201,9 +7201,13 @@ function renderMinhasOrdens() {
     }
     
     tb.innerHTML = list.map(o => {
-        const p = o.produto || state.produtos.find(x => x.id === o.produto_id);
         const pr = PR[o.prioridade] || PR.media;
         const st = ST[o.status] || ST.pendente;
+        // A coluna mostra a Descrição/Justificativa da OS (onde o solicitante
+        // anota o nome do cliente), não o produto — igual ao padrão já usado
+        // na tabela de Ordens do admin (descClean/descTrunc).
+        const descClean = (o.descricao || '').replace(/^\[.*?\]\s*/, '');
+        const descTrunc = descClean.length > 50 ? descClean.substring(0, 50) + '...' : descClean;
 
         let ac = '<button class="tbl-btn" onclick="printOrdem(\'' + o.id + '\')" title="Imprimir OS"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Imprimir</button>';
         if (temMaterialZerado(o)) ac += '<button class="tbl-btn" style="color:var(--red);border-color:#FECACA;background:var(--red-soft)" onclick="abrirMaterialPendenteOrdem(\'' + o.id + '\')" title="Imprimir Material Pendente"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/><line x1="9" y1="17" x2="9.01" y2="17"/></svg> Pendente</button>';
@@ -7219,7 +7223,7 @@ function renderMinhasOrdens() {
             }
         }
 
-        return '<tr><td><code style="font-size:0.78rem;font-family:monospace;">' + (o.numero || '') + '</code></td><td>' + (p ? p.nome : '—') + '</td><td>' + (o.quantidade || 0) + '</td><td class="col-hide-mobile"><span class="tag ' + pr.cls + '">' + pr.label + '</span></td><td><span class="tag ' + st.cls + '">' + st.label + '</span></td><td>' + receb + '</td><td>' + formatDate(o.criado_em) + '</td><td><div class="tbl-actions">' + ac + '</div></td></tr>';
+        return '<tr><td><code style="font-size:0.78rem;font-family:monospace;">' + (o.numero || '') + '</code></td><td style="max-width:220px;color:var(--text-2);font-size:0.82rem" title="' + descClean.replace(/"/g, "'") + '">' + (descTrunc || '—') + '</td><td>' + (o.quantidade || 0) + '</td><td class="col-hide-mobile"><span class="tag ' + pr.cls + '">' + pr.label + '</span></td><td><span class="tag ' + st.cls + '">' + st.label + '</span></td><td>' + receb + '</td><td>' + formatDate(o.criado_em) + '</td><td><div class="tbl-actions">' + ac + '</div></td></tr>';
     }).join('');
 }
 
