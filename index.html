@@ -1115,7 +1115,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
     </div>
 
     <div id="page-minhasOrdens" class="page">
-      <div class="card"><div class="card-header"><h3>Minhas Ordens de Serviço</h3></div><div class="card-body no-pad"><table class="table"><thead><tr><th>#</th><th>Descrição/Justificativa</th><th>Qtd</th><th class="col-hide-mobile">Prioridade</th><th>Status</th><th>Recebimento</th><th>Data</th><th>Ações</th></tr></thead><tbody id="tbodyMinhasOrdens"><tr><td colspan="8" class="empty">Você não possui ordens abertas</td></tr></tbody></table></div></div>
+      <div class="card"><div class="card-header"><h3>Minhas Ordens de Serviço</h3></div><div class="card-body no-pad"><table class="table"><thead><tr><th>#</th><th>Descrição/Justificativa</th><th>Equipe</th><th class="col-hide-mobile">Prioridade</th><th>Status</th><th>Recebimento</th><th>Data</th><th>Ações</th></tr></thead><tbody id="tbodyMinhasOrdens"><tr><td colspan="8" class="empty">Você não possui ordens abertas</td></tr></tbody></table></div></div>
     </div>
 
 
@@ -7196,13 +7196,15 @@ function renderMinhasOrdens() {
     const tb = document.getElementById('tbodyMinhasOrdens');
     
     if (!list.length) {
-        tb.innerHTML = '<tr><td colspan="7" class="empty">Você não possui ordens abertas</td></tr>';
+        tb.innerHTML = '<tr><td colspan="8" class="empty">Você não possui ordens abertas</td></tr>';
         return;
     }
     
     tb.innerHTML = list.map(o => {
         const pr = PR[o.prioridade] || PR.media;
         const st = ST[o.status] || ST.pendente;
+        const eq = state.equipes ? state.equipes.find(e => e.id === o.equipe_id) : null;
+        const equipeNome = eq ? eq.nome : '—';
         // A coluna mostra a Descrição/Justificativa da OS (onde o solicitante
         // anota o nome do cliente), não o produto — igual ao padrão já usado
         // na tabela de Ordens do admin (descClean/descTrunc).
@@ -7223,7 +7225,7 @@ function renderMinhasOrdens() {
             }
         }
 
-        return '<tr><td><code style="font-size:0.78rem;font-family:monospace;">' + (o.numero || '') + '</code></td><td style="max-width:220px;color:var(--text-2);font-size:0.82rem" title="' + descClean.replace(/"/g, "'") + '">' + (descTrunc || '—') + '</td><td>' + (o.quantidade || 0) + '</td><td class="col-hide-mobile"><span class="tag ' + pr.cls + '">' + pr.label + '</span></td><td><span class="tag ' + st.cls + '">' + st.label + '</span></td><td>' + receb + '</td><td>' + formatDate(o.criado_em) + '</td><td><div class="tbl-actions">' + ac + '</div></td></tr>';
+        return '<tr><td><code style="font-size:0.78rem;font-family:monospace;">' + (o.numero || '') + '</code></td><td style="max-width:220px;color:var(--text-2);font-size:0.82rem" title="' + descClean.replace(/"/g, "'") + '">' + (descTrunc || '—') + '</td><td>' + equipeNome + '</td><td class="col-hide-mobile"><span class="tag ' + pr.cls + '">' + pr.label + '</span></td><td><span class="tag ' + st.cls + '">' + st.label + '</span></td><td>' + receb + '</td><td>' + formatDate(o.criado_em) + '</td><td><div class="tbl-actions">' + ac + '</div></td></tr>';
     }).join('');
 }
 
