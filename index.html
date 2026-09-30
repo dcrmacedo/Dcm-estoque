@@ -974,7 +974,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn-outline" onclick="limparInventario()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Limpar</button>
-          <button class="btn-primary" onclick="confirmarInventario()"> Confirmar Inventário</button>
+          <button class="btn-primary" onclick="_comLoading(this, confirmarInventario)"> Confirmar Inventário</button>
         </div>
       </div>
       <!-- Histórico de inventários anteriores -->
@@ -1107,7 +1107,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
             </div>
 
             <div class="form-actions">
-              <button class="btn-primary" onclick="criarOrdem()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Enviar Ordem</button>
+              <button class="btn-primary" onclick="_comLoading(this, criarOrdem)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Enviar Ordem</button>
             </div>
           </div>
         </div>
@@ -1192,7 +1192,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
         <div class="form-group"><label>Cidade / Estado</label><input type="text" id="fornCidade" placeholder="Ex: Belém / PA"/></div>
       </div>
     </div>
-    <div class="modal-footer"><button class="btn-ghost" onclick="closeModal('modalFornecedor')">Cancelar</button><button class="btn-primary" onclick="salvarFornecedor()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Salvar</button></div>
+    <div class="modal-footer"><button class="btn-ghost" onclick="closeModal('modalFornecedor')">Cancelar</button><button class="btn-primary" onclick="_comLoading(this, salvarFornecedor)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Salvar</button></div>
   </div>
 </div>
 
@@ -1229,7 +1229,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
       </div>
       <div id="entradaItensList" style="display:flex;flex-direction:column;gap:8px"></div>
     </div>
-    <div class="modal-footer"><button class="btn-ghost" onclick="closeModal('modalEntrada')">Cancelar</button><button class="btn-primary" onclick="salvarEntrada()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Registrar</button></div>
+    <div class="modal-footer"><button class="btn-ghost" onclick="closeModal('modalEntrada')">Cancelar</button><button class="btn-primary" onclick="_comLoading(this, salvarEntrada)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Registrar</button></div>
   </div>
 </div>
 
@@ -1251,7 +1251,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
       </div>
       <div id="saidaItensList" style="display:flex;flex-direction:column;gap:8px"></div>
     </div>
-    <div class="modal-footer"><button class="btn-ghost" onclick="closeModal('modalSaida')">Cancelar</button><button class="btn-primary" onclick="salvarSaida()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Registrar</button></div>
+    <div class="modal-footer"><button class="btn-ghost" onclick="closeModal('modalSaida')">Cancelar</button><button class="btn-primary" onclick="_comLoading(this, salvarSaida)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Registrar</button></div>
   </div>
 </div>
 
@@ -1297,7 +1297,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
         <div class="form-group full-width"><label>Observações</label><textarea id="editEntradaObs" rows="2"></textarea></div>
       </div>
     </div>
-    <div class="modal-footer"><button class="btn-ghost" onclick="closeModal('modalEditEntrada')">Cancelar</button><button class="btn-primary" onclick="salvarEdicaoEntrada()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Salvar</button></div>
+    <div class="modal-footer"><button class="btn-ghost" onclick="closeModal('modalEditEntrada')">Cancelar</button><button class="btn-primary" onclick="_comLoading(this, salvarEdicaoEntrada)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Salvar</button></div>
   </div>
 </div>
 
@@ -1318,7 +1318,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
         <div class="form-group full-width"><label>Observações</label><textarea id="editSaidaObs" rows="2"></textarea></div>
       </div>
     </div>
-    <div class="modal-footer"><button class="btn-ghost" onclick="closeModal('modalEditSaida')">Cancelar</button><button class="btn-primary" onclick="salvarEdicaoSaida()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Salvar</button></div>
+    <div class="modal-footer"><button class="btn-ghost" onclick="closeModal('modalEditSaida')">Cancelar</button><button class="btn-primary" onclick="_comLoading(this, salvarEdicaoSaida)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Salvar</button></div>
   </div>
 </div>
 
@@ -1333,7 +1333,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
         <div class="form-group"><label>Perfil *</label><select id="usuPerfil"><option value="user">Usuário</option><option value="admin">Administrador</option></select></div>
       </div>
     </div>
-    <div class="modal-footer"><button class="btn-ghost" onclick="closeModal('modalUsuario')">Cancelar</button><button class="btn-primary" onclick="salvarUsuario()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Criar Usuário</button></div>
+    <div class="modal-footer"><button class="btn-ghost" onclick="closeModal('modalUsuario')">Cancelar</button><button class="btn-primary" onclick="_comLoading(this, salvarUsuario)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Criar Usuário</button></div>
   </div>
 </div>
 
@@ -1441,7 +1441,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
     </div>
     <div class="modal-footer">
       <button class="btn-ghost" onclick="closeModal('modalOrdem')">Cancelar</button>
-      <button class="btn-primary" onclick="criarOrdemModal()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Criar Ordem</button>
+      <button class="btn-primary" onclick="_comLoading(this, criarOrdemModal)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Criar Ordem</button>
     </div>
   </div>
 </div>
@@ -1559,7 +1559,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
     </div>
     <div class="modal-footer">
       <button class="btn-ghost" onclick="closeModal('modalEditOrdem')">Cancelar</button>
-      <button class="btn-primary" onclick="salvarEdicaoOrdem()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Salvar Alterações</button>
+      <button class="btn-primary" onclick="_comLoading(this, salvarEdicaoOrdem)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Salvar Alterações</button>
     </div>
   </div>
 </div>
@@ -1615,13 +1615,13 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
       <ul id="confRecebMateriais" style="margin:0 0 16px;padding-left:18px;font-size:0.85rem"></ul>
 
       <div id="confRecebBotoes" style="display:flex;gap:10px">
-        <button class="btn-primary" style="flex:1;background:#10B981" onclick="confirmarRecebimento('completo')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><polyline points="20 6 9 17 4 12"/></svg> Recebi tudo</button>
+        <button class="btn-primary" style="flex:1;background:#10B981" onclick="_comLoading(this, () => confirmarRecebimento('completo'))"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><polyline points="20 6 9 17 4 12"/></svg> Recebi tudo</button>
         <button class="btn-outline" style="flex:1;color:var(--red);border-color:#FECACA" onclick="confRecebMostrarParcial()">⚠ Recebi parcial / errado</button>
       </div>
 
       <div id="confRecebParcialBox" class="hidden" style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
         <div class="form-group full-width" style="margin-bottom:10px"><label>O que faltou ou veio diferente? *</label><textarea id="confRecebObs" rows="3" placeholder="Ex: faltaram 20 metros de cabo 4mm"></textarea></div>
-        <button class="btn-primary" style="width:100%;background:var(--red)" onclick="confirmarRecebimento('parcial')">Salvar divergência</button>
+        <button class="btn-primary" style="width:100%;background:var(--red)" onclick="_comLoading(this, () => confirmarRecebimento('parcial'))">Salvar divergência</button>
       </div>
     </div>
   </div>
@@ -1647,7 +1647,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
     </div>
     <div class="modal-footer">
       <button class="btn-ghost" onclick="closeModal('modalDevolucao')">Cancelar</button>
-      <button class="btn-primary" onclick="salvarDevolucao()">↩ Registrar Devolução</button>
+      <button class="btn-primary" onclick="_comLoading(this, salvarDevolucao)">↩ Registrar Devolução</button>
     </div>
   </div>
 </div>
@@ -1721,7 +1721,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
     </div>
     <div class="modal-footer">
       <button class="btn-ghost" onclick="closeModal('modalNovaRequisicao')">Cancelar</button>
-      <button class="btn-primary" onclick="salvarRequisicao()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg> Enviar Requisição</button>
+      <button class="btn-primary" onclick="_comLoading(this, salvarRequisicao)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg> Enviar Requisição</button>
     </div>
   </div>
 </div>
@@ -1737,8 +1737,8 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
     </div>
     <div class="modal-footer">
       <button class="btn-ghost" onclick="closeModal('modalAprovarReq')">Cancelar</button>
-      <button class="btn-outline" style="border-color:var(--red);color:var(--red)" onclick="responderRequisicao('rejeitada')"> Rejeitar</button>
-      <button class="btn-primary" style="background:var(--green)" onclick="responderRequisicao('aprovada')"> Aprovar e Liberar</button>
+      <button class="btn-outline" style="border-color:var(--red);color:var(--red)" onclick="_comLoading(this, () => responderRequisicao('rejeitada'))"> Rejeitar</button>
+      <button class="btn-primary" style="background:var(--green)" onclick="_comLoading(this, () => responderRequisicao('aprovada'))"> Aprovar e Liberar</button>
     </div>
   </div>
 </div>
@@ -1763,7 +1763,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
     </div>
     <div class="modal-footer">
       <button class="btn-ghost" onclick="closeModal('modalEquipe')">Cancelar</button>
-      <button class="btn-primary" onclick="salvarEquipe()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Salvar Equipe</button>
+      <button class="btn-primary" onclick="_comLoading(this, salvarEquipe)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Salvar Equipe</button>
     </div>
   </div>
 </div>
@@ -3608,6 +3608,24 @@ function _lockOp(btnEl) {
 function _unlockOp(btnEl) {
     _operacaoEmAndamento = false;
     if (btnEl) { btnEl.disabled = false; btnEl.innerHTML = btnEl._txtOrig || btnEl.innerHTML; }
+}
+
+// Envolve um clique de botão (this) com o mesmo spinner giratório já usado em
+// quickUpdateOrdem: desabilita o botão, prefixa um ícone de carregamento ao seu
+// texto original e restaura tudo ao final (sucesso ou erro), sem duplicar essa
+// lógica em cada função. Uso: onclick="_comLoading(this, minhaFuncaoAsync)" ou,
+// com argumento fixo: onclick="_comLoading(this, () => minhaFuncaoAsync('x'))".
+async function _comLoading(btn, fn) {
+    if (!btn || btn.disabled) return;
+    const orig = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;animation:spin 0.7s linear infinite;margin-right:6px"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>' + orig;
+    try {
+        await fn();
+    } finally {
+        // Se o botão foi removido do DOM (modal fechado, tabela redesenhada), não há nada a restaurar.
+        if (document.body.contains(btn)) { btn.disabled = false; btn.innerHTML = orig; }
+    }
 }
 
 
@@ -10367,7 +10385,7 @@ function _autoPreencherDtOS(kit, ctx) {
     </div>
     <div class="modal-footer">
       <button class="btn-ghost" onclick="closeModal('modalLiberarReserva')">Cancelar</button>
-      <button class="btn-primary" onclick="confirmarLiberacaoReserva()">Confirmar liberação</button>
+      <button class="btn-primary" onclick="_comLoading(this, confirmarLiberacaoReserva)">Confirmar liberação</button>
     </div>
   </div>
 </div>
