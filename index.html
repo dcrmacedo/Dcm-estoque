@@ -453,7 +453,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
       </div>
       <div class="nav-section" id="userMenu">
         <span class="nav-label">Menu</span>
-        <a class="nav-item" onclick="showPage('minhaOrdem')" data-page="minhaOrdem"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Nova Ordem de Serviço</a>
+        <a class="nav-item" onclick="openModal('modalOrdem')" data-page="novaOrdem"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Nova Ordem de Serviço</a>
         <a class="nav-item" onclick="showPage('minhasOrdens')" data-page="minhasOrdens"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Minhas Ordens</a>
         <a class="nav-item" onclick="openModal('modalNovaRequisicao')" data-page="novaRequisicao"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Nova Requisição</a>
         <a class="nav-item" onclick="openModal('modalDevolucao')" data-page="novaDevolucao"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>Devolver Material</a>
@@ -676,7 +676,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
                 <th>Solicitante</th>
                 <th>Equipe</th>
                 <th class="col-hide-mobile">Prioridade</th>
-                <th>Status</th>
+                <th>Status do Material</th>
                 <th>Data</th>
                 <th class="col-hide-mobile">Descrição</th>
                 <th>Ações</th>
@@ -1091,7 +1091,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
                     <option value="">Selecione o tipo de kit...</option>
                     <option value="inversor"> Inversor</option>
                     <option value="padrao_entrada"> Padrão de Entrada</option>
-                    <option value="padrao_entrada_auxiliar"> Padrão de Entrada (Porte Auxiliar)</option>
+                    <option value="padrao_entrada_auxiliar"> Padrão de Entrada (Poste Auxiliar)</option>
                     <option value="personalizado"> Personalizado</option>
                   </select>
                   <button type="button" class="btn-outline" style="padding:6px 12px;font-size:0.82rem" onclick="addLinhaOrdem('page')">+ Produto</button>
@@ -1423,7 +1423,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
               <option value="">Selecione o tipo de kit...</option>
               <option value="inversor"> Inversor</option>
               <option value="padrao_entrada"> Padrão de Entrada</option>
-              <option value="padrao_entrada_auxiliar"> Padrão de Entrada (Porte Auxiliar)</option>
+              <option value="padrao_entrada_auxiliar"> Padrão de Entrada (Poste Auxiliar)</option>
               <option value="personalizado"> Personalizado</option>
             </select>
             <button type="button" class="btn-outline" style="padding:6px 12px;font-size:0.78rem" onclick="addLinhaOrdem('modal')">+ Produto</button>
@@ -1546,7 +1546,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
               <option value="">Selecione o tipo de kit...</option>
               <option value="inversor"> Inversor</option>
               <option value="padrao_entrada"> Padrão de Entrada</option>
-              <option value="padrao_entrada_auxiliar"> Padrão de Entrada (Porte Auxiliar)</option>
+              <option value="padrao_entrada_auxiliar"> Padrão de Entrada (Poste Auxiliar)</option>
               <option value="personalizado"> Personalizado</option>
             </select>
             <button type="button" class="btn-outline" style="padding:6px 12px;font-size:0.82rem" onclick="addLinhaOrdem('edit')">+ Produto</button>
@@ -2393,7 +2393,7 @@ async function salvarSaida() {
 const KIT_LABELS = {
     inversor: ' Inversor',
     padrao_entrada: ' Padrão de Entrada',
-    padrao_entrada_auxiliar: ' Padrão de Entrada (Porte Auxiliar)',
+    padrao_entrada_auxiliar: ' Padrão de Entrada (Poste Auxiliar)',
     personalizado: ' Personalizado'
 };
 
@@ -3161,6 +3161,16 @@ async function criarOrdemModal() {
         _kitsConfirmados['modal'] = [];
         _kitEditIndex['modal'] = null;
         _ordemItens['modal'] = [];
+        // Atualiza a tela do modal (sem isso, os chips de kit confirmado e as
+        // linhas de item da ordem anterior continuavam aparecendo ao reabrir
+        // o modal, mesmo com o estado interno já zerado) e limpa o restante
+        // do formulário pra próxima ordem.
+        renderLinhasOrdem('modal');
+        renderKitsConfirmados('modal');
+        document.getElementById('modalOrdemDescricao').value = '';
+        document.getElementById('modalOrdemData').value = '';
+        document.getElementById('modalOrdemPrioridade').value = 'media';
+        const _mEquipeEl = document.getElementById('modalOrdemEquipe'); if (_mEquipeEl) _mEquipeEl.value = '';
         document.getElementById('modalOrdemLocalizacaoUrl').value = '';
         ['modalOrdemResidencia','modalOrdemTipoTelha','modalOrdemTipoEstrutura','modalOrdemCondicaoTelhado','modalOrdemObsTecnica'].forEach(id => {
             const el = document.getElementById(id); if (el) el.value = '';
@@ -4063,7 +4073,7 @@ function initApp() {
     pgRegister('relPlanejamento',() => renderRelPlanejamento());
     
     if (user.perfil === 'admin') showPage('dashboard');
-    else showPage('minhaOrdem');
+    else showPage('minhasOrdens');
 }
 
 const pageTitles = {
@@ -7064,7 +7074,12 @@ function renderOrdens(filter = '', sf = '') {
         
         const descClean = (o.descricao || '').replace(/^\[.*?\]\s*/, '');
         const descTrunc = descClean.length > 50 ? descClean.substring(0,50) + '...' : descClean;
-        let statusCell = '<span class="tag ' + st.cls + '">' + st.label + '</span>';
+        // Nesta coluna o rótulo é sobre o MATERIAL, não sobre a OS em si:
+        // "Concluída" soa estranho ao lado de "Aguard. confirm." (como pode
+        // estar concluída e aguardando confirmação ao mesmo tempo?) — o que
+        // de fato aconteceu é que o material foi liberado do estoque.
+        const statusMaterialLabel = o.status === 'concluida' ? 'Liberada' : st.label;
+        let statusCell = '<span class="tag ' + st.cls + '">' + statusMaterialLabel + '</span>';
         if (o.status === 'concluida') {
             if (o.confirmacao_status === 'confirmado') statusCell += ' <span class="tag tag-green" title="Confirmado por ' + (o.confirmacao_por || '') + ' em ' + formatDate(o.confirmacao_data) + '">✓ Receb.</span>';
             else if (o.confirmacao_status === 'parcial') statusCell += ' <span class="tag tag-red" title="' + (o.confirmacao_obs || '').replace(/"/g,"'") + '">⚠ Diverg.</span>';
@@ -9002,8 +9017,8 @@ function _kitTipoAtualPorInput(inpId) {
     }
     // Linha de sub-kit no cadastro de Kit (Novo Kit / Editar Kit): o "tipo"
     // vem do nome do sub-kit (select "Inversor" / "Padrão de Entrada" /
-    // "Padrão de Entrada (Porte Auxiliar)"), não de um select de tipo de OS.
-    // Tanto "Padrão de Entrada" quanto "Padrão de Entrada (Porte Auxiliar)"
+    // "Padrão de Entrada (Poste Auxiliar)"), não de um select de tipo de OS.
+    // Tanto "Padrão de Entrada" quanto "Padrão de Entrada (Poste Auxiliar)"
     // contam como 'padrao_entrada' pra essa checagem.
     const m2 = /^skInp_sk_(\d+)_/.exec(inpId || '');
     if (m2) {
@@ -9292,7 +9307,7 @@ function abrirModalKit(reset) {
 let _subKitCount = 0;
 const _SUBKIT_NOMES_PADRAO = ['Inversor', 'Padrão de Entrada'];
 // Tipos fixos de sub-kit disponíveis para seleção (evita nomes digitados de forma inconsistente)
-const SUBKIT_TIPOS_PADRAO = ['Inversor', 'Padrão de Entrada', 'Padrão de Entrada (Porte Auxiliar)'];
+const SUBKIT_TIPOS_PADRAO = ['Inversor', 'Padrão de Entrada', 'Padrão de Entrada (Poste Auxiliar)'];
 
 // Monta o <select> de tipo de sub-kit. Preserva nomes customizados (kits antigos)
 // adicionando-os como opção extra selecionada, sem perder dados.
@@ -10040,7 +10055,7 @@ function selecionarKitParaOS(kitId) {
                 return { ...item, nome: item.nome || (prod ? prod.nome : ''), quantidade: item.quantidade || 1, idx: _novoIdxItem(), produto: prod };
             });
             if (!itensCompletos.length) return;
-            const tipoMap = { 'Inversor': 'inversor', 'Padrão de Entrada': 'padrao_entrada', 'Padrão de Entrada (Porte Auxiliar)': 'padrao_entrada_auxiliar' };
+            const tipoMap = { 'Inversor': 'inversor', 'Padrão de Entrada': 'padrao_entrada', 'Padrão de Entrada (Poste Auxiliar)': 'padrao_entrada_auxiliar' };
             const tipo = tipoMap[sk.nome] || 'personalizado';
             const labelBase = (KIT_LABELS[tipo] || sk.nome || '').trim();
             _kitsConfirmados[ctx].push({
