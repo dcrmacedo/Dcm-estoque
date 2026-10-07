@@ -928,8 +928,8 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
       </div>
       <div class="card" id="pgCardDevolucoes"><div class="card-body no-pad">
         <table class="table">
-          <thead><tr><th>Data</th><th>Materiais</th><th>Equipe</th><th>OS Ref.</th><th>Responsável</th><th>Obs.</th><th></th></tr></thead>
-          <tbody id="tbodyDevolucoes"><tr><td colspan="7" class="empty">Nenhuma devolução registrada</td></tr></tbody>
+          <thead><tr><th>Data</th><th>Materiais</th><th>Status</th><th>Equipe</th><th>OS Ref.</th><th>Responsável</th><th>Obs.</th><th></th></tr></thead>
+          <tbody id="tbodyDevolucoes"><tr><td colspan="8" class="empty">Nenhuma devolução registrada</td></tr></tbody>
         </table>
       </div></div>
     </div>
@@ -1091,7 +1091,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
                     <option value="">Selecione o tipo de kit...</option>
                     <option value="inversor"> Inversor</option>
                     <option value="padrao_entrada"> Padrão de Entrada</option>
-                    <option value="padrao_entrada_auxiliar"> Padrão de Entrada (Poste Auxiliar)</option>
+                    <option value="padrao_entrada_auxiliar"> Padrão de Entrada (Porte Auxiliar)</option>
                     <option value="personalizado"> Personalizado</option>
                   </select>
                   <button type="button" class="btn-outline" style="padding:6px 12px;font-size:0.82rem" onclick="addLinhaOrdem('page')">+ Produto</button>
@@ -1423,7 +1423,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
               <option value="">Selecione o tipo de kit...</option>
               <option value="inversor"> Inversor</option>
               <option value="padrao_entrada"> Padrão de Entrada</option>
-              <option value="padrao_entrada_auxiliar"> Padrão de Entrada (Poste Auxiliar)</option>
+              <option value="padrao_entrada_auxiliar"> Padrão de Entrada (Porte Auxiliar)</option>
               <option value="personalizado"> Personalizado</option>
             </select>
             <button type="button" class="btn-outline" style="padding:6px 12px;font-size:0.78rem" onclick="addLinhaOrdem('modal')">+ Produto</button>
@@ -1546,7 +1546,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
               <option value="">Selecione o tipo de kit...</option>
               <option value="inversor"> Inversor</option>
               <option value="padrao_entrada"> Padrão de Entrada</option>
-              <option value="padrao_entrada_auxiliar"> Padrão de Entrada (Poste Auxiliar)</option>
+              <option value="padrao_entrada_auxiliar"> Padrão de Entrada (Porte Auxiliar)</option>
               <option value="personalizado"> Personalizado</option>
             </select>
             <button type="button" class="btn-outline" style="padding:6px 12px;font-size:0.82rem" onclick="addLinhaOrdem('edit')">+ Produto</button>
@@ -1631,6 +1631,11 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
   <div class="modal" style="max-width:680px">
     <div class="modal-header"><h3>↩ Registrar Devolução</h3><button class="modal-close" onclick="closeModal('modalDevolucao')">×</button></div>
     <div class="modal-body">
+      <!-- Pendente ou já devolvido -->
+      <label style="display:flex;align-items:flex-start;gap:10px;background:var(--amber-soft);border:1px solid var(--amber);border-radius:var(--radius);padding:12px 14px;margin-bottom:16px;cursor:pointer">
+        <input type="checkbox" id="devPendente" style="width:16px;height:16px;margin-top:1px;cursor:pointer"/>
+        <span style="font-size:0.85rem;line-height:1.4"><strong>Devolução pendente</strong> — a equipe ainda está com o material, só vai devolver depois. <span style="color:var(--text-2)">(não entra no estoque agora; fica como pendente até alguém confirmar que o material voltou)</span></span>
+      </label>
       <!-- Campos gerais -->
       <div class="form-grid" style="margin-bottom:16px">
         <div class="form-group"><label>Data *</label><input type="date" id="devData"/></div>
@@ -1664,6 +1669,8 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
     </div>
     <div class="modal-footer">
       <button class="btn-ghost" onclick="closeModal('modalDevolucaoDetalhe')">Fechar</button>
+      <button class="btn-outline hidden" id="btnCancelarDevolucaoDetalhe" style="color:var(--red);border-color:#FECACA">Cancelar Devolução</button>
+      <button class="btn-primary hidden" id="btnConfirmarDevolucaoDetalhe" style="background:#10B981">Confirmar Devolução</button>
     </div>
   </div>
 </div>
@@ -2393,7 +2400,7 @@ async function salvarSaida() {
 const KIT_LABELS = {
     inversor: ' Inversor',
     padrao_entrada: ' Padrão de Entrada',
-    padrao_entrada_auxiliar: ' Padrão de Entrada (Poste Auxiliar)',
+    padrao_entrada_auxiliar: ' Padrão de Entrada (Porte Auxiliar)',
     personalizado: ' Personalizado'
 };
 
@@ -4152,8 +4159,9 @@ function updateBadges() {
     const bReq = document.getElementById('badgeReq');
     if (bReq) { bReq.textContent = nReq; bReq.style.display = nReq > 0 ? 'flex' : 'none'; }
 
+    const nDev = state.devolucoes.filter(d => d.status === 'pendente').length;
     const bDev = document.getElementById('badgeDev');
-    if (bDev) { bDev.style.display = 'none'; } // só exibe quando há novidades recentes
+    if (bDev) { bDev.textContent = nDev; bDev.style.display = nDev > 0 ? 'flex' : 'none'; bDev.style.background = 'var(--amber)'; }
 }
 
 function openModal(id) {
@@ -4185,6 +4193,7 @@ function openModal(id) {
     }
     if (id === 'modalDevolucao') {
         const _d2=new Date(); document.getElementById('devData').value = _d2.getFullYear()+'-'+String(_d2.getMonth()+1).padStart(2,'0')+'-'+String(_d2.getDate()).padStart(2,'0');
+        document.getElementById('devPendente').checked = false;
         populateEquipeSelect('devEquipe');
         // Popular seletor de ordens concluídas
         const selOrdem = document.getElementById('devOrdem');
@@ -4571,6 +4580,7 @@ async function salvarDevolucao() {
     const equipeId = document.getElementById('devEquipe').value || null;
     const ordemId  = document.getElementById('devOrdem').value || null;
     const obs      = document.getElementById('devObs').value.trim();
+    const pendente = document.getElementById('devPendente').checked;
 
     // Coletar todos os itens
     const list = document.getElementById('devItensList');
@@ -4602,30 +4612,89 @@ async function salvarDevolucao() {
                 responsavel: state.currentUser.nome,
                 usuario_id: state.currentUser.id,
                 criado_em: new Date().toISOString(),
-                lote_id: loteId
+                lote_id: loteId,
+                status: pendente ? 'pendente' : 'confirmada'
             };
             let { data, error } = await sb.from('devolucoes').insert([dev]).select('*, produto:produtos(*)').single();
             if (error && (error.message || '').toLowerCase().includes('column')) {
-                // Fallback: banco ainda sem a coluna lote_id — salva sem agrupar
-                const devSemLote = { ...dev };
-                delete devSemLote.lote_id;
-                const res2 = await sb.from('devolucoes').insert([devSemLote]).select('*, produto:produtos(*)').single();
+                // Fallback: banco ainda sem a coluna lote_id e/ou status — salva
+                // só com o que existir. Sem a coluna status, trata como já
+                // confirmada (comportamento antigo), avisando o usuário.
+                const devSemExtras = { ...dev };
+                delete devSemExtras.lote_id;
+                delete devSemExtras.status;
+                const res2 = await sb.from('devolucoes').insert([devSemExtras]).select('*, produto:produtos(*)').single();
                 data = res2.data; error = res2.error;
+                if (!error && pendente) {
+                    showToast('Atenção: falta a coluna "status" na tabela devolucoes no Supabase — essa devolução foi registrada como já confirmada (creditada no estoque) em vez de pendente. Peça pro admin criar a coluna.', 'info');
+                }
             }
             if (error) throw error;
-            const produto = state.produtos.find(p => p.id === item.prodId);
-            const novoSaldo = (produto ? produto.saldo_atual || 0 : 0) + item.qtd;
-            await sb.from('produtos').update({ saldo_atual: novoSaldo }).eq('id', item.prodId);
-            const iProd = state.produtos.findIndex(p => p.id === item.prodId);
-            if (iProd !== -1) state.produtos[iProd].saldo_atual = novoSaldo;
+            // Só credita o estoque agora se NÃO for uma devolução pendente —
+            // o material pendente só entra quando alguém confirmar o retorno
+            // dele (ver confirmarDevolucaoPendente).
+            if (!pendente || !('status' in data)) {
+                const produto = state.produtos.find(p => p.id === item.prodId);
+                const novoSaldo = (produto ? produto.saldo_atual || 0 : 0) + item.qtd;
+                await sb.from('produtos').update({ saldo_atual: novoSaldo }).eq('id', item.prodId);
+                const iProd = state.produtos.findIndex(p => p.id === item.prodId);
+                if (iProd !== -1) state.produtos[iProd].saldo_atual = novoSaldo;
+            }
             state.devolucoes.unshift(data);
         }
         closeModal('modalDevolucao');
         renderDevolucoes();
-        showToast('<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;color:var(--green)"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> ' + itens.length + ' devolução(ões) registrada(s)!', 'success');
+        const msgOk = pendente
+            ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;color:var(--amber)"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> ' + itens.length + ' devolução(ões) pendente(s) registrada(s). O estoque será creditado quando o material voltar de fato.'
+            : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;color:var(--green)"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> ' + itens.length + ' devolução(ões) registrada(s)!';
+        showToast(msgOk, pendente ? 'info' : 'success');
         updateBadges();
     } catch(err) {
         showToast('Erro ao registrar devolução: ' + (err.message || ''), 'error');
+    }
+}
+
+// Marca todos os itens de uma "ordem" de devolução pendente (mesmo lote_id)
+// como efetivamente devolvidos: credita o estoque agora e atualiza o status.
+async function confirmarDevolucaoPendente(chave) {
+    let itens;
+    if ((chave || '').startsWith('__fallback_')) {
+        itens = state.devolucoes.filter(d => !d.lote_id && d.equipe_id && (d.observacoes||'').trim() && ('__fallback_' + _chaveFallbackDevolucao(d)) === chave);
+    } else if ((chave || '').startsWith('__individual_')) {
+        const id = chave.replace('__individual_', '');
+        const d = state.devolucoes.find(x => x.id === id);
+        itens = d ? [d] : [];
+    } else {
+        itens = state.devolucoes.filter(d => d.lote_id === chave);
+    }
+    if (!itens.length) return;
+
+    try {
+        for (const item of itens) {
+            const produto = state.produtos.find(p => p.id === item.produto_id);
+            const novoSaldo = (produto ? produto.saldo_atual || 0 : 0) + (item.quantidade || 0);
+            await sb.from('produtos').update({ saldo_atual: novoSaldo }).eq('id', item.produto_id);
+            const iProd = state.produtos.findIndex(p => p.id === item.produto_id);
+            if (iProd !== -1) state.produtos[iProd].saldo_atual = novoSaldo;
+
+            const updates = { status: 'confirmada', confirmado_em: new Date().toISOString(), confirmado_por: state.currentUser.nome };
+            let { error } = await sb.from('devolucoes').update(updates).eq('id', item.id);
+            if (error) {
+                // Fallback: banco sem as colunas de confirmação — atualiza só o status
+                const res2 = await sb.from('devolucoes').update({ status: 'confirmada' }).eq('id', item.id);
+                error = res2.error;
+            }
+            if (!error) {
+                item.status = 'confirmada';
+                item.confirmado_em = updates.confirmado_em;
+                item.confirmado_por = updates.confirmado_por;
+            }
+        }
+        closeModal('modalDevolucaoDetalhe');
+        renderDevolucoes();
+        showToast('Devolução confirmada — material creditado no estoque.', 'success');
+    } catch(err) {
+        showToast('Erro ao confirmar devolução: ' + (err.message || ''), 'error');
     }
 }
 
@@ -4678,7 +4747,7 @@ function renderDevolucoes() {
     const tb = document.getElementById('tbodyDevolucoes');
     if (!tb) return;
     if (!grupos.length) {
-        tb.innerHTML = '<tr><td colspan="7" class="empty">Nenhuma devolução registrada</td></tr>';
+        tb.innerHTML = '<tr><td colspan="8" class="empty">Nenhuma devolução registrada</td></tr>';
         const old = document.getElementById('pgCardDevolucoes')?.querySelector('.pagination-bar');
         if (old) old.remove();
         return;
@@ -4690,18 +4759,28 @@ function renderDevolucoes() {
         const eq = state.equipes.find(e => e.id === d0.equipe_id);
         const os = state.ordens.find(o => o.id === d0.ordem_id);
         const qtdTotal = itens.reduce((s, i) => s + (i.quantidade || 0), 0);
+        const pendente = d0.status === 'pendente';
+        const cancelada = d0.status === 'cancelada';
         const nomesPreview = itens.slice(0, 2).map(i => {
             const p = i.produto || state.produtos.find(x => x.id === i.produto_id);
             return p ? p.nome : '—';
         }).join(', ') + (itens.length > 2 ? '...' : '');
+        const statusBadge = pendente
+            ? '<span class="tag tag-amber" title="Equipe ainda está com o material">Pendente</span>'
+            : cancelada
+            ? '<span class="tag tag-gray" title="Devolução cancelada">Cancelada</span>'
+            : '<span class="tag tag-green">Devolvida</span>';
+        let acoes = '<button type="button" class="tbl-btn" onclick="event.stopPropagation();abrirDetalheDevolucao(\'' + g.chave + '\')">Ver materiais</button>';
+        if (pendente) acoes += '<button type="button" class="tbl-btn success" onclick="event.stopPropagation();_comLoading(this, () => confirmarDevolucaoPendente(\'' + g.chave + '\'))">Confirmar Devolução</button>';
         return '<tr style="cursor:pointer" onclick="abrirDetalheDevolucao(\'' + g.chave + '\')">' +
             '<td>' + formatDate(d0.data || d0.criado_em) + '</td>' +
             '<td><strong>' + itens.length + ' material' + (itens.length > 1 ? 'is' : '') + '</strong> <span class="tag tag-green">+' + qtdTotal + '</span><br><small style="color:var(--text-3)">' + nomesPreview + '</small></td>' +
+            '<td>' + statusBadge + '</td>' +
             '<td>' + (eq ? eq.nome : '—') + '</td>' +
             '<td>' + (os ? '<code style="font-size:0.78rem;font-family:monospace">' + (os.numero||'OS') + '</code>' : '—') + '</td>' +
             '<td>' + (d0.responsavel||'—') + '</td>' +
             '<td style="font-size:0.8rem;color:var(--text-2);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (d0.observacoes||'—') + '</td>' +
-            '<td><button type="button" class="tbl-btn" onclick="event.stopPropagation();abrirDetalheDevolucao(\'' + g.chave + '\')">Ver materiais</button></td>' +
+            '<td><div class="tbl-actions">' + acoes + '</div></td>' +
             '</tr>';
     }).join('');
 }
@@ -4726,8 +4805,11 @@ function abrirDetalheDevolucao(chave) {
     const eq = state.equipes.find(e => e.id === d0.equipe_id);
     const os = state.ordens.find(o => o.id === d0.ordem_id);
 
+    const pendente = d0.status === 'pendente';
+    const statusTag = pendente ? '<span class="tag tag-amber">Pendente</span>' : (d0.status === 'cancelada' ? '<span class="tag tag-gray">Cancelada</span>' : '<span class="tag tag-green">Devolvida</span>');
     document.getElementById('devDetalheTitulo').textContent = '↩ Devolução — ' + formatDate(d0.data || d0.criado_em);
     document.getElementById('devDetalheInfo').innerHTML =
+        '<div><div style="font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-3);margin-bottom:3px">Status</div><div>' + statusTag + '</div></div>' +
         '<div><div style="font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-3);margin-bottom:3px">Equipe</div><div>' + (eq ? eq.nome : '—') + '</div></div>' +
         '<div><div style="font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-3);margin-bottom:3px">OS Ref.</div><div>' + (os ? (os.numero||'OS') : '—') + '</div></div>' +
         '<div><div style="font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-3);margin-bottom:3px">Responsável</div><div>' + (d0.responsavel||'—') + '</div></div>' +
@@ -4737,7 +4819,68 @@ function abrirDetalheDevolucao(chave) {
         return '<tr><td>' + (p ? p.nome : '—') + '</td><td><span class="tag tag-green">+' + (i.quantidade||0) + '</span></td></tr>';
     }).join('');
 
+    const cancelada = d0.status === 'cancelada';
+    const btnConf = document.getElementById('btnConfirmarDevolucaoDetalhe');
+    btnConf.classList.toggle('hidden', !pendente);
+    btnConf.onclick = pendente ? function() { _comLoading(btnConf, () => confirmarDevolucaoPendente(chave)); } : null;
+
+    const btnCanc = document.getElementById('btnCancelarDevolucaoDetalhe');
+    btnCanc.classList.toggle('hidden', cancelada);
+    btnCanc.onclick = !cancelada ? function() { _comLoading(btnCanc, () => cancelarDevolucao(chave)); } : null;
+
     openModal('modalDevolucaoDetalhe');
+}
+
+// Cancela uma "ordem" de devolução registrada por engano. Se o material já
+// tinha sido creditado no estoque (status confirmada), estorna a quantidade
+// de volta; se ainda estava pendente, só marca como cancelada (nada a
+// estornar, já que o estoque nunca chegou a ser creditado).
+async function cancelarDevolucao(chave) {
+    let itens;
+    if ((chave || '').startsWith('__fallback_')) {
+        itens = state.devolucoes.filter(d => !d.lote_id && d.equipe_id && (d.observacoes||'').trim() && ('__fallback_' + _chaveFallbackDevolucao(d)) === chave);
+    } else if ((chave || '').startsWith('__individual_')) {
+        const id = chave.replace('__individual_', '');
+        const d = state.devolucoes.find(x => x.id === id);
+        itens = d ? [d] : [];
+    } else {
+        itens = state.devolucoes.filter(d => d.lote_id === chave);
+    }
+    if (!itens.length) return;
+
+    if (!confirm('Cancelar esta devolução? ' + (itens[0].status === 'pendente' ? 'Ela ainda não tinha sido creditada no estoque.' : 'A quantidade creditada será estornada do estoque.'))) return;
+
+    try {
+        for (const item of itens) {
+            // Só estorna o estoque se essa devolução já tinha sido confirmada
+            // (ou seja, se o estoque chegou a ser creditado de fato).
+            if (item.status === 'confirmada' || !item.status) {
+                const produto = state.produtos.find(p => p.id === item.produto_id);
+                const novoSaldo = (produto ? produto.saldo_atual || 0 : 0) - (item.quantidade || 0);
+                await sb.from('produtos').update({ saldo_atual: novoSaldo }).eq('id', item.produto_id);
+                const iProd = state.produtos.findIndex(p => p.id === item.produto_id);
+                if (iProd !== -1) state.produtos[iProd].saldo_atual = novoSaldo;
+            }
+
+            const updates = { status: 'cancelada', confirmado_em: new Date().toISOString(), confirmado_por: state.currentUser.nome };
+            let { error } = await sb.from('devolucoes').update(updates).eq('id', item.id);
+            if (error) {
+                const res2 = await sb.from('devolucoes').update({ status: 'cancelada' }).eq('id', item.id);
+                error = res2.error;
+            }
+            if (!error) {
+                item.status = 'cancelada';
+                item.confirmado_em = updates.confirmado_em;
+                item.confirmado_por = updates.confirmado_por;
+            }
+        }
+        closeModal('modalDevolucaoDetalhe');
+        renderDevolucoes();
+        showToast('Devolução cancelada.', 'info');
+        updateBadges();
+    } catch(err) {
+        showToast('Erro ao cancelar devolução: ' + (err.message || ''), 'error');
+    }
 }
 
 function filterDevolucoes() { pgReset('devolucoes'); renderDevolucoes(); }
@@ -8250,9 +8393,27 @@ function _prepararScanner(titulo, instrucao, btnTexto, modo) {
     listaEl.style.display = 'none';
     listaEl.innerHTML = '';
     document.getElementById('btnScannerFechar').textContent = (modo === 'entrada' || modo === 'saida') ? 'Concluir escaneamento' : 'Fechar';
-    // Reconstroi o video element
+
+    // Trava de segurança: se por algum motivo ainda sobrou um stream de
+    // câmera ativo de uma sessão anterior (ex: reabertura sem passar por
+    // fecharScanner), para ele antes de pedir um novo — sem isso a câmera
+    // podia ficar "presa" ligada (LED aceso) mesmo com o modal fechado.
+    if (_scannerStream) {
+        _scannerStream.getTracks().forEach(t => t.stop());
+        _scannerStream = null;
+    }
+
+    // Só reconstrói o <video> quando ele não existir mais (ex: a tentativa
+    // anterior falhou e scannerBox está mostrando a mensagem de erro em vez
+    // do vídeo). Reaproveitar o mesmo elemento entre aberturas evita ter
+    // dois elementos com id="scannerVideo" coexistindo no DOM.
     const box = document.getElementById('scannerBox');
-    box.innerHTML = '<video id="scannerVideo" autoplay muted playsinline style="width:100%;display:block"></video><div class="scan-line"></div>';
+    const videoExistente = document.getElementById('scannerVideo');
+    if (!videoExistente) {
+        box.innerHTML = '<video id="scannerVideo" autoplay muted playsinline style="width:100%;display:block"></video><div class="scan-line"></div>';
+    } else {
+        videoExistente.srcObject = null;
+    }
     document.getElementById('modalQRScanner').classList.remove('hidden');
     // Chama imediatamente — sem setTimeout — para preservar o user gesture
     iniciarScanner();
@@ -9017,8 +9178,8 @@ function _kitTipoAtualPorInput(inpId) {
     }
     // Linha de sub-kit no cadastro de Kit (Novo Kit / Editar Kit): o "tipo"
     // vem do nome do sub-kit (select "Inversor" / "Padrão de Entrada" /
-    // "Padrão de Entrada (Poste Auxiliar)"), não de um select de tipo de OS.
-    // Tanto "Padrão de Entrada" quanto "Padrão de Entrada (Poste Auxiliar)"
+    // "Padrão de Entrada (Porte Auxiliar)"), não de um select de tipo de OS.
+    // Tanto "Padrão de Entrada" quanto "Padrão de Entrada (Porte Auxiliar)"
     // contam como 'padrao_entrada' pra essa checagem.
     const m2 = /^skInp_sk_(\d+)_/.exec(inpId || '');
     if (m2) {
@@ -9307,7 +9468,7 @@ function abrirModalKit(reset) {
 let _subKitCount = 0;
 const _SUBKIT_NOMES_PADRAO = ['Inversor', 'Padrão de Entrada'];
 // Tipos fixos de sub-kit disponíveis para seleção (evita nomes digitados de forma inconsistente)
-const SUBKIT_TIPOS_PADRAO = ['Inversor', 'Padrão de Entrada', 'Padrão de Entrada (Poste Auxiliar)'];
+const SUBKIT_TIPOS_PADRAO = ['Inversor', 'Padrão de Entrada', 'Padrão de Entrada (Porte Auxiliar)'];
 
 // Monta o <select> de tipo de sub-kit. Preserva nomes customizados (kits antigos)
 // adicionando-os como opção extra selecionada, sem perder dados.
@@ -10055,7 +10216,7 @@ function selecionarKitParaOS(kitId) {
                 return { ...item, nome: item.nome || (prod ? prod.nome : ''), quantidade: item.quantidade || 1, idx: _novoIdxItem(), produto: prod };
             });
             if (!itensCompletos.length) return;
-            const tipoMap = { 'Inversor': 'inversor', 'Padrão de Entrada': 'padrao_entrada', 'Padrão de Entrada (Poste Auxiliar)': 'padrao_entrada_auxiliar' };
+            const tipoMap = { 'Inversor': 'inversor', 'Padrão de Entrada': 'padrao_entrada', 'Padrão de Entrada (Porte Auxiliar)': 'padrao_entrada_auxiliar' };
             const tipo = tipoMap[sk.nome] || 'personalizado';
             const labelBase = (KIT_LABELS[tipo] || sk.nome || '').trim();
             _kitsConfirmados[ctx].push({
