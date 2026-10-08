@@ -1091,7 +1091,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
                     <option value="">Selecione o tipo de kit...</option>
                     <option value="inversor"> Inversor</option>
                     <option value="padrao_entrada"> Padrão de Entrada</option>
-                    <option value="padrao_entrada_auxiliar"> Padrão de Entrada (Porte Auxiliar)</option>
+                    <option value="padrao_entrada_auxiliar"> Padrão de Entrada (Poste Auxiliar)</option>
                     <option value="personalizado"> Personalizado</option>
                   </select>
                   <button type="button" class="btn-outline" style="padding:6px 12px;font-size:0.82rem" onclick="addLinhaOrdem('page')">+ Produto</button>
@@ -1423,7 +1423,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
               <option value="">Selecione o tipo de kit...</option>
               <option value="inversor"> Inversor</option>
               <option value="padrao_entrada"> Padrão de Entrada</option>
-              <option value="padrao_entrada_auxiliar"> Padrão de Entrada (Porte Auxiliar)</option>
+              <option value="padrao_entrada_auxiliar"> Padrão de Entrada (Poste Auxiliar)</option>
               <option value="personalizado"> Personalizado</option>
             </select>
             <button type="button" class="btn-outline" style="padding:6px 12px;font-size:0.78rem" onclick="addLinhaOrdem('modal')">+ Produto</button>
@@ -1546,7 +1546,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
               <option value="">Selecione o tipo de kit...</option>
               <option value="inversor"> Inversor</option>
               <option value="padrao_entrada"> Padrão de Entrada</option>
-              <option value="padrao_entrada_auxiliar"> Padrão de Entrada (Porte Auxiliar)</option>
+              <option value="padrao_entrada_auxiliar"> Padrão de Entrada (Poste Auxiliar)</option>
               <option value="personalizado"> Personalizado</option>
             </select>
             <button type="button" class="btn-outline" style="padding:6px 12px;font-size:0.82rem" onclick="addLinhaOrdem('edit')">+ Produto</button>
@@ -2401,7 +2401,7 @@ async function salvarSaida() {
 const KIT_LABELS = {
     inversor: ' Inversor',
     padrao_entrada: ' Padrão de Entrada',
-    padrao_entrada_auxiliar: ' Padrão de Entrada (Porte Auxiliar)',
+    padrao_entrada_auxiliar: ' Padrão de Entrada (Poste Auxiliar)',
     personalizado: ' Personalizado'
 };
 
@@ -9190,8 +9190,8 @@ function _kitTipoAtualPorInput(inpId) {
     }
     // Linha de sub-kit no cadastro de Kit (Novo Kit / Editar Kit): o "tipo"
     // vem do nome do sub-kit (select "Inversor" / "Padrão de Entrada" /
-    // "Padrão de Entrada (Porte Auxiliar)"), não de um select de tipo de OS.
-    // Tanto "Padrão de Entrada" quanto "Padrão de Entrada (Porte Auxiliar)"
+    // "Padrão de Entrada (Poste Auxiliar)"), não de um select de tipo de OS.
+    // Tanto "Padrão de Entrada" quanto "Padrão de Entrada (Poste Auxiliar)"
     // contam como 'padrao_entrada' pra essa checagem.
     const m2 = /^skInp_sk_(\d+)_/.exec(inpId || '');
     if (m2) {
@@ -9480,7 +9480,7 @@ function abrirModalKit(reset) {
 let _subKitCount = 0;
 const _SUBKIT_NOMES_PADRAO = ['Inversor', 'Padrão de Entrada'];
 // Tipos fixos de sub-kit disponíveis para seleção (evita nomes digitados de forma inconsistente)
-const SUBKIT_TIPOS_PADRAO = ['Inversor', 'Padrão de Entrada', 'Padrão de Entrada (Porte Auxiliar)'];
+const SUBKIT_TIPOS_PADRAO = ['Inversor', 'Padrão de Entrada', 'Padrão de Entrada (Poste Auxiliar)'];
 
 // Monta o <select> de tipo de sub-kit. Preserva nomes customizados (kits antigos)
 // adicionando-os como opção extra selecionada, sem perder dados.
@@ -10228,7 +10228,7 @@ function selecionarKitParaOS(kitId) {
                 return { ...item, nome: item.nome || (prod ? prod.nome : ''), quantidade: item.quantidade || 1, idx: _novoIdxItem(), produto: prod };
             });
             if (!itensCompletos.length) return;
-            const tipoMap = { 'Inversor': 'inversor', 'Padrão de Entrada': 'padrao_entrada', 'Padrão de Entrada (Porte Auxiliar)': 'padrao_entrada_auxiliar' };
+            const tipoMap = { 'Inversor': 'inversor', 'Padrão de Entrada': 'padrao_entrada', 'Padrão de Entrada (Poste Auxiliar)': 'padrao_entrada_auxiliar' };
             const tipo = tipoMap[sk.nome] || 'personalizado';
             const labelBase = (KIT_LABELS[tipo] || sk.nome || '').trim();
             _kitsConfirmados[ctx].push({
