@@ -1632,7 +1632,8 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
     <div class="modal-header"><h3>↩ Registrar Devolução</h3><button class="modal-close" onclick="closeModal('modalDevolucao')">×</button></div>
     <div class="modal-body">
       <!-- Pendente ou já devolvido -->
-      <label style="display:flex;align-items:flex-start;gap:10px;background:var(--amber-soft);border:1px solid var(--amber);border-radius:var(--radius);padding:12px 14px;margin-bottom:16px;cursor:pointer">
+      <div id="devAvisoUsuario" class="hidden" style="background:var(--amber-soft);border:1px solid var(--amber);border-radius:var(--radius);padding:12px 14px;margin-bottom:16px;font-size:0.85rem;line-height:1.4"><strong>Devolução pendente</strong></div>
+      <label id="devPendenteLabel" style="display:flex;align-items:flex-start;gap:10px;background:var(--amber-soft);border:1px solid var(--amber);border-radius:var(--radius);padding:12px 14px;margin-bottom:16px;cursor:pointer">
         <input type="checkbox" id="devPendente" style="width:16px;height:16px;margin-top:1px;cursor:pointer"/>
         <span style="font-size:0.85rem;line-height:1.4"><strong>Devolução pendente</strong> — a equipe ainda está com o material, só vai devolver depois. <span style="color:var(--text-2)">(não entra no estoque agora; fica como pendente até alguém confirmar que o material voltou)</span></span>
       </label>
@@ -4193,7 +4194,10 @@ function openModal(id) {
     }
     if (id === 'modalDevolucao') {
         const _d2=new Date(); document.getElementById('devData').value = _d2.getFullYear()+'-'+String(_d2.getMonth()+1).padStart(2,'0')+'-'+String(_d2.getDate()).padStart(2,'0');
-        document.getElementById('devPendente').checked = false;
+        const _devEhAdmin = state.currentUser?.perfil === 'admin';
+        document.getElementById('devPendente').checked = !_devEhAdmin;
+        document.getElementById('devPendenteLabel').classList.toggle('hidden', !_devEhAdmin);
+        document.getElementById('devAvisoUsuario').classList.toggle('hidden', _devEhAdmin);
         populateEquipeSelect('devEquipe');
         // Popular seletor de ordens concluídas
         const selOrdem = document.getElementById('devOrdem');
@@ -4201,7 +4205,10 @@ function openModal(id) {
         state.ordens.filter(o => o.status === 'concluida').forEach(o => {
             const opt = document.createElement('option');
             opt.value = o.id;
-            opt.textContent = (o.numero || 'OS') + ' — ' + (o.descricao || '').substring(0, 40);
+            // A descrição vem como "[kits] texto do cliente": tira o prefixo dos kits
+            // para aparecer só o texto (nome do cliente), mais fácil de achar.
+            const _descCliente = (o.descricao || '').replace(/^\s*\[[^\]]*\]\s*/, '').trim();
+            opt.textContent = (o.numero || 'OS') + ' — ' + (_descCliente || 'Sem descrição').substring(0, 60);
             selOrdem.appendChild(opt);
         });
         devInitItems();
@@ -4580,7 +4587,9 @@ async function salvarDevolucao() {
     const equipeId = document.getElementById('devEquipe').value || null;
     const ordemId  = document.getElementById('devOrdem').value || null;
     const obs      = document.getElementById('devObs').value.trim();
-    const pendente = document.getElementById('devPendente').checked;
+    // Usuário comum nunca credita estoque direto: toda devolução dele fica
+    // pendente até um admin confirmar que o material chegou.
+    const pendente = state.currentUser?.perfil !== 'admin' || document.getElementById('devPendente').checked;
 
     // Coletar todos os itens
     const list = document.getElementById('devItensList');
@@ -4657,6 +4666,7 @@ async function salvarDevolucao() {
 // Marca todos os itens de uma "ordem" de devolução pendente (mesmo lote_id)
 // como efetivamente devolvidos: credita o estoque agora e atualiza o status.
 async function confirmarDevolucaoPendente(chave) {
+    if (state.currentUser?.perfil !== 'admin') { showToast('Apenas administradores podem confirmar devoluções.', 'error'); return; }
     let itens;
     if ((chave || '').startsWith('__fallback_')) {
         itens = state.devolucoes.filter(d => !d.lote_id && d.equipe_id && (d.observacoes||'').trim() && ('__fallback_' + _chaveFallbackDevolucao(d)) === chave);
@@ -4771,7 +4781,7 @@ function renderDevolucoes() {
             ? '<span class="tag tag-gray" title="Devolução cancelada">Cancelada</span>'
             : '<span class="tag tag-green">Devolvida</span>';
         let acoes = '<button type="button" class="tbl-btn" onclick="event.stopPropagation();abrirDetalheDevolucao(\'' + g.chave + '\')">Ver materiais</button>';
-        if (pendente) acoes += '<button type="button" class="tbl-btn success" onclick="event.stopPropagation();_comLoading(this, () => confirmarDevolucaoPendente(\'' + g.chave + '\'))">Confirmar Devolução</button>';
+        if (pendente && state.currentUser?.perfil === 'admin') acoes += '<button type="button" class="tbl-btn success" onclick="event.stopPropagation();_comLoading(this, () => confirmarDevolucaoPendente(\'' + g.chave + '\'))">Confirmar Devolução</button>';
         return '<tr style="cursor:pointer" onclick="abrirDetalheDevolucao(\'' + g.chave + '\')">' +
             '<td>' + formatDate(d0.data || d0.criado_em) + '</td>' +
             '<td><strong>' + itens.length + ' material' + (itens.length > 1 ? 'is' : '') + '</strong> <span class="tag tag-green">+' + qtdTotal + '</span><br><small style="color:var(--text-3)">' + nomesPreview + '</small></td>' +
@@ -4821,12 +4831,13 @@ function abrirDetalheDevolucao(chave) {
 
     const cancelada = d0.status === 'cancelada';
     const btnConf = document.getElementById('btnConfirmarDevolucaoDetalhe');
-    btnConf.classList.toggle('hidden', !pendente);
-    btnConf.onclick = pendente ? function() { _comLoading(btnConf, () => confirmarDevolucaoPendente(chave)); } : null;
+    const _ehAdminDet = state.currentUser?.perfil === 'admin';
+    btnConf.classList.toggle('hidden', !pendente || !_ehAdminDet);
+    btnConf.onclick = (pendente && _ehAdminDet) ? function() { _comLoading(btnConf, () => confirmarDevolucaoPendente(chave)); } : null;
 
     const btnCanc = document.getElementById('btnCancelarDevolucaoDetalhe');
-    btnCanc.classList.toggle('hidden', cancelada);
-    btnCanc.onclick = !cancelada ? function() { _comLoading(btnCanc, () => cancelarDevolucao(chave)); } : null;
+    btnCanc.classList.toggle('hidden', cancelada || !_ehAdminDet);
+    btnCanc.onclick = (!cancelada && _ehAdminDet) ? function() { _comLoading(btnCanc, () => cancelarDevolucao(chave)); } : null;
 
     openModal('modalDevolucaoDetalhe');
 }
@@ -4836,6 +4847,7 @@ function abrirDetalheDevolucao(chave) {
 // de volta; se ainda estava pendente, só marca como cancelada (nada a
 // estornar, já que o estoque nunca chegou a ser creditado).
 async function cancelarDevolucao(chave) {
+    if (state.currentUser?.perfil !== 'admin') { showToast('Apenas administradores podem cancelar devoluções.', 'error'); return; }
     let itens;
     if ((chave || '').startsWith('__fallback_')) {
         itens = state.devolucoes.filter(d => !d.lote_id && d.equipe_id && (d.observacoes||'').trim() && ('__fallback_' + _chaveFallbackDevolucao(d)) === chave);
