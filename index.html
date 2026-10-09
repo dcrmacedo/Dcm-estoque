@@ -1632,7 +1632,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
     <div class="modal-header"><h3>↩ Registrar Devolução</h3><button class="modal-close" onclick="closeModal('modalDevolucao')">×</button></div>
     <div class="modal-body">
       <!-- Pendente ou já devolvido -->
-      <div id="devAvisoUsuario" class="hidden" style="background:var(--amber-soft);border:1px solid var(--amber);border-radius:var(--radius);padding:12px 14px;margin-bottom:16px;font-size:0.85rem;line-height:1.4"><strong>Devolução pendente</strong></div>
+      <div id="devAvisoUsuario" class="hidden" style="background:var(--amber-soft);border:1px solid var(--amber);border-radius:var(--radius);padding:12px 14px;margin-bottom:16px;font-size:0.85rem;line-height:1.4"><strong>Devolução pendente</strong> — o material só entra no estoque depois que um administrador confirmar que ele chegou.</div>
       <label id="devPendenteLabel" style="display:flex;align-items:flex-start;gap:10px;background:var(--amber-soft);border:1px solid var(--amber);border-radius:var(--radius);padding:12px 14px;margin-bottom:16px;cursor:pointer">
         <input type="checkbox" id="devPendente" style="width:16px;height:16px;margin-top:1px;cursor:pointer"/>
         <span style="font-size:0.85rem;line-height:1.4"><strong>Devolução pendente</strong> — a equipe ainda está com o material, só vai devolver depois. <span style="color:var(--text-2)">(não entra no estoque agora; fica como pendente até alguém confirmar que o material voltou)</span></span>
@@ -7240,7 +7240,7 @@ function renderOrdens(filter = '', sf = '') {
             else if (o.confirmacao_status === 'parcial') statusCell += ' <span class="tag tag-red" title="' + (o.confirmacao_obs || '').replace(/"/g,"'") + '">⚠ Diverg.</span>';
             else statusCell += ' <span class="tag tag-amber" title="Aguardando a equipe confirmar recebimento">Aguard. confirm.</span>';
         }
-        return '<tr><td><code style="font-size:0.78rem;font-family:monospace;">' + (o.numero || '') + '</code></td><td>' + (o.solicitante_nome || '') + '</td><td>' + equipeNome + '</td><td class="col-hide-mobile"><span class="tag ' + pr.cls + '">' + pr.label + '</span></td><td>' + statusCell + '</td><td>' + formatDate(o.criado_em) + '</td><td class="col-hide-mobile" style="max-width:200px;color:var(--text-2);font-size:0.82rem" title="' + descClean.replace(/"/g,"'") + '">' + (descTrunc || '—') + '</td><td><div class="tbl-actions">' + ac + '</div></td></tr>';
+        return '<tr><td><code style="font-size:0.78rem;font-family:monospace;">' + (o.numero || '') + '</code></td><td>' + (o.solicitante_nome || '') + '</td><td>' + equipeNome + '</td><td class="col-hide-mobile"><span class="tag ' + pr.cls + '">' + pr.label + '</span></td><td>' + statusCell + '</td><td>' + formatDate(o.data_necessaria || o.criado_em) + '</td><td class="col-hide-mobile" style="max-width:200px;color:var(--text-2);font-size:0.82rem" title="' + descClean.replace(/"/g,"'") + '">' + (descTrunc || '—') + '</td><td><div class="tbl-actions">' + ac + '</div></td></tr>';
     }).join('');
 }
 
@@ -7413,7 +7413,7 @@ function renderMinhasOrdens() {
             }
         }
 
-        return '<tr><td><code style="font-size:0.78rem;font-family:monospace;">' + (o.numero || '') + '</code></td><td style="max-width:220px;color:var(--text-2);font-size:0.82rem" title="' + descClean.replace(/"/g, "'") + '">' + (descTrunc || '—') + '</td><td>' + equipeNome + '</td><td class="col-hide-mobile"><span class="tag ' + pr.cls + '">' + pr.label + '</span></td><td><span class="tag ' + st.cls + '">' + st.label + '</span></td><td>' + receb + '</td><td>' + formatDate(o.criado_em) + '</td><td><div class="tbl-actions">' + ac + '</div></td></tr>';
+        return '<tr><td><code style="font-size:0.78rem;font-family:monospace;">' + (o.numero || '') + '</code></td><td style="max-width:220px;color:var(--text-2);font-size:0.82rem" title="' + descClean.replace(/"/g, "'") + '">' + (descTrunc || '—') + '</td><td>' + equipeNome + '</td><td class="col-hide-mobile"><span class="tag ' + pr.cls + '">' + pr.label + '</span></td><td><span class="tag ' + st.cls + '">' + st.label + '</span></td><td>' + receb + '</td><td>' + formatDate(o.data_necessaria || o.criado_em) + '</td><td><div class="tbl-actions">' + ac + '</div></td></tr>';
     }).join('');
 }
 
