@@ -7186,10 +7186,17 @@ function renderOrdens(filter = '', sf = '') {
     let list = state.ordens;
     
     if (filter) {
-        list = list.filter(o => 
-            (o.numero || '').includes(filter) || 
-            (o.solicitante_nome || '').toLowerCase().includes(filter.toLowerCase())
-        );
+        // Busca por número, solicitante, equipe e descrição (onde fica o nome
+        // do cliente), sem diferenciar maiúsculas/minúsculas nem acentos.
+        const _n = t => String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        const termo = _n(filter).trim();
+        list = list.filter(o => {
+            const eqO = state.equipes ? state.equipes.find(e => e.id === o.equipe_id) : null;
+            return _n(o.numero).includes(termo) ||
+                   _n(o.solicitante_nome).includes(termo) ||
+                   _n(eqO ? eqO.nome : '').includes(termo) ||
+                   _n(o.descricao).includes(termo);
+        });
     }
     
     if (sf !== 'todas') {
