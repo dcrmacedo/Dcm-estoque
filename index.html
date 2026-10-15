@@ -3264,6 +3264,11 @@ function calcularReservaProduto(produtoId) {
     return calcularReservaProdutoExcluindo(produtoId, null);
 }
 
+// Produto de cabo (vendido/pedido em metros/lances): nome contém "cabo".
+function _ehProdutoCabo(p) {
+    return !!p && /\bcabo\b/i.test(p.nome || '');
+}
+
 // ── FILA GLOBAL DE PRIORIDADE POR PRODUTO ───────────────────────────────────
 // Antes, cada OS calculava "tem estoque suficiente?" olhando só pras próprias
 // linhas, usando o saldo TOTAL do produto — então duas OS's diferentes
@@ -3315,10 +3320,14 @@ function construirFilaGlobalProduto(produtoId) {
     let disponivel = Math.max(0, p ? (p.saldo_atual || 0) : 0);
     return linhas.map(l => {
         const disponivelAntes = disponivel;
-        // Tudo ou nada: se o estoque não cobre a quantidade INTEIRA pedida na linha,
-        // a pendência é a quantidade total pedida (ex.: pede 10 M, tem 1 M → pendente
-        // 10 M, não 9 M), já que a OS não pode ser atendida com material parcial.
-        const falta = disponivelAntes >= l.quantidade ? 0 : l.quantidade;
+        // Tudo ou nada SÓ PARA CABO: se o estoque não cobre a quantidade INTEIRA
+        // pedida, a pendência é a quantidade total (ex.: pede 10 M, tem 1 M →
+        // pendente 10 M, não 9 M), porque não dá pra completar um lance de cabo
+        // com sobra de outro lote. Para os demais produtos a pendência é só a
+        // diferença (ex.: pede 2 DPS, tem 1 → falta 1).
+        let falta;
+        if (disponivelAntes >= l.quantidade) falta = 0;
+        else falta = _ehProdutoCabo(p) ? l.quantidade : (l.quantidade - disponivelAntes);
         disponivel = Math.max(0, disponivel - l.quantidade);
         return Object.assign({}, l, { _disponivelAntes: disponivelAntes, _falta: falta, _ok: falta === 0 });
     });
