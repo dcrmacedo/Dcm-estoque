@@ -9147,11 +9147,11 @@ function renderKits(filter) {
 // ── Mapa de variantes por palavra-chave no nome do produto ──────────────────
 // Adicione mais palavras-chave e suas variantes conforme necessário.
 // "restritoATipo" limita em qual tipo de sub-kit da OS o painel de variante
-// aparece — hoje só o cabo Linha/Carga tem essa restrição (só faz sentido em
+// aparece — hoje só o cabo (Linha/Carga/Neutro/Terra) tem essa restrição (só faz sentido em
 // "Padrão de Entrada"). Os demais (disjuntor, fio, condutor, tomada) não têm
 // essa chave e por isso o painel aparece em qualquer tipo de kit.
 const KIT_VARIANTES = [
-    { regex: /\bcabo\b/i,        variantes: ['Linha', 'Carga'], restritoATipo: 'padrao_entrada' },
+    { regex: /\bcabo\b/i,        variantes: ['Fase Linha', 'Fase Carga', 'Neutro', 'Terra'], restritoATipo: 'padrao_entrada' },
     // "substituirPolos": ao escolher a variante, corrige o número de polos já
     // presente no nome do disjuntor (ex: "Disjuntor 80A 3P" -> "Disjuntor 80A
     // 2P") em vez de deixar o polo antigo (do produto escolhido primeiro)
@@ -9174,7 +9174,7 @@ const KIT_VARIANTES = [
 // um kit — mesmo com o produto_id e o saldo corretos por trás.
 // Agora o nome exibido vem SEMPRE do produto atual (p.nome); o único
 // uso de item.nome é reaproveitar um sufixo de variante reconhecido
-// (ex: "(Linha)", "(Carga)") que porventura esteja salvo nele.
+// (ex: "(Fase Linha)", "(Fase Carga)") que porventura esteja salvo nele.
 function nomeExibicaoItem(item, p) {
     if (!p) return (item && item.nome) || '—';
     if (item && item.nome) {
@@ -9231,7 +9231,7 @@ function _kitVerificarVariante(prodId, inpId) {
     if (!entrada) return;   // sem variantes para esse produto
 
     // A escolha de variante só tem restrição de tipo de kit quando a própria
-    // entrada em KIT_VARIANTES define isso (hoje: só o cabo Linha/Carga, que
+    // entrada em KIT_VARIANTES define isso (hoje: só o cabo Linha/Carga/Neutro/Terra, que
     // só faz sentido em "Padrão de Entrada"). Disjuntor e os demais aparecem
     // em qualquer tipo de kit.
     if (entrada.restritoATipo) {
