@@ -28,6 +28,11 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<!-- Leaflet: mapa de instalações (OpenStreetMap, sem chave de API) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.js"></script>
 <style>
 :root{--bg:#F4F6F9;--surface:#FFFFFF;--surface-2:#F8FAFC;--border:#E2E8F0;--border-soft:#EEF1F5;--sidebar-bg:#1A2035;--sidebar-hover:rgba(255,255,255,0.06);--sidebar-active:rgba(255,255,255,0.1);--sidebar-text:#94A3B8;--sidebar-text-active:#F1F5F9;--text:#1E293B;--text-2:#64748B;--text-3:#94A3B8;--accent:#3B82F6;--accent-soft:#EFF6FF;--accent-hover:#2563EB;--green:#10B981;--green-soft:#ECFDF5;--amber:#F59E0B;--amber-soft:#FFFBEB;--red:#eb2e2e;--red-soft:#FEF2F2;--purple:#eb2e2e;--purple-soft:#F5F3FF;--blue:#3B82F6;--blue-soft:#EFF6FF;--radius:10px;--radius-lg:14px;--shadow:0 1px 3px rgba(0,0,0,0.07),0 1px 2px rgba(0,0,0,0.05);--shadow-md:0 4px 16px rgba(0,0,0,0.08);--shadow-lg:0 10px 40px rgba(0,0,0,0.12);--sidebar-w:240px;--topbar-h:60px}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -401,6 +406,41 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
   .topbar-right{gap:8px}
 }
 @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+
+/* ── Mapa de Instalações ── */
+#mapaCanvas{width:100%;height:calc(100vh - 300px);min-height:380px;border-radius:var(--radius-lg);z-index:0}
+.mapa-card{padding:0;overflow:hidden;position:relative}
+.mapa-legenda{display:flex;flex-wrap:wrap;align-items:center;gap:14px;padding:10px 14px;border-top:1px solid var(--border-soft);font-size:0.76rem;color:var(--text-2)}
+.mapa-legenda i{display:inline-block;width:14px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px;transform:skewX(-14deg)}
+.mapa-placa{background:none!important;border:none!important;filter:drop-shadow(0 2px 3px rgba(15,23,42,0.4));transition:transform .15s}
+.mapa-placa:hover{transform:scale(1.12);z-index:1000!important}
+.mapa-popup{min-width:210px;font-family:inherit;color:var(--text)}
+.mapa-popup .mp-os{font-family:monospace;font-size:0.74rem;color:var(--text-3)}
+.mapa-popup .mp-cli{font-weight:600;font-size:0.92rem;margin:2px 0 8px;line-height:1.3}
+.mapa-popup .mp-lin{display:flex;justify-content:space-between;gap:10px;font-size:0.78rem;padding:3px 0;border-top:1px solid var(--border-soft)}
+.mapa-popup .mp-lin span:first-child{color:var(--text-3)}
+.mapa-popup .mp-acoes{display:flex;gap:6px;margin-top:10px}
+.mapa-popup .mp-acoes button,.mapa-popup .mp-acoes a{flex:1;text-align:center;padding:6px 8px;border-radius:7px;font-size:0.76rem;font-family:inherit;cursor:pointer;text-decoration:none;border:1px solid var(--border);background:var(--surface-2);color:var(--text)}
+.mapa-popup .mp-acoes button.prim{background:var(--accent);border-color:var(--accent);color:#fff}
+.mapa-semloc{margin-top:16px}
+.mapa-semloc summary{cursor:pointer;font-size:0.85rem;font-weight:600;padding:12px 16px}
+.mapa-semloc-lin{display:flex;align-items:center;gap:10px;padding:9px 16px;border-top:1px solid var(--border-soft);font-size:0.82rem;flex-wrap:wrap}
+.mapa-semloc-lin .m-info{flex:1;min-width:180px}
+.mapa-semloc-lin .m-motivo{font-size:0.74rem;color:var(--text-3)}
+.mapa-rota{margin-top:16px;padding:0}
+.mapa-rota-topo{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 16px}
+.mapa-rota-topo input[type=date]{padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface-2);color:var(--text);font-family:inherit;font-size:0.82rem}
+.mapa-rota-resumo{padding:0 16px 10px;font-size:0.8rem;color:var(--text-2)}
+.mapa-rota-lin{display:flex;align-items:center;gap:12px;padding:9px 16px;border-top:1px solid var(--border-soft);font-size:0.82rem;flex-wrap:wrap}
+.mapa-rota-lin .m-info{flex:1;min-width:180px}
+.mapa-rota-lin .m-sub{font-size:0.74rem;color:var(--text-3)}
+.mapa-rota-num{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:#1E293B;color:#fff;font-weight:700;font-size:0.76rem;flex-shrink:0}
+.mapa-parada{background:none!important;border:none!important}
+.mapa-parada span{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:#1E293B;color:#fff;font-weight:700;font-size:0.8rem;border:2px solid #fff;box-shadow:0 2px 6px rgba(15,23,42,0.45)}
+.mapa-base{background:none!important;border:none!important}
+.mapa-base span{display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:8px;background:#7C3AED;border:2px solid #fff;box-shadow:0 2px 6px rgba(15,23,42,0.45)}
+#mapaCanvas.mapa-definindo-base{cursor:crosshair}
+@media(max-width:600px){#mapaCanvas{height:calc(100vh - 360px);min-height:320px}}
 </style>
 </head>
 <body>
@@ -444,6 +484,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
         <a class="nav-item" onclick="showPage('entradaNfe')" data-page="entradaNfe"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M12 18v-6M9 15l3 3 3-3"/></svg>Entrada NF-e<span class="nav-text">NF-e</span></a>
         <a class="nav-item" onclick="showPage('saidas')" data-page="saidas"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12l7 7 7-7"/></svg>Saídas<span class="nav-text">Saídas</span></a>
         <a class="nav-item" onclick="showPage('ordens')" data-page="ordens" style="position:relative"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Ordens de Serviço<span class="nav-text">OS</span><span class="badge" id="badgeOrdens">0</span></a>
+        <a class="nav-item" onclick="showPage('mapa')" data-page="mapa"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>Mapa<span class="nav-text">Mapa</span></a>
         <a class="nav-item" onclick="showPage('devolucoes')" data-page="devolucoes"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>Devoluções<span class="nav-text">Devol.</span><span class="badge" id="badgeDev" style="background:var(--green)">0</span></a>
         <a class="nav-item" onclick="showPage('requisicoes')" data-page="requisicoes"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>Requisições<span class="nav-text">Req.</span><span class="badge" id="badgeReq">0</span></a>
         <a class="nav-item" onclick="showPage('inventario')" data-page="inventario"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="12" y2="16"/></svg>Inventário<span class="nav-text">Invent.</span></a>
@@ -641,6 +682,52 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
         <th style="width:36px"><input type="checkbox" id="checkAllSaidas" onchange="toggleSelecionarTodos('saidas',this.checked)" style="cursor:pointer;width:15px;height:15px"/></th>
         <th>Data</th><th>Produto</th><th>Qtd</th><th>Motivo</th><th>Responsável</th>
       </tr></thead><tbody id="tbodySaidas"><tr><td colspan="6" class="empty">Nenhuma saída registrada</td></tr></tbody></table></div></div>
+    </div>
+
+    <div id="page-mapa" class="page">
+      <div class="page-actions">
+        <div class="search-box"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" id="mapaBusca" placeholder="Buscar cliente ou OS..." oninput="renderMapa()"/></div>
+        <div class="filter-tabs" style="flex-shrink:0">
+          <button class="filter-tab active" onclick="mapaFiltrarStatus('todas',this)">Todas</button>
+          <button class="filter-tab" onclick="mapaFiltrarStatus('pendente',this)">Pendentes</button>
+          <button class="filter-tab" onclick="mapaFiltrarStatus('em_andamento',this)">Em andamento</button>
+          <button class="filter-tab" onclick="mapaFiltrarStatus('concluida',this)">Concluídas</button>
+        </div>
+        <select id="mapaEquipe" onchange="renderMapa()" style="padding:7px 12px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface-2);color:var(--text);font-family:inherit;font-size:0.82rem"><option value="">Todas as equipes</option></select>
+        <label style="display:flex;align-items:center;gap:6px;font-size:0.8rem;color:var(--text-2);cursor:pointer;flex-shrink:0"><input type="checkbox" id="mapaAgrupar" checked onchange="renderMapa()" style="width:15px;height:15px;cursor:pointer"/>Agrupar por região</label>
+        <div class="actions-right">
+          <span id="mapaContagem" style="font-size:0.8rem;color:var(--text-2)"></span>
+          <button class="btn-outline" onclick="mapaEnquadrar()">Enquadrar tudo</button>
+        </div>
+      </div>
+      <div class="card mapa-card">
+        <div id="mapaCanvas"></div>
+        <div class="mapa-legenda">
+          <span><i style="background:#F59E0B"></i>Pendente</span>
+          <span><i style="background:#3B82F6"></i>Em andamento</span>
+          <span><i style="background:#10B981"></i>Concluída</span>
+          <span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#EB2E2E;margin-right:6px"></span>Material pendente</span>
+          <span style="margin-left:auto;color:var(--text-3)">Placa com número = grupo; as faixas de cor mostram a proporção de cada status · o tamanho acompanha os painéis</span>
+        </div>
+      </div>
+      <div class="card mapa-rota" id="mapaRotaCard">
+        <div class="mapa-rota-topo">
+          <strong style="font-size:0.9rem">Roteiro do dia</strong>
+          <input type="date" id="mapaRotaData" onchange="mapaGerarRota()" title="Data das instalações"/>
+          <button class="btn-primary" onclick="mapaGerarRota()">Gerar roteiro</button>
+          <button class="btn-outline" onclick="mapaDefinirBase()" id="btnMapaBase" title="Marque no mapa de onde as equipes saem">Definir base de saída</button>
+          <button class="btn-outline" onclick="mapaLimparBase()" id="btnMapaBaseLimpar" style="display:none">Remover base</button>
+          <button class="btn-outline" onclick="mapaAbrirRotaGoogle()" id="btnMapaRotaGoogle" style="display:none">Abrir rota no Google Maps</button>
+          <button class="btn-outline" onclick="mapaLimparRota()" id="btnMapaRotaLimpar" style="display:none">Limpar</button>
+        </div>
+        <div class="mapa-rota-resumo" id="mapaRotaResumo">Escolha a data e gere o roteiro: o sistema ordena as paradas pelo caminho mais curto entre os clientes do dia (respeitando os filtros acima).</div>
+        <div id="mapaRotaLista"></div>
+      </div>
+
+      <details class="card mapa-semloc" id="mapaSemLocBox" style="display:none">
+        <summary id="mapaSemLocTitulo">Sem localização no mapa</summary>
+        <div id="mapaSemLocLista"></div>
+      </details>
     </div>
 
     <div id="page-ordens" class="page">
@@ -4101,6 +4188,7 @@ const pageTitles = {
     entradaNfe: 'Entrada via NF-e XML',
     saidas: 'Saídas',
     ordens: 'Ordens de Serviço',
+    mapa: 'Mapa de Instalações',
     devolucoes: 'Devoluções',
     requisicoes: 'Requisições',
     inventario: 'Inventário — Contagem Física',
@@ -4133,6 +4221,7 @@ function showPage(page) {
         populateProdutoSelect('ordemProduto');
         populateProdutoSelect('modalOrdemProduto');
     }
+    if (page === 'mapa') renderMapa();
     if (page === 'usuarios') renderUsuarios();
     if (page === 'equipes') renderEquipes();
     if (page === 'devolucoes') renderDevolucoes();
@@ -11227,5 +11316,449 @@ window.addEventListener('appinstalled', () => {
 });
 </script>
 
+<script>
+// ══════════════════════════════════════════════════════════════
+// MAPA DE INSTALAÇÕES — cada OS com localização vira uma "placa solar"
+// no mapa (cor = status, tamanho = nº de painéis, selo vermelho = material
+// pendente). A posição vem do link de localização da OS (localizacao_url).
+// ══════════════════════════════════════════════════════════════
+let _mapa = null, _mapaCamada = null, _mapaStatusFiltro = 'todas', _mapaPontos = [];
+const MAPA_CORES = { pendente: '#F59E0B', em_andamento: '#3B82F6', concluida: '#10B981', cancelada: '#94A3B8' };
+
+function _mapaEsc(t) {
+    return String(t == null ? '' : t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+function _mapaNorm(t) {
+    return String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+// Lê latitude/longitude de um link do Google Maps (ou de "lat, lng" colado
+// direto). Links curtos (maps.app.goo.gl) não trazem a posição no texto —
+// nesse caso devolve null e a OS cai na lista "sem localização".
+function mapaExtrairCoordenadas(texto) {
+    if (!texto) return null;
+    let t = String(texto).trim();
+    try { t = decodeURIComponent(t); } catch (e) {}
+    const num = '(-?\\d{1,3}(?:\\.\\d+)?)';
+    const padroes = [
+        new RegExp('!3d' + num + '!4d' + num),                                  // pino exato
+        new RegExp('[?&](?:q|query|ll|destination|daddr|center)=' + num + '[,\\s+]+' + num),
+        new RegExp('/place/' + num + ',\\s*' + num),
+        new RegExp('@' + num + ',\\s*' + num),                                  // centro da vista
+        new RegExp('^\\s*' + num + '\\s*[,;]\\s*' + num + '\\s*$')               // "lat, lng" puro
+    ];
+    for (const re of padroes) {
+        const m = re.exec(t);
+        if (m) {
+            const lat = parseFloat(m[1]), lng = parseFloat(m[2]);
+            if (isFinite(lat) && isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180 && !(lat === 0 && lng === 0)) return { lat, lng };
+        }
+    }
+    return null;
+}
+
+// Dados que a descrição da OS já traz: "CLIENTE: Fulano | PAINÉIS : 12 DE 620 KW | ..."
+function mapaDadosDaOrdem(o) {
+    const desc = String(o.descricao || '').replace(/^\s*\[[^\]]*\]\s*/, '').trim();
+    const mCli = /CLIENTE\s*:?\s*([^|\]]+)/i.exec(desc);
+    const cliente = (mCli ? mCli[1] : desc.split('|')[0]).trim() || 'Sem descrição';
+    const mQtd = /PAIN[ÉE]IS?\s*[:\-]?\s*(\d+)/i.exec(desc) || /(\d+)\s*(?:PAIN[ÉE]IS|PLACAS?)/i.exec(desc);
+    const paineis = mQtd ? parseInt(mQtd[1], 10) : null;
+    const mW = /\bDE\s*(\d{3,4})\s*K?W/i.exec(desc);          // potência de cada painel (W)
+    const kwp = (paineis && mW ? (paineis * parseInt(mW[1], 10)) / 1000 : null);
+    return { cliente, paineis, kwp };
+}
+
+// Marcador: painel solar em perspectiva (grade de células), com a ponta
+// apontando para o endereço. Tamanho varia com a quantidade de painéis.
+function mapaIconePlaca(cor, paineis, alerta) {
+    const n = paineis || 8;
+    const esc = n <= 6 ? 0.85 : (n <= 12 ? 1 : 1.2);
+    const W = Math.round(60 * esc), H = Math.round(52 * esc);
+    let grade = '';
+    for (let i = 1; i <= 3; i++) {                      // colunas
+        const f = i / 4;
+        grade += '<line x1="' + (14 + 42 * f).toFixed(1) + '" y1="6" x2="' + (4 + 42 * f).toFixed(1) + '" y2="34"/>';
+    }
+    for (let j = 1; j <= 2; j++) {                      // linhas
+        const f = j / 3, y = 6 + 28 * f;
+        grade += '<line x1="' + (14 - 10 * f).toFixed(1) + '" y1="' + y.toFixed(1) + '" x2="' + (56 - 10 * f).toFixed(1) + '" y2="' + y.toFixed(1) + '"/>';
+    }
+    const svg =
+        '<svg xmlns="http://www.w3.org/2000/svg" width="' + W + '" height="' + H + '" viewBox="0 0 60 52">' +
+        '<polygon points="25,34 35,34 30,48" fill="' + cor + '"/>' +
+        '<polygon points="14,6 56,6 46,34 4,34" fill="' + cor + '" stroke="#fff" stroke-width="2" stroke-linejoin="round"/>' +
+        '<g stroke="rgba(255,255,255,0.65)" stroke-width="1">' + grade + '</g>' +
+        '<polygon points="14,6 35,6 25,34 4,34" fill="rgba(255,255,255,0.14)"/>' +
+        (alerta ? '<circle cx="54" cy="7" r="6" fill="#EB2E2E" stroke="#fff" stroke-width="2"/><rect x="53.2" y="3.6" width="1.6" height="4.2" rx="0.8" fill="#fff"/><circle cx="54" cy="9.6" r="0.95" fill="#fff"/>' : '') +
+        '</svg>';
+    return L.divIcon({
+        className: 'mapa-placa', html: svg, iconSize: [W, H],
+        iconAnchor: [Math.round(30 * esc), Math.round(48 * esc)],
+        popupAnchor: [0, -Math.round(46 * esc)]
+    });
+}
+
+function mapaFiltrarStatus(st, btn) {
+    _mapaStatusFiltro = st;
+    document.querySelectorAll('#page-mapa .filter-tab').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    renderMapa();
+}
+
+function mapaEnquadrar() {
+    if (!_mapa) return;
+    if (_mapaPontos.length) _mapa.fitBounds(L.latLngBounds(_mapaPontos), { padding: [50, 50], maxZoom: 15 });
+    else _mapa.setView([-1.4558, -48.4902], 11);
+}
+
+function mapaPopupHtml(o, pos, dados, alerta, urlMaps) {
+    const st = ST[o.status] || { label: o.status, cls: 'tag-gray' };
+    const eq = (state.equipes || []).find(e => e.id === o.equipe_id);
+    const linhas = [
+        ['Status', '<span class="tag ' + st.cls + '">' + _mapaEsc(st.label) + '</span>'],
+        ['Equipe', _mapaEsc(eq ? eq.nome : '—')],
+        ['Data', _mapaEsc(formatDate(o.data_necessaria || o.criado_em))]
+    ];
+    if (dados.paineis) linhas.push(['Painéis', dados.paineis + (dados.kwp ? ' · ' + dados.kwp.toFixed(2).replace('.', ',') + ' kWp' : '')]);
+    if (alerta) linhas.push(['Material', '<span style="color:#EB2E2E;font-weight:600">Pendente</span>']);
+    return '<div class="mapa-popup">' +
+        '<div class="mp-os">' + _mapaEsc(o.numero || 'OS') + '</div>' +
+        '<div class="mp-cli">' + _mapaEsc(dados.cliente) + '</div>' +
+        linhas.map(l => '<div class="mp-lin"><span>' + l[0] + '</span><span>' + l[1] + '</span></div>').join('') +
+        '<div class="mp-acoes"><button class="prim" onclick="verOrdem(\'' + o.id + '\')">Ver OS</button>' +
+        '<a href="' + _mapaEsc(urlMaps) + '" target="_blank" rel="noopener">Abrir no Maps</a></div></div>';
+}
+
+function renderMapa() {
+    const canvas = document.getElementById('mapaCanvas');
+    if (!canvas) return;
+    if (typeof L === 'undefined') {
+        canvas.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-2);font-size:0.9rem">Não foi possível carregar o mapa (biblioteca Leaflet). Verifique a conexão com a internet e recarregue a página.</div>';
+        return;
+    }
+    // equipes no filtro (preserva a seleção)
+    const selEq = document.getElementById('mapaEquipe');
+    if (selEq && selEq.options.length <= 1 && (state.equipes || []).length) {
+        (state.equipes || []).forEach(e => { const op = document.createElement('option'); op.value = e.id; op.textContent = e.nome; selEq.appendChild(op); });
+    }
+    if (!_mapa) {
+        _mapa = L.map(canvas, { zoomControl: true, scrollWheelZoom: true }).setView([-1.4558, -48.4902], 11);
+        // Servidores gratuitos de mapa mudam de regra: o OpenStreetMap oficial
+        // bloqueia apps abertos de arquivo local e o CARTO passou a exigir chave
+        // de API. A Esri (satélite, ruas e rótulos) funciona sem chave.
+        const esri = (serv, extra) => L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/' + serv + '/MapServer/tile/{z}/{y}/{x}', Object.assign({ maxZoom: 19, maxNativeZoom: 18, attribution: 'Tiles &copy; Esri' }, extra || {}));
+        const satelite = esri('World_Imagery', { attribution: 'Tiles &copy; Esri — Maxar, Earthstar Geographics' });
+        const ruas = esri('World_Street_Map');
+        const hibrido = L.layerGroup([esri('World_Imagery', { attribution: 'Tiles &copy; Esri — Maxar, Earthstar Geographics' }), esri('Reference/World_Boundaries_and_Places', { attribution: '' })]);
+        satelite.addTo(_mapa);
+        L.control.layers({ 'Satélite': satelite, 'Híbrido (com nomes)': hibrido, 'Ruas': ruas }, null, { position: 'topright', collapsed: false }).addTo(_mapa);
+        _mapaCamada = null;
+        _mapaRotaCamada = L.layerGroup().addTo(_mapa);
+        _mapa.on('click', mapaCliqueNoMapa);
+        try { const b = JSON.parse(localStorage.getItem('dcm_mapa_base') || 'null'); if (b && isFinite(b.lat) && isFinite(b.lng)) { _mapaBase = { lat: b.lat, lng: b.lng }; mapaMostrarBase(); } } catch (e) {}
+    }
+    setTimeout(() => _mapa && _mapa.invalidateSize(), 60);   // a página acabou de ficar visível
+
+    const busca = _mapaNorm((document.getElementById('mapaBusca') || {}).value).trim();
+    const eqSel = selEq ? selEq.value : '';
+    const ordens = (state.ordens || []).filter(o => {
+        if (_mapaStatusFiltro === 'todas' ? o.status === 'cancelada' : o.status !== _mapaStatusFiltro) return false;
+        if (eqSel && o.equipe_id !== eqSel) return false;
+        if (busca) {
+            const eq = (state.equipes || []).find(e => e.id === o.equipe_id);
+            if (!_mapaNorm((o.numero || '') + ' ' + (o.descricao || '') + ' ' + (eq ? eq.nome : '')).includes(busca)) return false;
+        }
+        return true;
+    });
+
+    mapaCriarCamada();
+    _mapaPontos = [];
+    _mapaPosicionadas = [];
+    let kwpTotal = 0;
+    const semLoc = [], usados = {};
+    const inpRota = document.getElementById('mapaRotaData');
+    if (inpRota && !inpRota.value) { const h = new Date(); inpRota.value = h.getFullYear() + '-' + String(h.getMonth() + 1).padStart(2, '0') + '-' + String(h.getDate()).padStart(2, '0'); }
+    ordens.forEach(o => {
+        const pos = mapaExtrairCoordenadas(o.localizacao_url);
+        if (!pos) { semLoc.push(o); return; }
+        // OS no mesmo endereço: afasta um pouco para as placas não ficarem empilhadas
+        const chave = pos.lat.toFixed(5) + ',' + pos.lng.toFixed(5);
+        const k = usados[chave] = (usados[chave] || 0) + 1;
+        let lat = pos.lat, lng = pos.lng;
+        if (k > 1) { const ang = (k - 1) * 2.1; lat += 0.00022 * (k - 1) * Math.cos(ang); lng += 0.00022 * (k - 1) * Math.sin(ang); }
+
+        const dados = mapaDadosDaOrdem(o);
+        let alerta = false;
+        if (o.status === 'pendente' || o.status === 'em_andamento') { try { alerta = temMaterialZerado(o); } catch (e) { alerta = false; } }
+        const cor = MAPA_CORES[o.status] || '#94A3B8';
+        const urlMaps = /^https?:\/\//i.test(o.localizacao_url || '') ? o.localizacao_url : 'https://www.google.com/maps?q=' + pos.lat + ',' + pos.lng;
+        L.marker([lat, lng], { icon: mapaIconePlaca(cor, dados.paineis, alerta), title: (o.numero || '') + ' — ' + dados.cliente, kwp: dados.kwp || 0, alerta: alerta, status: o.status })
+            .bindPopup(mapaPopupHtml(o, pos, dados, alerta, urlMaps), { maxWidth: 270 })
+            .addTo(_mapaCamada);
+        _mapaPontos.push([lat, lng]);
+        _mapaPosicionadas.push({ o, pos, dados });
+        kwpTotal += dados.kwp || 0;
+    });
+    if (_mapaPontos.length) _mapa.fitBounds(L.latLngBounds(_mapaPontos), { padding: [50, 50], maxZoom: 15 });
+
+    const cont = document.getElementById('mapaContagem');
+    if (cont) cont.textContent = _mapaPontos.length + ' no mapa' + (kwpTotal ? ' · ' + kwpTotal.toFixed(1).replace('.', ',') + ' kWp' : '') + (semLoc.length ? ' · ' + semLoc.length + ' sem localização' : '');
+    _mapaSemLocLista = semLoc;
+    if (_mapaRotaAtiva) mapaGerarRota();
+
+    // OS sem posição: separa "sem link" de "link curto que não dá pra ler"
+    const box = document.getElementById('mapaSemLocBox');
+    if (box) {
+        box.style.display = semLoc.length ? '' : 'none';
+        document.getElementById('mapaSemLocTitulo').textContent = semLoc.length + ' OS sem localização no mapa';
+        document.getElementById('mapaSemLocLista').innerHTML = semLoc.map(o => {
+            const dados = mapaDadosDaOrdem(o);
+            const url = o.localizacao_url || '';
+            const curto = /goo\.gl|maps\.app|g\.co\/|bit\.ly/i.test(url);
+            const motivo = !url ? 'Sem link de localização'
+                : curto ? 'Link curto: abra-o, copie o endereço longo da barra do navegador e cole na OS'
+                : 'Não consegui ler a posição deste link';
+            return '<div class="mapa-semloc-lin"><div class="m-info"><strong>' + _mapaEsc(o.numero || 'OS') + '</strong> — ' + _mapaEsc(dados.cliente) +
+                '<div class="m-motivo">' + _mapaEsc(motivo) + '</div></div>' +
+                (/^https?:\/\//i.test(url) ? '<a class="tbl-btn" href="' + _mapaEsc(url) + '" target="_blank" rel="noopener" style="text-decoration:none">Abrir link</a>' : '') +
+                '<button class="tbl-btn" onclick="editarOrdem(\'' + o.id + '\')">Editar OS</button></div>';
+        }).join('');
+    }
+}
+
+// ══════════════════════════════════════════════════════════════
+// FASE 2 — agrupamento por região e roteiro do dia
+// ══════════════════════════════════════════════════════════════
+let _mapaPosicionadas = [], _mapaSemLocLista = [], _mapaRotaCamada = null, _mapaRotaAtiva = false;
+let _mapaRotaParadas = [], _mapaBase = null, _mapaBaseMarker = null, _mapaDefinindoBase = false;
+
+// Camada dos marcadores: agrupada (círculo-placa com a contagem) ou solta.
+function mapaCriarCamada() {
+    if (_mapaCamada) _mapa.removeLayer(_mapaCamada);
+    const chk = document.getElementById('mapaAgrupar');
+    const agrupar = (!chk || chk.checked) && typeof L.markerClusterGroup === 'function';
+    _mapaCamada = agrupar
+        ? L.markerClusterGroup({ maxClusterRadius: 55, showCoverageOnHover: false, spiderfyOnMaxZoom: true, iconCreateFunction: mapaIconeCluster })
+        : L.layerGroup();
+    _mapaCamada.addTo(_mapa);
+}
+
+// Ícone do grupo: a placa é dividida em faixas com as cores reais dos status
+// das OS que ela reúne (verde = concluída, azul = em andamento, amarelo =
+// pendente), na proporção de cada uma. Grupo de um status só fica todo da cor
+// dele. O tooltip detalha a contagem e o total de kWp.
+let _mapaClusterSeq = 0;
+function mapaIconeCluster(cluster) {
+    const filhos = cluster.getAllChildMarkers();
+    const total = filhos.length;
+    const kwp = filhos.reduce((a, m) => a + (m.options.kwp || 0), 0);
+    const alerta = filhos.some(m => m.options.alerta);
+    const ordem = [['concluida', 'concluída', 'concluídas'], ['em_andamento', 'em andamento', 'em andamento'], ['pendente', 'pendente', 'pendentes']];
+    const cont = {};
+    filhos.forEach(m => { const st = m.options.status || 'pendente'; cont[st] = (cont[st] || 0) + 1; });
+    const esc = total < 5 ? 1.1 : (total < 10 ? 1.3 : 1.5);
+    const W = Math.round(60 * esc), H = Math.round(52 * esc);
+    const id = 'mcl' + (++_mapaClusterSeq);
+    // faixas proporcionais (a placa vai de x=4 a x=56)
+    let x = 4, faixas = '';
+    ordem.forEach(([st]) => {
+        const n = cont[st] || 0;
+        if (!n) return;
+        const w = 52 * n / total;
+        faixas += '<rect x="' + x.toFixed(2) + '" y="0" width="' + (w + 0.6).toFixed(2) + '" height="52" fill="' + (MAPA_CORES[st] || '#94A3B8') + '"/>';
+        x += w;
+    });
+    let grade = '';
+    for (let i = 1; i <= 3; i++) { const f = i / 4; grade += '<line x1="' + (14 + 42 * f).toFixed(1) + '" y1="6" x2="' + (4 + 42 * f).toFixed(1) + '" y2="34"/>'; }
+    for (let j = 1; j <= 2; j++) { const f = j / 3, y = 6 + 28 * f; grade += '<line x1="' + (14 - 10 * f).toFixed(1) + '" y1="' + y.toFixed(1) + '" x2="' + (56 - 10 * f).toFixed(1) + '" y2="' + y.toFixed(1) + '"/>'; }
+    const unica = Object.keys(cont).length === 1 ? Object.keys(cont)[0] : null;
+    const corPonta = unica ? (MAPA_CORES[unica] || '#94A3B8') : '#475569';
+    const partes = ordem.filter(([st]) => cont[st]).map(([st, sing, plur]) => cont[st] + ' ' + (cont[st] > 1 ? plur : sing));
+    const titulo = total + ' instalações (' + partes.join(', ') + ')' + (kwp ? ' · ' + kwp.toFixed(1).replace('.', ',') + ' kWp' : '') + ' — clique para aproximar';
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + W + '" height="' + H + '" viewBox="0 0 60 52">' +
+        '<defs><clipPath id="' + id + '"><polygon points="14,6 56,6 46,34 4,34"/></clipPath></defs>' +
+        '<polygon points="25,34 35,34 30,48" fill="' + corPonta + '"/>' +
+        '<g clip-path="url(#' + id + ')">' + faixas + '</g>' +
+        '<polygon points="14,6 56,6 46,34 4,34" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round"/>' +
+        '<g stroke="rgba(255,255,255,0.55)" stroke-width="1">' + grade + '</g>' +
+        '<text x="30" y="26" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-size="17" font-weight="700" fill="#fff" stroke="#0F172A" stroke-width="3.2" paint-order="stroke">' + total + '</text>' +
+        (alerta ? '<circle cx="54" cy="7" r="6" fill="#EB2E2E" stroke="#fff" stroke-width="2"/><rect x="53.2" y="3.6" width="1.6" height="4.2" rx="0.8" fill="#fff"/><circle cx="54" cy="9.6" r="0.95" fill="#fff"/>' : '') +
+        '</svg>';
+    return L.divIcon({ className: 'mapa-placa', html: '<div title="' + _mapaEsc(titulo) + '">' + svg + '</div>', iconSize: [W, H], iconAnchor: [Math.round(30 * esc), Math.round(48 * esc)] });
+}
+
+// ── Roteiro ───────────────────────────────────────────────────
+function _mapaKm(a, b) {
+    const R = 6371, rad = Math.PI / 180;
+    const dLat = (b.lat - a.lat) * rad, dLng = (b.lng - a.lng) * rad;
+    const x = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * rad) * Math.cos(b.lat * rad) * Math.sin(dLng / 2) ** 2;
+    return 2 * R * Math.asin(Math.sqrt(x));
+}
+function _mapaFmtKm(km) { return km.toFixed(1).replace('.', ',') + ' km'; }
+
+// Data da instalação: data necessária; se não houver, o dia de criação.
+function _mapaDataOrdem(o) {
+    const d = String(o.data_necessaria || '').slice(0, 10);
+    if (/^\d{4}-\d{2}-\d{2}$/.test(d)) return d;
+    if (!o.criado_em) return '';
+    const dt = new Date(o.criado_em);
+    if (isNaN(dt)) return '';
+    return dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0');
+}
+
+// Vizinho mais próximo + 2-opt (caminho aberto). O ponto de partida é a base,
+// se existir; senão a primeira parada fica fixa como início.
+function _mapaKmRota(rota, base) {
+    let t = 0, ant = base || null;
+    rota.forEach(p => { if (ant) t += _mapaKm(ant, p); ant = p; });
+    return t;
+}
+// Sem base definida, testa cada parada como início e fica com o caminho mais curto.
+function mapaOrdenarRota(paradas, base) {
+    if (base || paradas.length < 3) return _mapaOrdenarDe(paradas, base);
+    let melhor = null, melhorKm = Infinity;
+    paradas.forEach((ini, i) => {
+        const resto = paradas.filter((_, j) => j !== i);
+        const rota = _mapaOrdenarDe([ini].concat(resto), null);
+        const km = _mapaKmRota(rota, null);
+        if (km < melhorKm - 1e-9) { melhorKm = km; melhor = rota; }
+    });
+    return melhor;
+}
+
+function _mapaOrdenarDe(paradas, base) {
+    if (paradas.length < 2 && !base) return paradas.slice();
+    const rest = paradas.slice();
+    let pts = [];
+    if (base) pts.push({ lat: base.lat, lng: base.lng, _base: true });
+    else pts.push(rest.shift());
+    while (rest.length) {
+        const atual = pts[pts.length - 1];
+        let bi = 0, bd = Infinity;
+        rest.forEach((p, i) => { const d = _mapaKm(atual, p); if (d < bd) { bd = d; bi = i; } });
+        pts.push(rest.splice(bi, 1)[0]);
+    }
+    const n = pts.length;
+    const d = (a, b) => _mapaKm(pts[a], pts[b]);
+    let melhorou = true, guarda = 0;
+    while (melhorou && guarda++ < 50) {
+        melhorou = false;
+        for (let i = 1; i < n - 1; i++) {
+            for (let j = i + 1; j < n; j++) {
+                const antes = d(i - 1, i) + (j + 1 < n ? d(j, j + 1) : 0);
+                const depois = d(i - 1, j) + (j + 1 < n ? d(i, j + 1) : 0);
+                if (depois + 1e-9 < antes) { pts = pts.slice(0, i).concat(pts.slice(i, j + 1).reverse(), pts.slice(j + 1)); melhorou = true; }
+            }
+        }
+    }
+    return pts.filter(p => !p._base);
+}
+
+function mapaGerarRota() {
+    if (!_mapa) return;
+    const data = (document.getElementById('mapaRotaData') || {}).value;
+    const resumo = document.getElementById('mapaRotaResumo'), lista = document.getElementById('mapaRotaLista');
+    if (!data) { showToast('Escolha a data do roteiro.', 'info'); return; }
+    _mapaRotaAtiva = true;
+    _mapaRotaCamada.clearLayers();
+    const dia = _mapaPosicionadas.filter(p => _mapaDataOrdem(p.o) === data);
+    const semPos = _mapaSemLocLista.filter(o => _mapaDataOrdem(o) === data);
+    const dataBr = data.split('-').reverse().join('/');
+    const notaSemPos = semPos.length
+        ? '<div class="mapa-rota-lin" style="color:var(--text-3)"><div class="m-info">' + semPos.length + ' OS deste dia sem localização ficaram fora do roteiro: ' +
+          semPos.map(o => _mapaEsc(o.numero || 'OS')).join(', ') + '</div></div>' : '';
+    document.getElementById('btnMapaRotaLimpar').style.display = '';
+    if (!dia.length) {
+        _mapaRotaParadas = [];
+        document.getElementById('btnMapaRotaGoogle').style.display = 'none';
+        resumo.textContent = 'Nenhuma OS com localização em ' + dataBr + ' (considerando os filtros de status, equipe e busca acima).';
+        lista.innerHTML = notaSemPos;
+        return;
+    }
+    const paradas = mapaOrdenarRota(dia.map(p => ({ o: p.o, dados: p.dados, lat: p.pos.lat, lng: p.pos.lng })), _mapaBase);
+    _mapaRotaParadas = paradas;
+
+    let total = 0, ant = _mapaBase, html = '';
+    const linha = [];
+    if (_mapaBase) linha.push([_mapaBase.lat, _mapaBase.lng]);
+    paradas.forEach((p, i) => {
+        const km = ant ? _mapaKm(ant, p) : 0;
+        total += km;
+        ant = p;
+        linha.push([p.lat, p.lng]);
+        const eq = (state.equipes || []).find(e => e.id === p.o.equipe_id);
+        const sub = (eq ? _mapaEsc(eq.nome) + ' · ' : '') + (i === 0 && !_mapaBase ? 'ponto de partida' : _mapaFmtKm(km) + ' do ponto anterior');
+        html += '<div class="mapa-rota-lin"><span class="mapa-rota-num">' + (i + 1) + '</span><div class="m-info"><strong>' + _mapaEsc(p.o.numero || 'OS') + '</strong> — ' + _mapaEsc(p.dados.cliente) +
+            '<div class="m-sub">' + sub + '</div></div>' +
+            '<button class="tbl-btn" onclick="verOrdem(\'' + p.o.id + '\')">Ver OS</button></div>';
+        L.marker([p.lat, p.lng], { icon: L.divIcon({ className: 'mapa-parada', html: '<span>' + (i + 1) + '</span>', iconSize: [26, 26], iconAnchor: [13, 62] }), zIndexOffset: 1000, interactive: false }).addTo(_mapaRotaCamada);
+    });
+    if (linha.length > 1) L.polyline(linha, { color: '#1E293B', weight: 3, opacity: 0.85, dashArray: '8 6' }).addTo(_mapaRotaCamada);
+    resumo.textContent = dataBr + ' · ' + paradas.length + ' parada' + (paradas.length > 1 ? 's' : '') + (total ? ' · ' + _mapaFmtKm(total) + ' em linha reta (estimativa; o trajeto real pelas ruas é maior)' : '') + (_mapaBase ? ' · saindo da base' : '');
+    lista.innerHTML = html + notaSemPos;
+    document.getElementById('btnMapaRotaGoogle').style.display = '';
+    const pts = linha.slice();
+    if (pts.length) _mapa.fitBounds(L.latLngBounds(pts), { padding: [60, 60], maxZoom: 15 });
+}
+
+function mapaLimparRota() {
+    _mapaRotaAtiva = false;
+    _mapaRotaParadas = [];
+    if (_mapaRotaCamada) _mapaRotaCamada.clearLayers();
+    document.getElementById('mapaRotaLista').innerHTML = '';
+    document.getElementById('mapaRotaResumo').textContent = 'Escolha a data e gere o roteiro: o sistema ordena as paradas pelo caminho mais curto entre os clientes do dia (respeitando os filtros acima).';
+    document.getElementById('btnMapaRotaGoogle').style.display = 'none';
+    document.getElementById('btnMapaRotaLimpar').style.display = 'none';
+}
+
+function mapaAbrirRotaGoogle() {
+    const ps = _mapaRotaParadas;
+    if (!ps.length) { showToast('Gere um roteiro primeiro.', 'info'); return; }
+    const pt = p => p.lat + ',' + p.lng;
+    let origem = null, destino = pt(ps[ps.length - 1]), meio;
+    if (_mapaBase) { origem = pt(_mapaBase); meio = ps.slice(0, -1); }
+    else if (ps.length > 1) { origem = pt(ps[0]); meio = ps.slice(1, -1); }
+    else meio = [];
+    if (meio.length > 9) { meio = meio.slice(0, 9); showToast('O Google Maps aceita no máximo 9 paradas intermediárias: enviei as 9 primeiras.', 'info'); }
+    const url = 'https://www.google.com/maps/dir/?api=1&travelmode=driving' + (origem ? '&origin=' + origem : '') +
+        '&destination=' + destino + (meio.length ? '&waypoints=' + encodeURIComponent(meio.map(pt).join('|')) : '');
+    window.open(url, '_blank', 'noopener');
+}
+
+// ── Base de saída (depósito) ──────────────────────────────────
+function mapaDefinirBase() {
+    if (!_mapa) return;
+    _mapaDefinindoBase = true;
+    document.getElementById('mapaCanvas').classList.add('mapa-definindo-base');
+    showToast('Clique no mapa no ponto de onde as equipes saem.', 'info');
+}
+function mapaCliqueNoMapa(e) {
+    if (!_mapaDefinindoBase) return;
+    _mapaDefinindoBase = false;
+    document.getElementById('mapaCanvas').classList.remove('mapa-definindo-base');
+    _mapaBase = { lat: e.latlng.lat, lng: e.latlng.lng };
+    try { localStorage.setItem('dcm_mapa_base', JSON.stringify(_mapaBase)); } catch (err) {}
+    mapaMostrarBase();
+    if (_mapaRotaAtiva) mapaGerarRota();
+}
+function mapaMostrarBase() {
+    if (_mapaBaseMarker) { _mapa.removeLayer(_mapaBaseMarker); _mapaBaseMarker = null; }
+    const btn = document.getElementById('btnMapaBaseLimpar');
+    if (btn) btn.style.display = _mapaBase ? '' : 'none';
+    const btnDef = document.getElementById('btnMapaBase');
+    if (btnDef) btnDef.textContent = _mapaBase ? 'Mudar base de saída' : 'Definir base de saída';
+    if (!_mapaBase || !_mapa) return;
+    const icone = L.divIcon({ className: 'mapa-base', iconSize: [30, 30], iconAnchor: [15, 15],
+        html: '<span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg></span>' });
+    _mapaBaseMarker = L.marker([_mapaBase.lat, _mapaBase.lng], { icon: icone, title: 'Base de saída', zIndexOffset: 900 }).addTo(_mapa);
+}
+function mapaLimparBase() {
+    _mapaBase = null;
+    try { localStorage.removeItem('dcm_mapa_base'); } catch (err) {}
+    mapaMostrarBase();
+    if (_mapaRotaAtiva) mapaGerarRota();
+}
+</script>
 </body>
 </html>
