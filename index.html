@@ -963,7 +963,8 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
                 <option value="criticos">Somente Críticos</option>
               </select>
             </div>
-            <button class="btn-outline" style="margin-left:auto" onclick="imprimirRelatorio('planejamento')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Imprimir</button>
+            <button class="btn-outline" style="margin-left:auto" onclick="imprimirComprasPorFornecedor()" title="Lista de compras separada por fornecedor (produtos com sugestão de compra)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Lista por Fornecedor</button>
+            <button class="btn-outline" onclick="imprimirRelatorio('planejamento')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Imprimir</button>
             <button class="btn-outline green" onclick="gerarRelatorioExcel('planejamento')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Excel</button>
           </div>
         </div>
@@ -1548,6 +1549,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
     </div>
     <div class="modal-footer">
       <button class="btn-ghost" onclick="closeModal('modalMaterialPendente')">Fechar</button>
+      <button class="btn-outline" onclick="imprimirPendentePorFornecedor()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Imprimir por Fornecedor</button>
       <button class="btn-primary" style="background:var(--red)" onclick="printMaterialPendente()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Imprimir Material Pendente</button>
     </div>
   </div>
@@ -3024,6 +3026,94 @@ function verificarEMostrarMaterialPendente(ordem, todosItens) {
     document.getElementById('matPendenteLista').innerHTML = renderMatPendenteGrupos(grupos);
 
     openModal('modalMaterialPendente');
+}
+
+// ===== Lista de compra separada por fornecedor (só impressão) =====
+// itens: [{ produto, quantidade }]; agrupa pelo fornecedor cadastrado no produto.
+function imprimirListaPorFornecedor(itens, titulo, subtitulo) {
+    if (!itens || !itens.length) { showToast('Nenhum material para imprimir.', 'info'); return; }
+    const grupos = {};
+    itens.forEach(function(it) {
+        const p = it.produto;
+        const forn = p && p.fornecedor_id ? state.fornecedores.find(function(f) { return f.id === p.fornecedor_id; }) : null;
+        const key = forn ? forn.id : '__sem__';
+        if (!grupos[key]) grupos[key] = { forn: forn, itens: [] };
+        grupos[key].itens.push(it);
+    });
+    const lista = Object.values(grupos).sort(function(a, b) {
+        if (!a.forn) return 1; if (!b.forn) return -1;
+        return (a.forn.nome || '').localeCompare(b.forn.nome || '', 'pt-BR');
+    });
+    const esc = function(v) { return String(v == null ? '' : v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
+    const blocos = lista.map(function(g) {
+        const f = g.forn;
+        const contato = f ? [f.contato, f.telefone, f.email].filter(Boolean).map(esc).join(' · ') : '';
+        g.itens.sort(function(a, b) { return (a.nome || '').localeCompare(b.nome || '', 'pt-BR'); });
+        const rows = g.itens.map(function(it) {
+            const p = it.produto;
+            return '<tr><td>' + esc(it.nome) + '</td><td>' + esc(p ? (p.codigo || '—') : '—') + '</td>' +
+                '<td style="text-align:center;font-weight:700">' + esc(it.quantidade) + ' ' + esc(p ? (p.unidade || 'UN') : 'UN') + '</td>' +
+                '<td class="chk"></td></tr>';
+        }).join('');
+        return '<div class="forn-block"><div class="forn-header"><span>' + (f ? esc(f.nome) : 'SEM FORNECEDOR CADASTRADO') + '</span>' +
+            '<small>' + (f && f.cnpj ? 'CNPJ ' + esc(f.cnpj) : '') + '</small></div>' +
+            (contato ? '<div class="forn-contato">' + contato + '</div>' : '') +
+            '<table><thead><tr><th>Material</th><th>Código</th><th style="text-align:center">Quantidade</th><th style="width:40px"></th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+    }).join('');
+    const win = window.open('', '_blank', 'width=900,height=700');
+    if (!win) { showToast('Permita pop-ups para imprimir.', 'error'); return; }
+    win.document.write('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"/><title>' + esc(titulo) + '</title><style>' +
+        '*{box-sizing:border-box;margin:0;padding:0}body{font-family:"Segoe UI",Arial,sans-serif;color:#1E293B;background:#fff;padding:36px}' +
+        '.header{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid #1E293B;padding-bottom:14px;margin-bottom:22px}' +
+        '.header h2{font-size:1.4rem}.header p{font-size:0.78rem;color:#64748B;margin-top:3px}' +
+        '.forn-block{margin-bottom:22px;page-break-inside:avoid}' +
+        '.forn-header{display:flex;justify-content:space-between;align-items:center;background:#1E293B;color:#fff;padding:8px 12px;font-weight:700;font-size:0.9rem;border-radius:6px 6px 0 0}' +
+        '.forn-header small{font-weight:400;opacity:.8}.forn-contato{font-size:0.78rem;color:#475569;background:#F1F5F9;padding:5px 12px;border:1px solid #CBD5E1;border-top:none}' +
+        'table{width:100%;border-collapse:collapse;font-size:0.82rem}th{background:#F1F5F9;text-align:left;padding:7px 10px;border:1px solid #CBD5E1;font-size:0.72rem;text-transform:uppercase}' +
+        'td{padding:7px 10px;border:1px solid #CBD5E1}td.chk{width:40px}' +
+        '.footer{margin-top:24px;font-size:0.72rem;color:#94A3B8;text-align:center}@media print{body{padding:16px}}' +
+        '</style></head><body><div class="header"><div><h2>' + esc(titulo) + '</h2><p>' + esc(subtitulo || '') + '</p></div>' +
+        '<div style="text-align:right;font-size:0.78rem;color:#64748B">Emitido em ' + new Date().toLocaleDateString('pt-BR') + '<br>' + lista.length + ' fornecedor(es) · ' + itens.length + ' material(is)</div></div>' +
+        blocos + '<div class="footer">DCM Estoque</div><script>window.onload=function(){window.print()}<\/script></body></html>');
+    win.document.close();
+}
+
+function imprimirPendentePorFornecedor() {
+    if (!_materialPendenteAtual) return;
+    const { ordem, kitsCompletos } = _materialPendenteAtual;
+    const grupos = montarGruposPendentesGlobal(ordem && ordem.id, kitsCompletos);
+    const mapa = {};
+    grupos.forEach(function(g) {
+        g.itens.forEach(function(i) {
+            const p = state.produtos.find(function(x) { return x.id === i.produto_id; }) || i.produto;
+            const k = (p && p.id) || i.produto_id || nomeExibicaoItem(i, p);
+            if (!mapa[k]) mapa[k] = { produto: p, nome: nomeExibicaoItem(i, p), quantidade: 0 };
+            mapa[k].quantidade += i._falta;
+        });
+    });
+    imprimirListaPorFornecedor(Object.values(mapa), 'Material Pendente por Fornecedor', 'OS ' + (ordem.numero || ''));
+}
+
+function imprimirComprasPorFornecedor() {
+    const prazoFiltro = document.getElementById('relPrazoFiltro').value;
+    const fornFiltro = document.getElementById('relPrazoFornecedor').value;
+    const criticoFiltro = document.getElementById('relPrazoCritico').value;
+    const itens = [];
+    state.produtos.forEach(function(p) {
+        const prazo = p.prazo_entrega || 0, saldo = p.saldo_atual || 0, minimo = p.estoque_minimo || 0;
+        const isCritico = minimo > 0 && saldo <= minimo;
+        if (prazoFiltro === 'gt30' && prazo < 30) return;
+        if (prazoFiltro === 'gt45' && prazo < 45) return;
+        if (prazoFiltro === 'lt15' && prazo >= 15) return;
+        if (prazoFiltro === '15-30' && (prazo < 15 || prazo > 30)) return;
+        if (prazoFiltro === '30-45' && (prazo < 30 || prazo > 45)) return;
+        if (fornFiltro && p.fornecedor_id !== fornFiltro) return;
+        if (criticoFiltro === 'criticos' && !isCritico) return;
+        const sug = calcularSugestaoCompra(p).sugestao;
+        if (sug > 0) itens.push({ produto: p, nome: p.nome || '', quantidade: sug });
+    });
+    if (!itens.length) { showToast('Nenhum produto com sugestão de compra nos filtros atuais.', 'info'); return; }
+    imprimirListaPorFornecedor(itens, 'Lista de Compras por Fornecedor', 'Quantidades sugeridas pelo Planejamento de Compras');
 }
 
 function printMaterialPendente() {
@@ -9143,9 +9233,23 @@ function filterKits() {
     renderKits(q);
 }
 
+// Kits na ordem definida pelo admin (campo "ordem"); os sem número vão depois,
+// mantendo a ordem de cadastro. Usuário comum só enxerga os liberados para ele.
+function kitsOrdenados(lista) {
+    return (lista || []).slice().sort((a, b) => {
+        const oa = (a.ordem === null || a.ordem === undefined) ? Infinity : a.ordem;
+        const ob = (b.ordem === null || b.ordem === undefined) ? Infinity : b.ordem;
+        return oa === ob ? 0 : (oa < ob ? -1 : 1);
+    });
+}
+function kitsVisiveis() {
+    const todos = state.kits || [];
+    return state.currentUser && state.currentUser.perfil === 'admin' ? todos : todos.filter(k => k.visivel_usuario !== false);
+}
+
 function renderKits(filter) {
     filter = filter || (document.getElementById('searchKits')?.value || '').toLowerCase();
-    let list = state.kits || [];
+    let list = kitsOrdenados(state.kits || []);
     if (filter) list = list.filter(k => (k.nome || '').toLowerCase().includes(filter));
 
     const grid = document.getElementById('kitsGrid');
@@ -9210,6 +9314,12 @@ function renderKits(filter) {
             .join('');
         const dtRow = dtTags ? '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">' + dtTags + '</div>' : '';
 
+        const ordemBadge = (kit.ordem !== null && kit.ordem !== undefined)
+            ? '<span class="tag" style="font-size:0.65rem;padding:2px 7px;background:var(--surface-2);border:1px solid var(--border)" title="Ordem de exibição">#' + kit.ordem + '</span> '
+            : '';
+        const ocultoBadge = kit.visivel_usuario === false
+            ? '<span class="tag tag-amber" style="font-size:0.65rem;padding:2px 7px" title="Usuários comuns não veem este kit">Só admin</span> '
+            : '';
         const tipoBadge = tipoKit === 'inversor'
             ? '<span class="tag" style="font-size:0.65rem;padding:2px 7px;background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8">Inversor</span> '
             : '';
@@ -9218,7 +9328,7 @@ function renderKits(filter) {
             '<div class="kit-card-header">' +
                 '<div class="kit-card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg></div>' +
                 '<div><div class="kit-card-title">' + (kit.nome || 'Kit sem nome') + '</div>' +
-                '<div class="kit-card-sub">' + tipoBadge + totalItens + ' material(is)' + (kit.descricao ? ' · ' + kit.descricao : '') + '</div></div>' +
+                '<div class="kit-card-sub">' + ordemBadge + ocultoBadge + tipoBadge + totalItens + ' material(is)' + (kit.descricao ? ' · ' + kit.descricao : '') + '</div></div>' +
                 '<div style="margin-left:auto">' + estBadge + '</div>' +
             '</div>' +
             '<div class="kit-card-body">' + itensHtml + maisStr + dtRow + '</div>' +
@@ -9457,6 +9567,35 @@ function _kitSelecionarVariante(inpId, variante) {
 
 // ────────────────────────────────────────────────────────────────────────────
 
+// ===== Fornecedor por material no Kit Padrão =====
+function _kitFornOptionsHtml(sel) {
+    return '<option value="">Fornecedor...</option>' +
+        (state.fornecedores || []).slice().sort(function(a, b) { return (a.nome || '').localeCompare(b.nome || '', 'pt-BR'); })
+        .map(function(f) { return '<option value="' + f.id + '"' + (f.id === sel ? ' selected' : '') + '>' + String(f.nome || '').replace(/</g, '&lt;') + '</option>'; }).join('');
+}
+// Ao escolher o produto, pré-seleciona o fornecedor cadastrado nele (pode ser trocado na linha)
+function _kitSyncFornecedor(hidId) {
+    const hid = document.getElementById(hidId);
+    if (!hid) return;
+    const row = hid.closest('.kit-modal-item-row');
+    const sel = row && row.querySelector('.kit-forn-sel');
+    const p = state.produtos.find(function(x) { return x.id === hid.value; });
+    if (sel && p) sel.value = p.fornecedor_id || '';
+}
+// itensKit: [{produto_id, nome, quantidade, fornecedor_id?}]
+function imprimirKitPorFornecedor(itensKit, nomeKit) {
+    const itens = (itensKit || []).map(function(i) {
+        const p = state.produtos.find(function(x) { return x.id === i.produto_id; });
+        const fid = i.fornecedor_id || (p && p.fornecedor_id) || null;
+        const prodRef = Object.assign({}, p || {}, { fornecedor_id: fid });
+        return { produto: prodRef, nome: nomeExibicaoItem(i, p), quantidade: i.quantidade || 1 };
+    });
+    imprimirListaPorFornecedor(itens, 'Kit por Fornecedor', nomeKit || '');
+}
+function imprimirKitEmEdicao() {
+    imprimirKitPorFornecedor(coletarItensKit(), document.getElementById('kitNome').value.trim());
+}
+
 function addKitItemLinha() {
     const container = document.getElementById('kitItensList');
     const vazio = document.getElementById('kitItensVazio');
@@ -9479,9 +9618,10 @@ function addKitItemLinha() {
             ' onfocus="acFiltrarSimples(this,\'' + hidId + '\')"' +
             ' data-dd="' + ddId + '" data-hid="' + hidId + '"' +
             ' onblur="var dd=this.getAttribute(\'data-dd\');setTimeout(function(){acFechar(dd)},180)"/>' +
-            '<input type="hidden" id="' + hidId + '" onchange="_kitVerificarVariante(this.value,\'' + inputId + '\')"/>' +
+            '<input type="hidden" id="' + hidId + '" onchange="_kitVerificarVariante(this.value,\'' + inputId + '\');_kitSyncFornecedor(\'' + hidId + '\')"/>' +
             '<div class="ac-dropdown" id="' + ddId + '"></div>' +
         '</div>' +
+        '<select class="kit-forn-sel" id="kitForn_' + idx + '" title="Fornecedor deste material" style="width:130px;flex-shrink:0;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:6px 6px;font-size:0.78rem;color:var(--text);font-family:inherit">' + _kitFornOptionsHtml('') + '</select>' +
         '<div style="display:flex;align-items:center;gap:6px;flex-shrink:0">' +
             '<label style="font-size:0.75rem;color:var(--text-2);white-space:nowrap">Qtd:</label>' +
             '<input type="number" id="' + qtyId + '" value="1" min="1" style="width:60px;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-size:0.875rem;color:var(--text);font-family:inherit"/>' +
@@ -9548,11 +9688,14 @@ function coletarItensKit() {
         const displayNome = txtInput
             ? txtInput.value.replace(/\s*\(Saldo:\s*[\d-]+\)/gi, '').trim()
             : '';
-        itens.push({
+        const fornSel = row.querySelector('.kit-forn-sel');
+        const it = {
             produto_id: prodId,
             nome: displayNome || (prod ? prod.nome : ''),
             quantidade: qty
-        });
+        };
+        if (fornSel && fornSel.value) it.fornecedor_id = fornSel.value;
+        itens.push(it);
     });
     return itens;
 }
@@ -9562,6 +9705,8 @@ function abrirModalKit(reset) {
         state.editingKitId = null;
         document.getElementById('kitNome').value = '';
         document.getElementById('kitDescricao').value = '';
+        document.getElementById('kitOrdem').value = '';
+        document.getElementById('kitVisivelUsuario').value = '1';
         document.getElementById('kitItensList').innerHTML = '';
         const vazio = document.getElementById('kitItensVazio');
         if (vazio) { vazio.style.display = ''; document.getElementById('kitItensList').appendChild(vazio); }
@@ -9885,10 +10030,16 @@ async function salvarKit() {
     };
     const temDadosTecnicos = Object.values(dadosTecnicos).some(v => v);
 
+    const ordemRaw = parseInt(document.getElementById('kitOrdem')?.value, 10);
+    const ordemKit = isFinite(ordemRaw) && ordemRaw > 0 ? ordemRaw : null;
+    const visivelKit = document.getElementById('kitVisivelUsuario')?.value !== '0';
+
     const payload = {
         nome,
         descricao: desc,
         tipo_kit: tipoKit,
+        ordem: ordemKit,
+        visivel_usuario: visivelKit,
         itens: JSON.stringify(itens),
         sub_kits: subKits ? JSON.stringify(subKits) : null,
         dados_tecnicos: temDadosTecnicos ? JSON.stringify(dadosTecnicos) : null,
@@ -9898,7 +10049,7 @@ async function salvarKit() {
 
     try {
         if (state.editingKitId) {
-            let updatePayload = { nome, descricao: desc, tipo_kit: tipoKit, itens: JSON.stringify(itens) };
+            let updatePayload = { nome, descricao: desc, tipo_kit: tipoKit, ordem: ordemKit, visivel_usuario: visivelKit, itens: JSON.stringify(itens) };
             if (subKits) updatePayload.sub_kits = JSON.stringify(subKits);
             if (temDadosTecnicos) updatePayload.dados_tecnicos = JSON.stringify(dadosTecnicos);
             let { data, error } = await sb.from('kits').update(updatePayload).eq('id', state.editingKitId).select().single();
@@ -9913,11 +10064,18 @@ async function salvarKit() {
                     ({ data, error } = await sb.from('kits').update(updatePayload).eq('id', state.editingKitId).select().single());
                 }
             }
+            // Banco ainda sem as colunas ordem / visivel_usuario: salva o resto
+            if (error && /ordem|visivel_usuario/.test(error.message || '')) {
+                delete updatePayload.ordem; delete updatePayload.visivel_usuario;
+                ({ data, error } = await sb.from('kits').update(updatePayload).eq('id', state.editingKitId).select().single());
+                if (!error) showToast('Kit salvo, mas faltam as colunas "ordem" e "visivel_usuario" na tabela kits do Supabase — ordem e visibilidade só valem nesta sessão.', 'info');
+            }
             if (error) throw error;
             // Preservar sub_kits e tipo_kit em memória mesmo sem coluna no banco
             if (data) {
                 if (!data.sub_kits && subKits) data.sub_kits = JSON.stringify(subKits);
                 if (!data.tipo_kit) data.tipo_kit = tipoKit;
+                data.ordem = ordemKit; data.visivel_usuario = visivelKit;
             }
             const idx = state.kits.findIndex(k => k.id === state.editingKitId);
             if (idx !== -1) state.kits[idx] = { ...state.kits[idx], ...data, sub_kits: JSON.stringify(subKits), tipo_kit: tipoKit };
@@ -9937,11 +10095,17 @@ async function salvarKit() {
                     ({ data, error } = await sb.from('kits').insert([insertPayload]).select().single());
                 }
             }
+            if (error && /ordem|visivel_usuario/.test(error.message || '')) {
+                delete insertPayload.ordem; delete insertPayload.visivel_usuario;
+                ({ data, error } = await sb.from('kits').insert([insertPayload]).select().single());
+                if (!error) showToast('Kit salvo, mas faltam as colunas "ordem" e "visivel_usuario" na tabela kits do Supabase — ordem e visibilidade só valem nesta sessão.', 'info');
+            }
             if (error) throw error;
             // Preservar sub_kits e tipo_kit em memória mesmo sem coluna no banco
             if (data) {
                 if (!data.sub_kits && subKits) data.sub_kits = JSON.stringify(subKits);
                 if (!data.tipo_kit) data.tipo_kit = tipoKit;
+                data.ordem = ordemKit; data.visivel_usuario = visivelKit;
             }
             state.kits.unshift(data);
             showToast('Kit criado com sucesso!', 'success');
@@ -9973,6 +10137,8 @@ function editKit(id) {
 
     document.getElementById('kitNome').value = kit.nome || '';
     document.getElementById('kitDescricao').value = kit.descricao || '';
+    document.getElementById('kitOrdem').value = (kit.ordem === null || kit.ordem === undefined) ? '' : kit.ordem;
+    document.getElementById('kitVisivelUsuario').value = kit.visivel_usuario === false ? '0' : '1';
     document.getElementById('modalKitTitle').innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:6px"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Editar Kit';
 
     // Restaurar tipo de kit e mostrar seção correta
@@ -10022,6 +10188,8 @@ function editKit(id) {
         const prod = state.produtos.find(p => p.id === item.produto_id);
         if (txtEl) txtEl.value = nomeExibicaoItem(item, prod);
         if (qtyEl) qtyEl.value = item.quantidade || 1;
+        const fornEl = document.getElementById('kitForn_' + idx);
+        if (fornEl) fornEl.value = item.fornecedor_id || (prod && prod.fornecedor_id) || '';
     });
     atualizarResumoKit();
     document.getElementById('modalKit').classList.remove('hidden');
@@ -10129,6 +10297,12 @@ function verKit(id) {
 
     document.getElementById('btnEditarKitModal').onclick = function() { closeModal('modalVerKit'); editKit(id); };
     document.getElementById('btnBaixarKitModal').onclick = function() { exportarKit(kit); };
+    document.getElementById('btnImprimirKitForn').onclick = function() {
+        const lista = tipoKit === 'inversor'
+            ? (typeof kit.sub_kits === 'string' ? JSON.parse(kit.sub_kits || '[]') : (kit.sub_kits || [])).flatMap(function(sk) { return sk.itens || []; })
+            : (typeof kit.itens === 'string' ? JSON.parse(kit.itens || '[]') : (kit.itens || []));
+        imprimirKitPorFornecedor(lista, kit.nome);
+    };
 
     document.getElementById('modalVerKit').classList.remove('hidden');
 }
@@ -10264,19 +10438,20 @@ async function deleteKit(id) {
 let _seletorKitCtx = 'modal'; // 'modal' ou 'page'
 
 function abrirSeletorKit(ctx) {
-    if (!state.kits || state.kits.length === 0) {
-        showToast('Nenhum kit cadastrado. Crie um kit na aba Produtos → Kits.', 'info');
+    if (kitsVisiveis().length === 0) {
+        showToast('Nenhum kit disponível. Um administrador pode criar kits na aba Produtos → Kits.', 'info');
         return;
     }
     _seletorKitCtx = ctx;
     document.getElementById('searchSeletorKit').value = '';
-    renderListaSeletorKit(state.kits);
+    renderListaSeletorKit(kitsOrdenados(kitsVisiveis()));
     document.getElementById('modalSeletorKit').classList.remove('hidden');
 }
 
 function filtrarSeletorKit() {
     const q = (document.getElementById('searchSeletorKit').value || '').toLowerCase();
-    const lista = q ? state.kits.filter(k => (k.nome || '').toLowerCase().includes(q)) : state.kits;
+    const base = kitsOrdenados(kitsVisiveis());
+    const lista = q ? base.filter(k => (k.nome || '').toLowerCase().includes(q)) : base;
     renderListaSeletorKit(lista);
 }
 
@@ -10485,6 +10660,21 @@ function _autoPreencherDtOS(kit, ctx) {
         </div>
       </div>
 
+      <!-- ── Ordem e visibilidade ── -->
+      <div class="form-grid" style="margin-bottom:16px">
+        <div class="form-group">
+          <label>Ordem de exibição</label>
+          <input type="number" id="kitOrdem" min="1" step="1" placeholder="Ex: 1 (vazio = depois dos numerados)"/>
+        </div>
+        <div class="form-group">
+          <label>Quem pode usar este kit</label>
+          <select id="kitVisivelUsuario">
+            <option value="1">Todos (usuários e administradores)</option>
+            <option value="0">Só administradores</option>
+          </select>
+        </div>
+      </div>
+
       <!-- ── Tipo de Kit ── -->
       <div class="form-group" style="margin-bottom:16px">
         <label style="font-size:0.75rem;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-2)">Tipo de Kit *</label>
@@ -10587,6 +10777,7 @@ function _autoPreencherDtOS(kit, ctx) {
     </div>
     <div class="modal-footer">
       <button class="btn-ghost" onclick="closeModal('modalKit')">Cancelar</button>
+      <button class="btn-outline" type="button" onclick="imprimirKitEmEdicao()" title="Imprime os materiais do kit separados por fornecedor">Imprimir por Fornecedor</button>
       <button class="btn-primary" onclick="salvarKit()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
         Salvar Kit
@@ -10633,6 +10824,7 @@ function _autoPreencherDtOS(kit, ctx) {
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
         Editar
       </button>
+      <button class="btn-outline" id="btnImprimirKitForn" onclick="">Imprimir por Fornecedor</button>
       <button class="btn-primary" id="btnBaixarKitModal" onclick="" style="background:#10B981">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         Baixar Kit
