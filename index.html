@@ -441,6 +441,43 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
 .mapa-base span{display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:8px;background:#7C3AED;border:2px solid #fff;box-shadow:0 2px 6px rgba(15,23,42,0.45)}
 #mapaCanvas.mapa-definindo-base{cursor:crosshair}
 @media(max-width:600px){#mapaCanvas{height:calc(100vh - 360px);min-height:320px}}
+
+/* ── Kanban de Ordens de Serviço ── */
+.kb-board{display:grid;gap:14px;align-items:start;overflow-x:auto;padding-bottom:10px;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity}
+.kb-col{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);display:flex;flex-direction:column;min-width:0;scroll-snap-align:start;transition:border-color .15s,background .15s}
+.kb-col.kb-over{border-color:var(--accent);background:var(--accent-soft)}
+.kb-col-head{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-top:3px solid var(--kb-c,var(--accent));border-radius:var(--radius) var(--radius) 0 0;font-size:0.76rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-2)}
+.kb-count{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:1px 9px;font-size:0.72rem;color:var(--text)}
+.kb-col-body{padding:8px;display:flex;flex-direction:column;gap:8px;max-height:calc(100vh - 250px);min-height:90px;overflow-y:auto}
+.kb-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;cursor:pointer;box-shadow:var(--shadow);transition:border-color .15s,box-shadow .15s}
+.kb-card:hover{border-color:var(--accent);box-shadow:var(--shadow-md)}
+.kb-card{user-select:none;-webkit-user-select:none}
+.kb-card[data-arrasta="1"]{cursor:grab}
+.kb-card.kb-dragging{opacity:.35}
+.kb-card.kb-loading{position:relative;pointer-events:none}
+.kb-card.kb-loading::after{content:'';position:absolute;inset:0;border-radius:inherit;background:var(--surface);opacity:.65}
+.kb-card.kb-loading::before{content:'';position:absolute;top:50%;left:50%;width:22px;height:22px;margin:-11px 0 0 -11px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;z-index:2}
+.kb-placeholder{display:flex;align-items:center;gap:10px;padding:14px 12px;border:2px dashed var(--accent);border-radius:var(--radius);background:var(--accent-soft);color:var(--accent);font-size:0.8rem;font-weight:600}
+.kb-card{position:relative}
+.kb-card.kb-flash{animation:kbFlash 2.4s ease-out}
+@keyframes kbFlash{0%{box-shadow:0 0 0 3px var(--green);background:var(--green-soft)}60%{box-shadow:0 0 0 3px var(--green);background:var(--green-soft)}100%{box-shadow:var(--shadow);background:var(--surface)}}
+.kb-selo{position:absolute;top:-9px;right:10px;background:var(--green);color:#fff;font-size:0.7rem;font-weight:700;padding:2px 10px;border-radius:20px;box-shadow:var(--shadow-md);animation:kbPop .25s ease-out}
+@keyframes kbPop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+.kb-grip{display:inline-flex;align-items:center;color:var(--text-3);touch-action:none;padding:4px 2px;margin:-4px 0 -4px -4px;cursor:grab}
+.kb-card.kb-ghost{position:fixed;z-index:9999;pointer-events:none;margin:0;opacity:.92;transform:rotate(2deg);box-shadow:var(--shadow-lg)}
+body.kb-drag-active{user-select:none;-webkit-user-select:none;cursor:grabbing}
+.kb-col.kb-bad{border-color:var(--red);background:var(--red-soft)}
+.kb-pr-urgente{border-left:3px solid var(--red)}
+.kb-pr-alta{border-left:3px solid var(--amber)}
+.kb-card-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
+.kb-card-top code{font-size:0.78rem;font-family:monospace;color:var(--text-2)}
+.kb-card-desc{font-size:0.82rem;font-weight:500;color:var(--text);line-height:1.35;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
+.kb-card-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+.kb-card-meta{display:flex;justify-content:space-between;gap:8px;margin-top:8px;font-size:0.72rem;color:var(--text-2)}
+.kb-card-acoes{margin-top:10px;padding-top:8px;border-top:1px solid var(--border-soft);flex-wrap:wrap}
+.kb-vazio{text-align:center;color:var(--text-3);font-size:0.8rem;padding:18px 6px}
+.kb-mais{width:100%;font-size:0.78rem;padding:7px}
+@media(max-width:900px){.kb-board{grid-auto-columns:minmax(270px,85%);grid-auto-flow:column;grid-template-columns:none!important}.kb-col-body{max-height:none}}
 </style>
 </head>
 <body>
@@ -739,6 +776,10 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
           <button class="filter-tab" onclick="filterOrdensByStatus('em_andamento',this)">Em andamento</button>
           <button class="filter-tab" onclick="filterOrdensByStatus('concluida',this)">Concluídas</button>
         </div>
+        <div class="filter-tabs" style="flex-shrink:0" title="Modo de visualização">
+          <button class="filter-tab kb-view" data-v="kanban" onclick="setOrdensView('kanban')">Kanban</button>
+          <button class="filter-tab kb-view" data-v="lista" onclick="setOrdensView('lista')">Lista</button>
+        </div>
         <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
           <input type="date" id="ordensDtInicio" oninput="filterOrdens()" title="Data início"
             style="padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface-2);color:var(--text);font-family:inherit;font-size:0.8rem"/>
@@ -754,6 +795,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
           <button class="btn-primary" onclick="openModal('modalOrdem')">+ Nova Ordem</button>
         </div>
       </div>
+      <div id="kanbanOrdens" class="kb-board"></div>
       <div class="card" id="pgCardOrdens">
         <div class="card-body no-pad">
           <table class="table">
@@ -7367,6 +7409,30 @@ async function deletarOrdem(id) {
 }
 
 
+// ── Pedaços compartilhados entre a visão Lista (tabela) e a visão Kanban ────
+// Botões de ação de uma OS (Ver, Editar, Imprimir, Material Pendente, ▶, ✓, Excluir)
+function _ordemAcoesHtml(o) {
+    let ac = '<button class="tbl-btn" onclick="verOrdem(\'' + o.id + '\')">Ver</button>';
+    ac += '<button class="tbl-btn" onclick="editarOrdem(\'' + o.id + '\')">Editar</button>';
+    ac += '<button class="tbl-btn" onclick="printOrdem(\'' + o.id + '\')" title="Imprimir OS"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></button>';
+    if (temMaterialZerado(o)) ac += '<button class="tbl-btn" style="color:var(--red);border-color:#FECACA;background:var(--red-soft)" onclick="abrirMaterialPendenteOrdem(\'' + o.id + '\')" title="Imprimir Material Pendente"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/><line x1="9" y1="17" x2="9.01" y2="17"/></svg></button>';
+    if (o.status === 'pendente') ac += '<button class="tbl-btn success" onclick="quickUpdateOrdem(\'' + o.id + '\',\'em_andamento\')">▶</button>';
+    if (o.status !== 'concluida' && o.status !== 'cancelada') ac += '<button class="tbl-btn" onclick="quickUpdateOrdem(\'' + o.id + '\',\'concluida\')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><polyline points="20 6 9 17 4 12"/></svg></button>';
+    ac += '<button class="tbl-btn danger" onclick="deletarOrdem(\'' + o.id + '\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>';
+    return ac;
+}
+
+// Tags de confirmação de recebimento (só faz sentido em OS concluída)
+function _ordemConfirmTagsHtml(o) {
+    var statusCell = '';
+    if (o.status === 'concluida') {
+            if (o.confirmacao_status === 'confirmado') statusCell += ' <span class="tag tag-green" title="Confirmado por ' + (o.confirmacao_por || '') + ' em ' + formatDate(o.confirmacao_data) + '">✓ Receb.</span>';
+            else if (o.confirmacao_status === 'parcial') statusCell += ' <span class="tag tag-red" title="' + (o.confirmacao_obs || '').replace(/"/g,"'") + '">⚠ Diverg.</span>';
+            else statusCell += ' <span class="tag tag-amber" title="Aguardando a equipe confirmar recebimento">Aguard. confirm.</span>';
+        }
+    return statusCell;
+}
+
 function renderOrdens(filter = '', sf = '') {
     filter = filter || '';
     sf = sf || state.filtroOrdens || 'todas';
@@ -7397,6 +7463,15 @@ function renderOrdens(filter = '', sf = '') {
     if (dtIni) list = list.filter(o => new Date(o.criado_em) >= new Date(dtIni));
     if (dtFim) list = list.filter(o => new Date(o.criado_em) <= new Date(dtFim + 'T23:59:59'));
     
+    // Visão Lista x Kanban (mesma busca/filtros/período nas duas)
+    const _modoKb = _getOrdensView() === 'kanban';
+    const _kbEl = document.getElementById('kanbanOrdens');
+    const _tbCard = document.getElementById('pgCardOrdens');
+    if (_kbEl) _kbEl.style.display = _modoKb ? '' : 'none';
+    if (_tbCard) _tbCard.style.display = _modoKb ? 'none' : '';
+    document.querySelectorAll('#page-ordens .kb-view').forEach(b => b.classList.toggle('active', b.dataset.v === (_modoKb ? 'kanban' : 'lista')));
+    if (_modoKb) { renderKanbanOrdens(list, sf); return; }
+
     const tb = document.getElementById('tbodyOrdens');
     
     if (!list.length) {
@@ -7414,13 +7489,7 @@ function renderOrdens(filter = '', sf = '') {
         const pr = PR[o.prioridade] || PR.media;
         const st = ST[o.status] || ST.pendente;
         
-        let ac = '<button class="tbl-btn" onclick="verOrdem(\'' + o.id + '\')">Ver</button>';
-        ac += '<button class="tbl-btn" onclick="editarOrdem(\'' + o.id + '\')">Editar</button>';
-        ac += '<button class="tbl-btn" onclick="printOrdem(\'' + o.id + '\')" title="Imprimir OS"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></button>';
-        if (temMaterialZerado(o)) ac += '<button class="tbl-btn" style="color:var(--red);border-color:#FECACA;background:var(--red-soft)" onclick="abrirMaterialPendenteOrdem(\'' + o.id + '\')" title="Imprimir Material Pendente"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/><line x1="9" y1="17" x2="9.01" y2="17"/></svg></button>';
-        if (o.status === 'pendente') ac += '<button class="tbl-btn success" onclick="quickUpdateOrdem(\'' + o.id + '\',\'em_andamento\')">▶</button>';
-        if (o.status !== 'concluida' && o.status !== 'cancelada') ac += '<button class="tbl-btn" onclick="quickUpdateOrdem(\'' + o.id + '\',\'concluida\')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><polyline points="20 6 9 17 4 12"/></svg></button>';
-        ac += '<button class="tbl-btn danger" onclick="deletarOrdem(\'' + o.id + '\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>';
+        const ac = _ordemAcoesHtml(o);
         
         const descClean = (o.descricao || '').replace(/^\[.*?\]\s*/, '');
         const descTrunc = descClean.length > 50 ? descClean.substring(0,50) + '...' : descClean;
@@ -7430,25 +7499,279 @@ function renderOrdens(filter = '', sf = '') {
         // de fato aconteceu é que o material foi liberado do estoque.
         const statusMaterialLabel = o.status === 'concluida' ? 'Liberada' : st.label;
         let statusCell = '<span class="tag ' + st.cls + '">' + statusMaterialLabel + '</span>';
-        if (o.status === 'concluida') {
-            if (o.confirmacao_status === 'confirmado') statusCell += ' <span class="tag tag-green" title="Confirmado por ' + (o.confirmacao_por || '') + ' em ' + formatDate(o.confirmacao_data) + '">✓ Receb.</span>';
-            else if (o.confirmacao_status === 'parcial') statusCell += ' <span class="tag tag-red" title="' + (o.confirmacao_obs || '').replace(/"/g,"'") + '">⚠ Diverg.</span>';
-            else statusCell += ' <span class="tag tag-amber" title="Aguardando a equipe confirmar recebimento">Aguard. confirm.</span>';
-        }
+        if (o.status === 'concluida') statusCell += _ordemConfirmTagsHtml(o);
         return '<tr><td><code style="font-size:0.78rem;font-family:monospace;">' + (o.numero || '') + '</code></td><td>' + (o.solicitante_nome || '') + '</td><td>' + equipeNome + '</td><td class="col-hide-mobile"><span class="tag ' + pr.cls + '">' + pr.label + '</span></td><td>' + statusCell + '</td><td>' + formatDate(o.data_necessaria || o.criado_em) + '</td><td class="col-hide-mobile" style="max-width:200px;color:var(--text-2);font-size:0.82rem" title="' + descClean.replace(/"/g,"'") + '">' + (descTrunc || '—') + '</td><td><div class="tbl-actions">' + ac + '</div></td></tr>';
     }).join('');
 }
 
+// ============================================
+// KANBAN DE ORDENS DE SERVIÇO
+// Mesma lista/filtros da tabela; cada card tem as mesmas ações. Arrastar um
+// card só AVANÇA a OS (Pendente → Em andamento → Concluída) e reaproveita
+// quickUpdateOrdem, que já dá a baixa de estoque ao concluir.
+// ============================================
+var _ordensViewAtual = null;
+var _kbLimites = {};          // quantos cards cada coluna mostra (botão "Mostrar mais")
+var _kbDragId = null;
+const KB_LIMITE_INICIAL = { pendente: 40, em_andamento: 40, concluida: 15, cancelada: 10 };
+const KB_COLUNAS = [
+    { st: 'pendente',     titulo: 'Pendente',     cor: 'var(--amber)' },
+    { st: 'em_andamento', titulo: 'Em andamento', cor: 'var(--accent)' },
+    { st: 'concluida',    titulo: 'Concluída',    cor: 'var(--green)' },
+    { st: 'cancelada',    titulo: 'Cancelada',    cor: 'var(--text-3)' }
+];
+
+function _getOrdensView() {
+    if (_ordensViewAtual) return _ordensViewAtual;
+    var v = null;
+    try { v = localStorage.getItem('dcm_ordens_view'); } catch (e) {}
+    _ordensViewAtual = (v === 'lista' || v === 'kanban') ? v : 'kanban';
+    return _ordensViewAtual;
+}
+
+function setOrdensView(v) {
+    _ordensViewAtual = v === 'lista' ? 'lista' : 'kanban';
+    try { localStorage.setItem('dcm_ordens_view', _ordensViewAtual); } catch (e) {}
+    var busca = document.getElementById('searchOrdens');
+    renderOrdens(busca ? busca.value : '', state.filtroOrdens);
+}
+
+function _kbEsc(t) {
+    return String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function _kbOrdenar(lista, st) {
+    var peso = { urgente: 0, alta: 1, media: 2, baixa: 3 };
+    var data = function (o) { return new Date(o.data_necessaria || o.criado_em || 0).getTime(); };
+    var copia = lista.slice();
+    if (st === 'concluida' || st === 'cancelada') {
+        copia.sort(function (a, b) { return new Date(b.criado_em || 0) - new Date(a.criado_em || 0); });
+    } else {
+        copia.sort(function (a, b) {
+            var pa = peso[a.prioridade] != null ? peso[a.prioridade] : 2;
+            var pb = peso[b.prioridade] != null ? peso[b.prioridade] : 2;
+            return pa - pb || data(a) - data(b);
+        });
+    }
+    return copia;
+}
+
+function _kbCardHtml(o) {
+    var eq = state.equipes ? state.equipes.find(function (e) { return e.id === o.equipe_id; }) : null;
+    var pr = PR[o.prioridade] || PR.media;
+    var desc = (o.descricao || '').replace(/^\[.*?\]\s*/, '');
+    var tags = '';
+    if (o.status === 'concluida') {
+        tags += '<span class="tag tag-green">Liberada</span>' + _ordemConfirmTagsHtml(o);
+    } else if (o.status !== 'cancelada' && temMaterialZerado(o)) {
+        tags += '<span class="tag tag-red" title="Há material com estoque insuficiente nesta OS">Material pendente</span>';
+    }
+    var arrastavel = o.status === 'pendente' || o.status === 'em_andamento';
+    return '<div class="kb-card kb-pr-' + _kbEsc(o.prioridade || 'media') + '" data-id="' + _kbEsc(o.id) + '" ' +
+        (arrastavel ? 'data-arrasta="1" onpointerdown="_kbPointerDown(event,\'' + o.id + '\')" ' : '') +
+        'onclick="_kbAbrirCard(\'' + o.id + '\')" title="Clique para ver a OS' + (arrastavel ? ' · arraste para avançar o status' : '') + '">' +
+        '<div class="kb-card-top"><span style="display:flex;align-items:center;gap:6px">' +
+            (arrastavel ? '<span class="kb-grip" title="Segure e arraste para avançar a OS"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><circle cx="8" cy="5" r="1.5"/><circle cx="16" cy="5" r="1.5"/><circle cx="8" cy="12" r="1.5"/><circle cx="16" cy="12" r="1.5"/><circle cx="8" cy="19" r="1.5"/><circle cx="16" cy="19" r="1.5"/></svg></span>' : '') +
+            '<code>' + _kbEsc(o.numero || '') + '</code></span><span class="tag ' + pr.cls + '">' + pr.label + '</span></div>' +
+        '<div class="kb-card-desc" title="' + _kbEsc(desc) + '">' + (_kbEsc(desc) || '—') + '</div>' +
+        (tags ? '<div class="kb-card-tags">' + tags + '</div>' : '') +
+        '<div class="kb-card-meta"><span>' + _kbEsc(eq ? eq.nome : 'Sem equipe') + '</span><span>' + formatDate(o.data_necessaria || o.criado_em) + '</span></div>' +
+        '<div class="kb-card-meta" style="margin-top:2px"><span>' + _kbEsc(o.solicitante_nome || '') + '</span></div>' +
+        '<div class="tbl-actions kb-card-acoes" onclick="event.stopPropagation()">' + _ordemAcoesHtml(o) + '</div>' +
+    '</div>';
+}
+
+function renderKanbanOrdens(list, sf) {
+    var el = document.getElementById('kanbanOrdens');
+    if (!el) return;
+    var cols = KB_COLUNAS.filter(function (c) {
+        if (sf && sf !== 'todas') return c.st === sf;
+        return c.st !== 'cancelada' || list.some(function (o) { return o.status === 'cancelada'; });
+    });
+    el.style.gridTemplateColumns = 'repeat(' + cols.length + ',minmax(290px,1fr))';
+    el.innerHTML = cols.map(function (c) {
+        var itens = _kbOrdenar(list.filter(function (o) { return o.status === c.st; }), c.st);
+        var lim = _kbLimites[c.st] || KB_LIMITE_INICIAL[c.st];
+        var visiveis = itens.slice(0, lim);
+        var corpo = visiveis.length
+            ? visiveis.map(_kbCardHtml).join('')
+            : '<div class="kb-vazio">Nenhuma ordem</div>';
+        if (itens.length > visiveis.length) {
+            corpo += '<button type="button" class="btn-outline kb-mais" onclick="_kbMostrarMais(\'' + c.st + '\')">Mostrar mais (' + (itens.length - visiveis.length) + ')</button>';
+        }
+        return '<div class="kb-col" data-st="' + c.st + '" style="--kb-c:' + c.cor + '">' +
+            '<div class="kb-col-head"><span>' + c.titulo + '</span><span class="kb-count">' + itens.length + '</span></div>' +
+            '<div class="kb-col-body">' + corpo + '</div></div>';
+    }).join('');
+}
+
+function _kbMostrarMais(st) {
+    _kbLimites[st] = (_kbLimites[st] || KB_LIMITE_INICIAL[st]) + 15;
+    var busca = document.getElementById('searchOrdens');
+    renderOrdens(busca ? busca.value : '', state.filtroOrdens);
+}
+
+// ── Arrastar com ponteiro (mouse e toque) — mesmo padrão de habilitarReordenacao ──
+// Mouse: segura em qualquer parte do card e arrasta. Toque: segura no
+// "puxador" (⋮⋮) do card — o resto do card continua rolando a tela.
+var _kbDrag = null;          // estado do arrasto em andamento
+var _kbUltimoArrasto = 0;    // evita abrir o "Ver" logo depois de soltar um card
+
+function _kbPodeAvancar(o, status) {
+    return (o.status === 'pendente' && (status === 'em_andamento' || status === 'concluida')) ||
+           (o.status === 'em_andamento' && status === 'concluida');
+}
+
+function _kbAbrirCard(id) {
+    if (Date.now() - _kbUltimoArrasto < 350) return;
+    verOrdem(id);
+}
+
+function _kbColunaEm(x, y) {
+    var el = document.elementFromPoint(x, y);
+    return el && el.closest ? el.closest('#kanbanOrdens .kb-col') : null;
+}
+
+function _kbPointerDown(ev, id) {
+    if (ev.pointerType === 'mouse' && ev.button !== 0) return;
+    if (ev.target.closest('button, a, input, select, textarea, .kb-card-acoes')) return;
+    if (ev.pointerType === 'touch' && !ev.target.closest('.kb-grip')) return;
+    _kbDrag = { id: id, card: ev.currentTarget, x0: ev.clientX, y0: ev.clientY, pid: ev.pointerId,
+                touch: ev.pointerType === 'touch', ativo: false, ghost: null, dx: 0, dy: 0 };
+    document.addEventListener('pointermove', _kbPointerMove);
+    document.addEventListener('pointerup', _kbPointerUp);
+    document.addEventListener('pointercancel', _kbPointerCancel);
+}
+
+function _kbPointerMove(ev) {
+    var d = _kbDrag;
+    if (!d || ev.pointerId !== d.pid) return;
+    if (!d.ativo) {
+        if (Math.hypot(ev.clientX - d.x0, ev.clientY - d.y0) < 6) return;   // ainda é um clique
+        d.ativo = true;
+        var r = d.card.getBoundingClientRect();
+        d.dx = d.x0 - r.left; d.dy = d.y0 - r.top;
+        var g = d.card.cloneNode(true);
+        g.removeAttribute('onclick'); g.removeAttribute('onpointerdown');
+        g.classList.add('kb-ghost');
+        g.style.width = r.width + 'px';
+        document.body.appendChild(g);
+        d.ghost = g;
+        d.card.classList.add('kb-dragging');
+        document.body.classList.add('kb-drag-active');
+    }
+    d.ghost.style.left = (ev.clientX - d.dx) + 'px';
+    d.ghost.style.top  = (ev.clientY - d.dy) + 'px';
+
+    // destaca a coluna sob o ponteiro: verde/azul se pode soltar, vermelho se não
+    var o = state.ordens.find(function (x) { return x.id === d.id; });
+    var col = _kbColunaEm(ev.clientX, ev.clientY);
+    document.querySelectorAll('#kanbanOrdens .kb-over, #kanbanOrdens .kb-bad').forEach(function (c) { c.classList.remove('kb-over', 'kb-bad'); });
+    if (col && o && col.dataset.st !== o.status) col.classList.add(_kbPodeAvancar(o, col.dataset.st) ? 'kb-over' : 'kb-bad');
+
+    // rolagem horizontal do quadro quando o card chega perto da borda
+    var board = document.getElementById('kanbanOrdens');
+    if (board) {
+        var br = board.getBoundingClientRect();
+        if (ev.clientX < br.left + 50) board.scrollLeft -= 18;
+        else if (ev.clientX > br.right - 50) board.scrollLeft += 18;
+    }
+}
+
+function _kbPointerUp(ev) {
+    var d = _kbDrag;
+    if (!d || ev.pointerId !== d.pid) return;
+    var col = d.ativo ? _kbColunaEm(ev.clientX, ev.clientY) : null;
+    var id = d.id, card = d.card, ativo = d.ativo;
+    _kbLimparArrasto();
+    if (!ativo) return;
+    _kbUltimoArrasto = Date.now();
+    if (col) _kbSoltar(id, col.dataset.st, card);
+}
+
+function _kbPointerCancel(ev) {
+    var d = _kbDrag;
+    if (!d || ev.pointerId !== d.pid) return;
+    if (d.ativo) _kbUltimoArrasto = Date.now();
+    _kbLimparArrasto();
+}
+
+function _kbLimparArrasto() {
+    document.removeEventListener('pointermove', _kbPointerMove);
+    document.removeEventListener('pointerup', _kbPointerUp);
+    document.removeEventListener('pointercancel', _kbPointerCancel);
+    if (_kbDrag) {
+        if (_kbDrag.ghost) _kbDrag.ghost.remove();
+        if (_kbDrag.card) _kbDrag.card.classList.remove('kb-dragging');
+    }
+    document.body.classList.remove('kb-drag-active');
+    document.querySelectorAll('#kanbanOrdens .kb-over, #kanbanOrdens .kb-bad').forEach(function (c) { c.classList.remove('kb-over', 'kb-bad'); });
+    _kbDrag = null;
+}
+
+function _kbSoltar(id, status, card) {
+    var o = state.ordens.find(function (x) { return x.id === id; });
+    if (!o || o.status === status) return;
+    if (!_kbPodeAvancar(o, status)) {
+        showToast('A OS só avança (Pendente → Em andamento → Concluída). Para outras mudanças use Ver / Editar.', 'info');
+        return;
+    }
+    if (status === 'concluida' && !confirm('Concluir a ' + (o.numero || 'OS') + '? O material será baixado do estoque.')) return;
+    var rotulo = status === 'concluida' ? 'Concluindo' : 'Iniciando';
+    if (card) card.classList.add('kb-loading');
+    // cartão provisório na coluna de destino enquanto o sistema atualiza
+    var corpo = document.querySelector('#kanbanOrdens .kb-col[data-st="' + status + '"] .kb-col-body');
+    var ph = null;
+    if (corpo) {
+        ph = document.createElement('div');
+        ph.className = 'kb-placeholder';
+        ph.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation:spin 0.7s linear infinite;flex-shrink:0"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>' +
+            '<span>' + rotulo + ' ' + _kbEsc(o.numero || 'OS') + (status === 'concluida' ? ' e baixando o estoque…' : '…') + '</span>';
+        var vazio = corpo.querySelector('.kb-vazio');
+        if (vazio) vazio.style.display = 'none';
+        corpo.insertBefore(ph, corpo.firstChild);
+        corpo.scrollTop = 0;
+    }
+    // botão "fantasma": quickUpdateOrdem mostra o spinner nele em vez de em algum botão do card
+    Promise.resolve(quickUpdateOrdem(id, status, document.createElement('button')))
+        .finally(function () {
+            if (card) card.classList.remove('kb-loading');
+            if (ph && document.body.contains(ph)) {         // deu erro: o quadro não foi redesenhado
+                var c = ph.parentNode;
+                ph.remove();
+                var v = c.querySelector('.kb-vazio'); if (v) v.style.display = '';
+                return;
+            }
+            var atual = state.ordens.find(function (x) { return x.id === id; });
+            if (atual && atual.status === status) _kbDestacarCard(id, status);
+        });
+}
+
+// Destaque verde/azul no card que acabou de chegar na coluna nova
+function _kbDestacarCard(id, status) {
+    var novo = document.querySelector('#kanbanOrdens .kb-card[data-id="' + id + '"]');
+    if (!novo) return;
+    novo.classList.add('kb-flash');
+    var sel = document.createElement('div');
+    sel.className = 'kb-selo';
+    sel.textContent = status === 'concluida' ? '✓ Concluída' : '▶ Em andamento';
+    novo.appendChild(sel);
+    try { novo.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' }); } catch (e) {}
+    setTimeout(function () { novo.classList.remove('kb-flash'); if (sel.parentNode) sel.remove(); }, 2400);
+}
+
 function filterOrdens() {
     pgReset('ordens');
+    _kbLimites = {};
     renderOrdens(document.getElementById('searchOrdens').value, state.filtroOrdens);
 }
 
 function filterOrdensByStatus(status, btn) {
     state.filtroOrdens = status;
     pgReset('ordens');
-    document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('#page-ordens .filter-tab:not(.kb-view)').forEach(b => b.classList.remove('active'));
     if (btn) btn.classList.add('active');
+    _kbLimites = {};
     filterOrdens();
 }
 
