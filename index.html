@@ -9350,7 +9350,15 @@ function renderKits(filter) {
 // "Padrão de Entrada"). Os demais (disjuntor, fio, condutor, tomada) não têm
 // essa chave e por isso o painel aparece em qualquer tipo de kit.
 const KIT_VARIANTES = [
-    { regex: /\bcabo\b/i,        variantes: ['Fase Linha', 'Fase Carga', 'Neutro', 'Terra'], restritoATipo: 'padrao_entrada' },
+    // Cabo por cor (só em "Padrão de Entrada"): preto = fase (Linha/Carga),
+    // azul = Neutro, verde = Terra. Estas 3 vêm ANTES da regra genérica de
+    // cabo porque o .find() usa a primeira que casar.
+    // "Prensa Cabo" não é cabo elétrico: o (?!.*\bprensa\b) no início exclui esse produto
+    // das regras de cabo (não abre painel de variante).
+    { regex: /^(?!.*\bprensa\b).*\bcabo\b.*\bpreto\b/i, variantes: ['Fase Linha', 'Fase Carga'], restritoATipo: 'padrao_entrada' },
+    { regex: /^(?!.*\bprensa\b).*\bcabo\b.*\bazul\b/i,  variantes: ['Neutro'],                    restritoATipo: 'padrao_entrada' },
+    { regex: /^(?!.*\bprensa\b).*\bcabo\b.*\bverde\b/i, variantes: ['Terra'],                     restritoATipo: 'padrao_entrada' },
+    { regex: /^(?!.*\bprensa\b).*\bcabo\b/i,        variantes: ['Fase Linha', 'Fase Carga', 'Neutro', 'Terra'], restritoATipo: 'padrao_entrada' },
     // "substituirPolos": ao escolher a variante, corrige o número de polos já
     // presente no nome do disjuntor (ex: "Disjuntor 80A 3P" -> "Disjuntor 80A
     // 2P") em vez de deixar o polo antigo (do produto escolhido primeiro)
