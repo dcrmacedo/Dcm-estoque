@@ -10492,12 +10492,109 @@ function renderListaSeletorKit(lista) {
     }).join('');
 }
 
-function selecionarKitParaOS(kitId) {
+// ── Bitola do eletroduto (3/4" ou 1") ao carregar um kit na OS ──────────────
+// O kit é cadastrado com a bitola 3/4. Ao escolher "1" os materiais abaixo
+// são trocados pelo produto de 1" (troca o produto_id de verdade, no mesmo
+// padrão do disjuntor 1P/2P/3P em _kitSelecionarVariante). Caixa condulete e
+// tampa cega ficam sempre em 3/4. Pares fixos
+// por CÓDIGO do produto — os nomes dos produtos de 1" não seguem o de 3/4.
+const KIT_BITOLAS = ['3/4', '1'];
+const KIT_BITOLA_PARES = [
+    { c34: '134',  c1: '135'  },                                  // Joelho | Cotovelo Branco PVC
+    { c34: '116',  c1: '117'  },                                  // Adaptador Condulete | Unidute
+    { c34: '144',  c1: '145'  },                                  // Eletroduto Branco PVC
+    { c34: '136',  c1: '137'  },                                  // Abraçadeira Branco PVC
+    { c34: null,   c1: '8210', nome34: /prensa[\s-]*cabo.*3\/4/ } // Prensa Cabo (3/4 achado pelo nome)
+];
+
+function _normNomeBitola(nome) {
+    return String(nome || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+}
+
+// Em qual lado de um par o produto está: { par, lado: '3/4' | '1' } ou null
+function _ladoBitola(prod) {
+    if (!prod) return null;
+    const cod = String(prod.codigo || '').trim();
+    const nome = _normNomeBitola(prod.nome);
+    for (const par of KIT_BITOLA_PARES) {
+        if (cod === par.c1) return { par, lado: '1' };
+        if ((par.c34 && cod === par.c34) || (par.nome34 && par.nome34.test(nome))) return { par, lado: '3/4' };
+    }
+    return null;
+}
+
+// Produto equivalente na bitola pedida (ou null se não estiver cadastrado)
+function _produtoNaBitola(par, bitola) {
+    if (bitola === '1') return state.produtos.find(p => String(p.codigo || '').trim() === par.c1) || null;
+    if (par.c34) return state.produtos.find(p => String(p.codigo || '').trim() === par.c34) || null;
+    return state.produtos.find(p => par.nome34.test(_normNomeBitola(p.nome))) || null;
+}
+
+function _kitTemItemBitola(kit) {
+    const ids = [];
+    const tipoKit = _tipoKitReal(kit);
+    if (tipoKit === 'inversor' && kit.sub_kits) {
+        const sks = typeof kit.sub_kits === 'string' ? JSON.parse(kit.sub_kits) : kit.sub_kits;
+        (sks || []).forEach(sk => (sk.itens || []).forEach(i => ids.push(i)));
+    } else {
+        const its = kit.itens ? (typeof kit.itens === 'string' ? JSON.parse(kit.itens) : kit.itens) : [];
+        its.forEach(i => ids.push(i));
+    }
+    return ids.some(i => _ladoBitola(state.produtos.find(x => x.id === i.produto_id)));
+}
+
+// Troca, na lista de itens, cada material do lado errado pelo produto da
+// bitola escolhida. Sem equivalente cadastrado: mantém e volta em "faltantes".
+function _aplicarBitolaItens(itens, bitola) {
+    const faltantes = [];
+    itens.forEach(item => {
+        const atual = state.produtos.find(p => p.id === item.produto_id);
+        const info = _ladoBitola(atual);
+        if (!info || info.lado === bitola) return;
+        const eq = _produtoNaBitola(info.par, bitola);
+        if (eq) {
+            item.produto_id = eq.id;
+            item.nome = eq.nome;
+            if ('produto' in item) item.produto = eq;
+        } else {
+            faltantes.push(atual.nome);
+        }
+    });
+    return faltantes;
+}
+
+function _avisarBitolaFaltantes(faltantes, bitola) {
+    if (!faltantes.length) return;
+    const unicos = faltantes.filter((n, i) => faltantes.indexOf(n) === i);
+    showToast('Sem equivalente de ' + bitola + '" no estoque (mantido o original): ' + unicos.join(', '), 'info');
+}
+
+// Tela de escolha mostrada dentro do próprio modal "Selecionar Kit"
+function _mostrarEscolhaBitola(kit) {
+    const el = document.getElementById('listaSeletorKit');
+    if (!el) return;
+    const btn = b => '<button type="button" class="btn-outline" style="flex:1;padding:14px 10px;font-size:1.05rem;font-weight:600" ' +
+        'onclick="selecionarKitParaOS(\'' + kit.id + '\',\'' + b + '\')">' + b + '"</button>';
+    el.innerHTML =
+        '<div style="padding:6px 2px">' +
+            '<div style="font-weight:600;font-size:0.92rem;color:var(--text);margin-bottom:4px">Kit ' + String(kit.nome || '').replace(/</g, '&lt;') + '</div>' +
+            '<div style="font-size:0.8rem;color:var(--text-2);margin-bottom:14px">Escolha a bitola. Ao escolher 1", eletroduto, joelho, abraçadeira, adaptador condulete e prensa cabo são trocados pelos de 1". Caixa e tampa condulete continuam em 3/4.</div>' +
+            '<div style="display:flex;gap:10px;margin-bottom:12px">' + KIT_BITOLAS.map(btn).join('') + '</div>' +
+            '<button type="button" class="btn-ghost" onclick="filtrarSeletorKit()">← Voltar aos kits</button>' +
+        '</div>';
+}
+
+function selecionarKitParaOS(kitId, bitola) {
     const kit = state.kits.find(k => k.id === kitId);
     if (!kit) return;
 
+    // Kit com material de eletroduto: pergunta a bitola antes de carregar
+    if (!bitola && _kitTemItemBitola(kit)) { _mostrarEscolhaBitola(kit); return; }
+
     const tipoKit = _tipoKitReal(kit);
     const ctx = _seletorKitCtx;
+    let faltantesBitola = [];
+    const sufixoBitola = bitola ? ' · ' + bitola + '"' : '';
 
     if (tipoKit === 'inversor' && kit.sub_kits) {
         const subKits = typeof kit.sub_kits === 'string' ? JSON.parse(kit.sub_kits) : kit.sub_kits;
@@ -10508,12 +10605,13 @@ function selecionarKitParaOS(kitId) {
                 return { ...item, nome: item.nome || (prod ? prod.nome : ''), quantidade: item.quantidade || 1, idx: _novoIdxItem(), produto: prod };
             });
             if (!itensCompletos.length) return;
+            if (bitola) faltantesBitola = faltantesBitola.concat(_aplicarBitolaItens(itensCompletos, bitola));
             const tipoMap = { 'Inversor': 'inversor', 'Padrão de Entrada': 'padrao_entrada', 'Padrão de Entrada (Poste Auxiliar)': 'padrao_entrada_auxiliar' };
             const tipo = tipoMap[sk.nome] || 'personalizado';
             const labelBase = (KIT_LABELS[tipo] || sk.nome || '').trim();
             _kitsConfirmados[ctx].push({
                 tipo,
-                label: labelBase + ' <span style="font-weight:400;opacity:.75">— ' + (kit.nome || 'Kit') + '</span>',
+                label: labelBase + ' <span style="font-weight:400;opacity:.75">— ' + (kit.nome || 'Kit') + sufixoBitola + '</span>',
                 itens: itensCompletos
             });
         });
@@ -10522,7 +10620,8 @@ function selecionarKitParaOS(kitId) {
         renderKitsConfirmados(ctx);
         _autoPreencherDtOS(kit, ctx);
         closeModal('modalSeletorKit');
-        showToast('Kit Inversor "' + kit.nome + '" carregado — ' + subKits.length + ' sub-kits confirmados!', 'success');
+        showToast('Kit Inversor "' + kit.nome + '"' + sufixoBitola + ' carregado — ' + subKits.length + ' sub-kits confirmados!', 'success');
+        _avisarBitolaFaltantes(faltantesBitola, bitola);
         return;
     }
 
@@ -10539,6 +10638,7 @@ function selecionarKitParaOS(kitId) {
         nome: item.nome || '',
         quantidade: item.quantidade || 1
     }));
+    if (bitola) faltantesBitola = _aplicarBitolaItens(_ordemItens[ctx], bitola);
     renderLinhasOrdem(ctx);
 
     const containerId = ctx === 'modal' ? 'modalOrdemItens' : ctx === 'edit' ? 'editOrdemItens' : 'pageOrdemItens';
@@ -10546,13 +10646,14 @@ function selecionarKitParaOS(kitId) {
     if (container) {
         const label = document.createElement('div');
         label.style.cssText = 'display:flex;align-items:center;gap:6px;font-size:0.78rem;font-weight:600;color:#6366F1;margin-bottom:6px;padding:6px 10px;background:rgba(99,102,241,0.08);border-radius:6px;border:1px solid rgba(99,102,241,0.2)';
-        label.innerHTML = 'Kit: <strong>' + (kit.nome || '') + '</strong> — ' + itens.length + ' material(is) carregado(s)';
+        label.innerHTML = 'Kit: <strong>' + (kit.nome || '') + '</strong>' + (bitola ? ' · bitola <strong>' + bitola + '"</strong>' : '') + ' — ' + itens.length + ' material(is) carregado(s)';
         container.insertBefore(label, container.firstChild);
     }
 
     _autoPreencherDtOS(kit, ctx);
     closeModal('modalSeletorKit');
-    showToast('Kit "' + kit.nome + '" carregado! Clique em "Confirmar Kit" para adicionar à ordem.', 'success');
+    showToast('Kit "' + kit.nome + '"' + sufixoBitola + ' carregado! Clique em "Confirmar Kit" para adicionar à ordem.', 'success');
+    _avisarBitolaFaltantes(faltantesBitola, bitola);
 }
 
 function _coletarDadosTecnicosOrdem(ctx) {
