@@ -461,6 +461,11 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
 .kb-card{position:relative}
 .kb-card.kb-flash{animation:kbFlash 2.4s ease-out}
 @keyframes kbFlash{0%{box-shadow:0 0 0 3px var(--green);background:var(--green-soft)}60%{box-shadow:0 0 0 3px var(--green);background:var(--green-soft)}100%{box-shadow:var(--shadow);background:var(--surface)}}
+.tbl-btn.pin-btn:hover{border-color:#F59E0B;color:#D97706}
+.tbl-btn.pin-btn.ativo{background:var(--amber-soft);color:#D97706;border-color:#FCD34D}
+.kb-card.kb-fixada{box-shadow:0 0 0 2px #F59E0B,var(--shadow);background:linear-gradient(var(--amber-soft),var(--surface) 70px)}
+.kb-count.kb-count-fix{display:inline-flex;align-items:center;gap:3px;color:#D97706;background:var(--amber-soft);border-color:#FCD34D}
+tr.os-fixada td{background:var(--amber-soft)}
 .kb-selo{position:absolute;top:-9px;right:10px;background:var(--green);color:#fff;font-size:0.7rem;font-weight:700;padding:2px 10px;border-radius:20px;box-shadow:var(--shadow-md);animation:kbPop .25s ease-out}
 @keyframes kbPop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
 .kb-grip{display:inline-flex;align-items:center;color:var(--text-3);touch-action:none;padding:4px 2px;margin:-4px 0 -4px -4px;cursor:grab}
@@ -774,12 +779,14 @@ body.kb-drag-active{user-select:none;-webkit-user-select:none;cursor:grabbing}
           <button class="filter-tab active" onclick="filterOrdensByStatus('todas',this)">Todas</button>
           <button class="filter-tab" onclick="filterOrdensByStatus('pendente',this)">Pendentes</button>
           <button class="filter-tab" onclick="filterOrdensByStatus('em_andamento',this)">Em andamento</button>
+          <button class="filter-tab" id="tabFixadasOrdens" onclick="filterOrdensByStatus('fixadas',this)" title="OS marcadas para separar o material">Fixadas</button>
           <button class="filter-tab" onclick="filterOrdensByStatus('concluida',this)">Concluídas</button>
         </div>
         <div class="filter-tabs" style="flex-shrink:0" title="Modo de visualização">
-          <button class="filter-tab kb-view" data-v="kanban" onclick="setOrdensView('kanban')">Kanban</button>
+          <button class="filter-tab kb-view" data-v="kanban" onclick="setOrdensView('kanban')">Quadro</button>
           <button class="filter-tab kb-view" data-v="lista" onclick="setOrdensView('lista')">Lista</button>
         </div>
+        <button class="btn-outline" id="btnLimparFixadas" style="display:none;flex-shrink:0" onclick="limparFixadasOrdens()" title="Remove a fixação de todas as OS (nova rodada de separação)">Limpar fixadas</button>
         <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
           <input type="date" id="ordensDtInicio" oninput="filterOrdens()" title="Data início"
             style="padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface-2);color:var(--text);font-family:inherit;font-size:0.8rem"/>
@@ -7409,11 +7416,74 @@ async function deletarOrdem(id) {
 }
 
 
+// ── Fixar OS para separação de material ─────────────────────────────────────
+// Marca quais OS terão o material separado na próxima rodada (ex.: 7 obras
+// previstas, só 3 vão para a semana). Guardado em ordens.fixada_separacao e
+// compartilhado por todos os usuários. Só vale para OS pendente/em andamento.
+function _ordemFixada(o) {
+    return !!(o && o.fixada_separacao) && o.status !== 'concluida' && o.status !== 'cancelada';
+}
+
+function _pinSvg(preenchido, tam) {
+    tam = tam || 14;
+    return '<svg width="' + tam + '" height="' + tam + '" viewBox="0 0 24 24" fill="' + (preenchido ? 'currentColor' : 'none') + '" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg>';
+}
+
+function _renderOrdensAtual() {
+    var busca = document.getElementById('searchOrdens');
+    renderOrdens(busca ? busca.value : '', state.filtroOrdens);
+}
+
+// Coluna ainda não criada no Supabase: avisa com o SQL em vez de falhar em silêncio
+function _erroColunaFixada(error) {
+    if (error && error.message && error.message.includes('fixada_separacao')) {
+        alert('Falta criar a coluna no banco de dados.\n\nNo Supabase (SQL Editor) rode:\n\nALTER TABLE ordens ADD COLUMN fixada_separacao boolean DEFAULT false;\n\nDepois recarregue o sistema.');
+        return true;
+    }
+    return false;
+}
+
+async function alternarFixadaOrdem(id) {
+    var o = state.ordens.find(function (x) { return x.id === id; });
+    if (!o) return;
+    var novo = !o.fixada_separacao;
+    try {
+        var res = await sb.from('ordens').update({ fixada_separacao: novo }).eq('id', id).select().single();
+        if (res.error) throw res.error;
+        var i = state.ordens.findIndex(function (x) { return x.id === id; });
+        if (i !== -1) state.ordens[i] = Object.assign({}, state.ordens[i], res.data, { fixada_separacao: novo });
+        _renderOrdensAtual();
+        showToast(novo ? _pinSvg(true) + ' ' + (o.numero || 'OS') + ' fixada para separação' : (o.numero || 'OS') + ' removida da separação');
+    } catch (error) {
+        console.error('Erro ao fixar OS:', error);
+        if (!_erroColunaFixada(error)) showToast('Erro ao fixar a OS.', 'error');
+    }
+}
+
+async function limparFixadasOrdens() {
+    var ids = state.ordens.filter(function (o) { return o.fixada_separacao; }).map(function (o) { return o.id; });
+    if (!ids.length) return;
+    var ativas = state.ordens.filter(_ordemFixada).length;
+    if (!confirm('Remover a fixação de ' + ativas + ' OS? Use isso ao começar uma nova rodada de separação.')) return;
+    try {
+        var res = await sb.from('ordens').update({ fixada_separacao: false }).in('id', ids);
+        if (res.error) throw res.error;
+        state.ordens.forEach(function (o) { if (ids.indexOf(o.id) !== -1) o.fixada_separacao = false; });
+        if (state.filtroOrdens === 'fixadas') { state.filtroOrdens = 'todas'; document.querySelectorAll('#page-ordens .filter-tab:not(.kb-view)').forEach(function (b, n) { b.classList.toggle('active', n === 0); }); }
+        _renderOrdensAtual();
+        showToast('Fixações removidas');
+    } catch (error) {
+        console.error('Erro ao limpar fixadas:', error);
+        if (!_erroColunaFixada(error)) showToast('Erro ao remover as fixações.', 'error');
+    }
+}
+
 // ── Pedaços compartilhados entre a visão Lista (tabela) e a visão Kanban ────
 // Botões de ação de uma OS (Ver, Editar, Imprimir, Material Pendente, ▶, ✓, Excluir)
 function _ordemAcoesHtml(o) {
     let ac = '<button class="tbl-btn" onclick="verOrdem(\'' + o.id + '\')">Ver</button>';
     ac += '<button class="tbl-btn" onclick="editarOrdem(\'' + o.id + '\')">Editar</button>';
+    if (o.status !== 'concluida' && o.status !== 'cancelada') ac += '<button class="tbl-btn pin-btn' + (_ordemFixada(o) ? ' ativo' : '') + '" onclick="alternarFixadaOrdem(\'' + o.id + '\')" title="' + (_ordemFixada(o) ? 'Remover da separação' : 'Fixar para separar o material') + '">' + _pinSvg(_ordemFixada(o)) + '</button>';
     ac += '<button class="tbl-btn" onclick="printOrdem(\'' + o.id + '\')" title="Imprimir OS"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></button>';
     if (temMaterialZerado(o)) ac += '<button class="tbl-btn" style="color:var(--red);border-color:#FECACA;background:var(--red-soft)" onclick="abrirMaterialPendenteOrdem(\'' + o.id + '\')" title="Imprimir Material Pendente"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/><line x1="9" y1="17" x2="9.01" y2="17"/></svg></button>';
     if (o.status === 'pendente') ac += '<button class="tbl-btn success" onclick="quickUpdateOrdem(\'' + o.id + '\',\'em_andamento\')">▶</button>';
@@ -7438,6 +7508,13 @@ function renderOrdens(filter = '', sf = '') {
     sf = sf || state.filtroOrdens || 'todas';
     
     let list = state.ordens;
+
+    // aba "Fixadas" com contador e botão "Limpar fixadas" (contam todas as OS fixadas, sem filtros)
+    const _nFix = state.ordens.filter(_ordemFixada).length;
+    const _tabFix = document.getElementById('tabFixadasOrdens');
+    if (_tabFix) _tabFix.innerHTML = 'Fixadas' + (_nFix ? ' <span class="kb-count kb-count-fix">' + _nFix + '</span>' : '');
+    const _btnFix = document.getElementById('btnLimparFixadas');
+    if (_btnFix) _btnFix.style.display = _nFix ? '' : 'none';
     
     if (filter) {
         // Busca por número, solicitante, equipe e descrição (onde fica o nome
@@ -7453,7 +7530,9 @@ function renderOrdens(filter = '', sf = '') {
         });
     }
     
-    if (sf !== 'todas') {
+    if (sf === 'fixadas') {
+        list = list.filter(_ordemFixada);
+    } else if (sf !== 'todas') {
         list = list.filter(o => o.status === sf);
     }
 
@@ -7481,6 +7560,9 @@ function renderOrdens(filter = '', sf = '') {
         return;
     }
     
+    // OS fixadas para separação sobem para o topo da lista (ordenação estável)
+    if (list.some(_ordemFixada)) list = list.slice().sort((a, b) => (_ordemFixada(b) ? 1 : 0) - (_ordemFixada(a) ? 1 : 0));
+
     const page = pgApply('ordens', list, 'pgCardOrdens');
     
     tb.innerHTML = page.map(o => {
@@ -7500,7 +7582,8 @@ function renderOrdens(filter = '', sf = '') {
         const statusMaterialLabel = o.status === 'concluida' ? 'Liberada' : st.label;
         let statusCell = '<span class="tag ' + st.cls + '">' + statusMaterialLabel + '</span>';
         if (o.status === 'concluida') statusCell += _ordemConfirmTagsHtml(o);
-        return '<tr><td><code style="font-size:0.78rem;font-family:monospace;">' + (o.numero || '') + '</code></td><td>' + (o.solicitante_nome || '') + '</td><td>' + equipeNome + '</td><td class="col-hide-mobile"><span class="tag ' + pr.cls + '">' + pr.label + '</span></td><td>' + statusCell + '</td><td>' + formatDate(o.data_necessaria || o.criado_em) + '</td><td class="col-hide-mobile" style="max-width:200px;color:var(--text-2);font-size:0.82rem" title="' + descClean.replace(/"/g,"'") + '">' + (descTrunc || '—') + '</td><td><div class="tbl-actions">' + ac + '</div></td></tr>';
+        if (_ordemFixada(o)) statusCell += ' <span class="tag tag-amber" title="Fixada para separação de material">' + _pinSvg(true, 11) + ' Separar</span>';
+        return '<tr' + (_ordemFixada(o) ? ' class="os-fixada"' : '') + '><td><code style="font-size:0.78rem;font-family:monospace;">' + (o.numero || '') + '</code></td><td>' + (o.solicitante_nome || '') + '</td><td>' + equipeNome + '</td><td class="col-hide-mobile"><span class="tag ' + pr.cls + '">' + pr.label + '</span></td><td>' + statusCell + '</td><td>' + formatDate(o.data_necessaria || o.criado_em) + '</td><td class="col-hide-mobile" style="max-width:200px;color:var(--text-2);font-size:0.82rem" title="' + descClean.replace(/"/g,"'") + '">' + (descTrunc || '—') + '</td><td><div class="tbl-actions">' + ac + '</div></td></tr>';
     }).join('');
 }
 
@@ -7547,10 +7630,11 @@ function _kbOrdenar(lista, st) {
     if (st === 'concluida' || st === 'cancelada') {
         copia.sort(function (a, b) { return new Date(b.criado_em || 0) - new Date(a.criado_em || 0); });
     } else {
+        var fx = function (o) { return _ordemFixada(o) ? 0 : 1; };   // fixadas primeiro
         copia.sort(function (a, b) {
             var pa = peso[a.prioridade] != null ? peso[a.prioridade] : 2;
             var pb = peso[b.prioridade] != null ? peso[b.prioridade] : 2;
-            return pa - pb || data(a) - data(b);
+            return fx(a) - fx(b) || pa - pb || data(a) - data(b);
         });
     }
     return copia;
@@ -7561,13 +7645,14 @@ function _kbCardHtml(o) {
     var pr = PR[o.prioridade] || PR.media;
     var desc = (o.descricao || '').replace(/^\[.*?\]\s*/, '');
     var tags = '';
+    if (_ordemFixada(o)) tags += '<span class="tag tag-amber" title="Fixada para separação de material">' + _pinSvg(true, 11) + ' Separar</span>';
     if (o.status === 'concluida') {
         tags += '<span class="tag tag-green">Liberada</span>' + _ordemConfirmTagsHtml(o);
     } else if (o.status !== 'cancelada' && temMaterialZerado(o)) {
         tags += '<span class="tag tag-red" title="Há material com estoque insuficiente nesta OS">Material pendente</span>';
     }
     var arrastavel = o.status === 'pendente' || o.status === 'em_andamento';
-    return '<div class="kb-card kb-pr-' + _kbEsc(o.prioridade || 'media') + '" data-id="' + _kbEsc(o.id) + '" ' +
+    return '<div class="kb-card kb-pr-' + _kbEsc(o.prioridade || 'media') + (_ordemFixada(o) ? ' kb-fixada' : '') + '" data-id="' + _kbEsc(o.id) + '" ' +
         (arrastavel ? 'data-arrasta="1" onpointerdown="_kbPointerDown(event,\'' + o.id + '\')" ' : '') +
         'onclick="_kbAbrirCard(\'' + o.id + '\')" title="Clique para ver a OS' + (arrastavel ? ' · arraste para avançar o status' : '') + '">' +
         '<div class="kb-card-top"><span style="display:flex;align-items:center;gap:6px">' +
@@ -7585,6 +7670,7 @@ function renderKanbanOrdens(list, sf) {
     var el = document.getElementById('kanbanOrdens');
     if (!el) return;
     var cols = KB_COLUNAS.filter(function (c) {
+        if (sf === 'fixadas') return c.st === 'pendente' || c.st === 'em_andamento';
         if (sf && sf !== 'todas') return c.st === sf;
         return c.st !== 'cancelada' || list.some(function (o) { return o.status === 'cancelada'; });
     });
@@ -7593,6 +7679,7 @@ function renderKanbanOrdens(list, sf) {
         var itens = _kbOrdenar(list.filter(function (o) { return o.status === c.st; }), c.st);
         var lim = _kbLimites[c.st] || KB_LIMITE_INICIAL[c.st];
         var visiveis = itens.slice(0, lim);
+        var nFix = itens.filter(_ordemFixada).length;
         var corpo = visiveis.length
             ? visiveis.map(_kbCardHtml).join('')
             : '<div class="kb-vazio">Nenhuma ordem</div>';
@@ -7600,7 +7687,9 @@ function renderKanbanOrdens(list, sf) {
             corpo += '<button type="button" class="btn-outline kb-mais" onclick="_kbMostrarMais(\'' + c.st + '\')">Mostrar mais (' + (itens.length - visiveis.length) + ')</button>';
         }
         return '<div class="kb-col" data-st="' + c.st + '" style="--kb-c:' + c.cor + '">' +
-            '<div class="kb-col-head"><span>' + c.titulo + '</span><span class="kb-count">' + itens.length + '</span></div>' +
+            '<div class="kb-col-head"><span>' + c.titulo + '</span><span style="display:flex;align-items:center;gap:6px">' +
+                (nFix ? '<span class="kb-count kb-count-fix" title="' + nFix + ' fixada(s) para separação">' + _pinSvg(true, 10) + ' ' + nFix + '</span>' : '') +
+                '<span class="kb-count">' + itens.length + '</span></span></div>' +
             '<div class="kb-col-body">' + corpo + '</div></div>';
     }).join('');
 }
